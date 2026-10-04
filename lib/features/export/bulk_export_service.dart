@@ -8,6 +8,7 @@ import '../benchmark/data/benchmark_repository.dart';
 import '../fieldbook/data/measurement_repository.dart';
 import '../fieldbook/domain/fieldbook.dart';
 import '../fieldbook/domain/measurement.dart';
+import '../fieldbook/domain/measurement_validation.dart';
 import '../pro/pro_settings_repository.dart';
 import 'csv_exporter.dart';
 import 'export_file_namer.dart';
@@ -59,8 +60,8 @@ class BulkExportService {
     final namer = ExportFileNamer();
 
     for (final fieldBook in fieldBooks) {
-      final measurements = await measurementRepository.getByFieldBookId(
-        fieldBook.id!,
+      final measurements = MeasurementValidation.trimTrailingUnmeasured(
+        await measurementRepository.getByFieldBookId(fieldBook.id!),
       );
       if (measurements.isEmpty) continue;
 
@@ -102,7 +103,7 @@ class BulkExportService {
           startElevation: startElevation,
           proSettings: settings,
         );
-        await file.writeAsString(csv);
+        await file.writeAsString(CsvExporter.withBom(csv));
         files.add(XFile(file.path));
       }
     }
@@ -131,7 +132,9 @@ class BulkExportService {
         );
         final file = File('${dir.path}/$summaryName');
         await file.writeAsString(
-          SubmissionSummaryReport.generateCsv(summaryInputs),
+          CsvExporter.withBom(
+            SubmissionSummaryReport.generateCsv(summaryInputs),
+          ),
         );
         files.add(XFile(file.path));
       }

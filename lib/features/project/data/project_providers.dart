@@ -1,8 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'project_repository.dart';
+import 'sample_project_service.dart';
 import '../domain/project.dart';
 
 final projectRepositoryProvider = Provider((ref) => ProjectRepository());
+
+final sampleProjectServiceProvider = Provider((ref) => SampleProjectService());
 
 final projectListProvider =
     AsyncNotifierProvider<ProjectListNotifier, List<Project>>(

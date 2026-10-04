@@ -5,6 +5,8 @@ import 'package:printing/printing.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import '../../core/theme/app_theme.dart';
+import '../../core/widgets/app_snackbar.dart';
 import '../fieldbook/domain/fieldbook.dart';
 import '../fieldbook/domain/measurement.dart';
 import 'pdf_template.dart';
@@ -49,6 +51,7 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
   }
 
   Future<void> _loadInterstitialAd() async {
+    if (!AdManager.supportsMobileAds) return;
     final settings = ref.read(adSettingsRepositoryProvider);
     if (!await settings.canShowInterstitial()) return;
 
@@ -57,6 +60,11 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
       request: const AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (ad) {
+          if (!mounted) {
+            ad.dispose();
+            return;
+          }
+          _interstitialAd?.dispose();
           _interstitialAd = ad;
           ad.fullScreenContentCallback = FullScreenContentCallback(
             onAdDismissedFullScreenContent: (ad) => ad.dispose(),
@@ -69,11 +77,8 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
   }
 
   Future<void> _loadProPdfSettings() async {
-    final adsRemoved = await ref
-        .read(adSettingsRepositoryProvider)
-        .areAdsRemoved();
-    if (!adsRemoved) return;
-
+    // PDF/CSV 문서 설정은 무료 사용자에게도 적용됩니다. (무료는 내보내기 시
+    // 광고가 노출되며, 이 광고가 수익 모델을 유지합니다.)
     final settings = await ref
         .read(proSettingsRepositoryProvider)
         .getPdfSettings();
@@ -139,10 +144,12 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
           startElevation: widget.startElevation,
           proSettings: _proPdfSettings,
         ),
+        scrollViewDecoration: BoxDecoration(color: context.appColors.soft),
         canChangeOrientation: false,
         canChangePageFormat: false,
-        allowPrinting: true,
-        allowSharing: true,
+        // 공유/인쇄는 AppBar의 공유 흐름(내보내기 이력·광고)으로만 제공합니다.
+        allowPrinting: false,
+        allowSharing: false,
       ),
     );
   }
@@ -177,9 +184,7 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
       await _showInterstitialAd();
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('PDF 생성 실패: $e')));
+        AppSnackbar.error(context, 'PDF 생성 실패: $e');
       }
     }
   }
@@ -201,7 +206,7 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
         proSettings: _proPdfSettings,
       );
       final file = File('${dir.path}/$fileName');
-      await file.writeAsString(csvString);
+      await file.writeAsString(CsvExporter.withBom(csvString));
       await Share.shareXFiles([XFile(file.path)]);
       await ExportHistoryRepository().record(
         ExportHistoryRecord(
@@ -214,9 +219,7 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
       await _showInterstitialAd();
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('CSV 생성 실패: $e')));
+        AppSnackbar.error(context, 'CSV 생성 실패: $e');
       }
     }
   }

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../constants/app_constants.dart';
@@ -18,12 +19,33 @@ class DatabaseHelper {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, AppConstants.dbName);
 
-    return await openDatabase(
+    return await databaseFactory.openDatabase(
       path,
+      options: openDatabaseOptions(),
+    );
+  }
+
+  /// Options shared by the app database and tests (in-memory ffi DBs).
+  @visibleForTesting
+  OpenDatabaseOptions openDatabaseOptions() {
+    return OpenDatabaseOptions(
       version: AppConstants.dbVersion,
+      onConfigure: _configureDB,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
+  }
+
+  /// Replaces the shared database instance (tests only).
+  @visibleForTesting
+  void setDatabaseForTesting(Database? db) {
+    _database = db;
+  }
+
+  /// SQLite leaves foreign keys off per connection by default, which would
+  /// silently disable ON DELETE CASCADE / SET NULL.
+  Future<void> _configureDB(Database db) async {
+    await db.execute('PRAGMA foreign_keys = ON');
   }
 
   Future<void> _createDB(Database db, int version) async {
@@ -99,6 +121,7 @@ class DatabaseHelper {
     ''');
 
     await _createSettingsTable(db);
+    await _createQuickMemosTable(db);
   }
 
   Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
@@ -152,6 +175,43 @@ class DatabaseHelper {
         'ALTER TABLE benchmarks ADD COLUMN coordinate_captured_at TEXT',
       );
     }
+    if (oldVersion < 7) {
+      await _createQuickMemosTable(db);
+    }
+    if (oldVersion < 8) {
+      await _deleteOrphanRows(db);
+    }
+  }
+
+  /// Before v8 foreign keys were never enabled, so deleting a project / field
+  /// book / BM left dangling children behind. Remove them once.
+  Future<void> _deleteOrphanRows(Database db) async {
+    await db.execute(
+      'DELETE FROM field_books WHERE project_id NOT IN (SELECT id FROM projects)',
+    );
+    await db.execute(
+      'DELETE FROM benchmarks WHERE project_id NOT IN (SELECT id FROM projects)',
+    );
+    await db.execute(
+      'DELETE FROM measurements '
+      'WHERE field_book_id NOT IN (SELECT id FROM field_books)',
+    );
+    await db.execute(
+      'UPDATE field_books SET start_bm_id = NULL '
+      'WHERE start_bm_id IS NOT NULL '
+      'AND start_bm_id NOT IN (SELECT id FROM benchmarks)',
+    );
+  }
+
+  Future<void> _createQuickMemosTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS quick_memos (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        text TEXT,
+        audio_path TEXT,
+        created_at TEXT NOT NULL
+      )
+    ''');
   }
 
   Future<void> _createSettingsTable(Database db) async {

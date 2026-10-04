@@ -3,13 +3,30 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/fieldbook_providers.dart';
+import '../data/measurement_repository.dart';
 import '../domain/fieldbook.dart';
 import '../domain/measurement.dart';
 import '../domain/measurement_validation.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/semantic_pill.dart';
 import '../../benchmark/data/benchmark_repository.dart';
 import '../../export/export_screen.dart';
+import '../../quickmemo/presentation/quick_memo_fab.dart';
 import '../../../core/utils/calculation.dart';
+
+/// Display text for a BS/FS reading: 3 decimals (e.g. 1.94 → '1.940'), but
+/// never rounds away entered precision (1.2345 stays '1.2345').
+String formatReadingText(double value) {
+  final fixed = value.toStringAsFixed(3);
+  return double.parse(fixed) == value ? fixed : value.toString();
+}
+
+/// Column flex weights shared by the table header and rows. NO gets a wider
+/// share than the numeric columns' tail so station names like 'BM-1 (폐합)'
+/// stay legible on a 360pt viewport (≈50/68/68/68/68/36pt).
+const int _flexNo = 14;
+const int _flexValue = 19;
+const int _flexAction = 10;
 
 class _RowData {
   String stationName;
@@ -35,6 +52,10 @@ class _RowData {
   double? get bs => double.tryParse(bsText);
   double? get fs => double.tryParse(fsText);
   bool get hasData => bs != null || fs != null;
+
+  /// Rows worth persisting: a station name alone (e.g. from '구조 복제')
+  /// counts, fully empty rows do not.
+  bool get hasContent => stationName.trim().isNotEmpty || hasData;
 }
 
 class FieldBookEditScreen extends ConsumerStatefulWidget {
@@ -52,13 +73,29 @@ class FieldBookEditScreen extends ConsumerStatefulWidget {
       _FieldBookEditScreenState();
 }
 
-class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen> {
+class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
+    with WidgetsBindingObserver {
   final List<_RowData> _rows = [];
   double _startElevation = 0;
   bool _loaded = false;
   bool _dirty = false;
   String _saveStatus = '저장됨';
   Timer? _autosaveTimer;
+
+  /// Captured in didChangeDependencies so saves that finish (or start) after
+  /// dispose — pop-save, lifecycle flush — never touch `ref`.
+  late ProviderContainer _container;
+
+  /// Tail of the save queue; every save chains onto it so two saves never
+  /// interleave their delete/insert.
+  Future<void> _saveQueue = Future.value();
+
+  /// Incremented on every edit; compared with the generation captured by the
+  /// last queued save to know whether there are unsaved edits.
+  int _editGeneration = 0;
+  int _queuedGeneration = 0;
+  int _savedGeneration = 0;
+  double? _persistedStartElevation;
   late FieldBookReviewStatus _reviewStatus;
   DateTime? _reviewedAt;
   final int _initialRowCount = 20;
@@ -82,10 +119,38 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen> {
 
   FocusNode _getFocusNode(int row, String col) {
     final key = '${row}_$col';
-    if (!_focusNodes.containsKey(key)) {
-      _focusNodes[key] = FocusNode();
+    return _focusNodes.putIfAbsent(key, () => _createFocusNode(key));
+  }
+
+  /// Focus node that pads the cell's value to 3 decimals once the user leaves
+  /// it, so the field is never reformatted while it is being typed in.
+  FocusNode _createFocusNode(String key) {
+    final node = FocusNode();
+    node.addListener(() {
+      if (!node.hasFocus) _formatCellOnBlur(key, node);
+    });
+    return node;
+  }
+
+  void _formatCellOnBlur(String key, FocusNode node) {
+    if (!mounted || _focusNodes[key] != node) return;
+    final controller = _controllers[key];
+    if (controller == null) return;
+    final sep = key.indexOf('_');
+    final row = int.tryParse(key.substring(0, sep));
+    final col = key.substring(sep + 1);
+    if (row == null || row >= _rows.length) return;
+    final value = double.tryParse(controller.text.trim());
+    if (value == null) return;
+    final formatted = formatReadingText(value);
+    if (formatted == controller.text) return;
+    // Same numeric value, so no recalculation or autosave is needed.
+    controller.text = formatted;
+    if (col == 'bs') {
+      _rows[row].bsText = formatted;
+    } else {
+      _rows[row].fsText = formatted;
     }
-    return _focusNodes[key]!;
   }
 
   void _moveToNextCell(int currentRow, String currentCol) {
@@ -117,6 +182,8 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _persistedStartElevation = widget.fieldBook.startElevation;
     _reviewStatus = widget.fieldBook.reviewStatus;
     _reviewedAt = widget.fieldBook.reviewedAt;
     _reviewMemoController.text = widget.fieldBook.reviewMemo ?? '';
@@ -124,7 +191,23 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _container = ProviderScope.containerOf(context, listen: false);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
+      _flushPendingEdits();
+    }
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _flushPendingEdits();
     _autosaveTimer?.cancel();
     _scrollController.dispose();
     for (final c in _controllers.values) {
@@ -153,8 +236,8 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen> {
       rows.add(
         _RowData(
           stationName: m.stationName,
-          bsText: m.bs?.toString() ?? '',
-          fsText: m.fs?.toString() ?? '',
+          bsText: m.bs == null ? '' : formatReadingText(m.bs!),
+          fsText: m.fs == null ? '' : formatReadingText(m.fs!),
           ih: m.ih,
           gh: m.gh,
           isTP: m.type == MeasurementType.tp,
@@ -179,37 +262,16 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen> {
   }
 
   void _recalculate() {
-    double currentIH = 0;
-    bool firstBsFound = false;
-
+    final results = LevelRun.compute(_startElevation, [
+      for (final row in _rows)
+        LevelRunInput(bs: row.bs, fs: row.fs, manualTp: row.manualTp),
+    ]);
     for (int i = 0; i < _rows.length; i++) {
       final row = _rows[i];
-      final bs = row.bs;
-      final fs = row.fs;
-
-      final isTP = firstBsFound && bs != null && fs != null;
-      row.isTP = row.manualTp || isTP;
-
-      if (!firstBsFound && bs == null && fs == null && i == 0) {
-        // First row before any input: show start elevation as GH
-        row.gh = _startElevation;
-        row.ih = null;
-      } else if (!firstBsFound && bs != null) {
-        currentIH = LevelCalculation.calculateIH(_startElevation, bs);
-        row.ih = currentIH;
-        row.gh = _startElevation;
-        firstBsFound = true;
-      } else if (isTP) {
-        row.gh = LevelCalculation.calculateGH(currentIH, fs);
-        row.ih = LevelCalculation.calculateIH(row.gh!, bs);
-        currentIH = row.ih!;
-      } else if (firstBsFound && fs != null) {
-        row.gh = LevelCalculation.calculateGH(currentIH, fs);
-        row.ih = null;
-      } else {
-        row.ih = null;
-        row.gh = null;
-      }
+      final result = results[i];
+      row.isTP = result.isTP;
+      row.ih = result.ih;
+      row.gh = result.gh;
     }
     setState(() {});
   }
@@ -218,7 +280,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen> {
     final measurements = <Measurement>[];
     var orderIndex = 0;
     for (final row in _rows) {
-      if (!row.hasData) continue;
+      if (!row.hasContent) continue;
       measurements.add(
         Measurement(
           id: row.dbId,
@@ -242,37 +304,76 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen> {
 
   void _scheduleAutosave() {
     _dirty = true;
+    _editGeneration++;
     _autosaveTimer?.cancel();
     setState(() => _saveStatus = '자동저장 대기');
-    _autosaveTimer = Timer(const Duration(milliseconds: 900), () async {
-      await _saveToDb(silent: true);
+    _autosaveTimer = Timer(const Duration(milliseconds: 900), () {
+      _saveToDb(silent: true).catchError((Object _) {});
     });
   }
 
-  Future<void> _saveToDb({bool silent = false}) async {
-    final measRepo = ref.read(measurementRepositoryProvider);
-    await measRepo.deleteByFieldBookId(widget.fieldBook.id!);
+  bool get _hasUnqueuedEdits => _editGeneration != _queuedGeneration;
 
-    for (final measurement in _toMeasurements()) {
-      await measRepo.create(
-        Measurement(
-          fieldBookId: measurement.fieldBookId,
-          orderIndex: measurement.orderIndex,
-          stationName: measurement.stationName,
-          type: measurement.type,
-          bs: measurement.bs,
-          fs: measurement.fs,
-          ih: measurement.ih,
-          gh: measurement.gh,
-          manualTp: measurement.manualTp,
-        ),
+  /// Saves edits not yet queued (pop, dispose, app paused). Safe after
+  /// dispose because the save only uses the captured container.
+  void _flushPendingEdits() {
+    if (!_loaded || !_hasUnqueuedEdits) return;
+    try {
+      _saveToDb(silent: true).catchError((Object _) {});
+    } catch (_) {
+      // Container already disposed (app teardown); nothing left to save into.
+    }
+  }
+
+  Future<void> _saveToDb({bool silent = false}) {
+    // A manual/export/pop save supersedes the pending autosave.
+    _autosaveTimer?.cancel();
+    _autosaveTimer = null;
+
+    // Snapshot now so the queued save writes exactly the state at call time.
+    final fieldBookId = widget.fieldBook.id!;
+    final projectId = widget.projectId;
+    final measurements = _toMeasurements();
+    final startElevation = _startElevation;
+    final generation = _editGeneration;
+    _queuedGeneration = generation;
+    final container = _container;
+    final MeasurementRepository measRepo = container.read(
+      measurementRepositoryProvider,
+    );
+
+    final save = _saveQueue.catchError((Object _) {}).then((_) async {
+      await measRepo.replaceForFieldBook(
+        fieldBookId,
+        measurements,
+        startElevation: startElevation,
       );
-    }
-    _dirty = false;
-    if (mounted) {
-      setState(() => _saveStatus = silent ? '자동저장됨' : '저장됨');
-    }
-    ref.invalidate(measurementListProvider(widget.fieldBook.id!));
+      container.invalidate(measurementListProvider(fieldBookId));
+      if (_persistedStartElevation != startElevation) {
+        _persistedStartElevation = startElevation;
+        container.invalidate(fieldBookListProvider(projectId));
+      }
+    });
+    _saveQueue = save;
+
+    return save.then(
+      (_) {
+        if (generation > _savedGeneration) _savedGeneration = generation;
+        if (!mounted) return;
+        setState(() {
+          _dirty = _savedGeneration != _editGeneration;
+          if (!_dirty) _saveStatus = silent ? '자동저장됨' : '저장됨';
+        });
+      },
+      onError: (Object error, StackTrace stackTrace) {
+        // Let the next flush (pop/dispose/pause) retry the failed edits.
+        if (_queuedGeneration == generation) {
+          _queuedGeneration = _savedGeneration;
+        }
+        if (mounted) setState(() => _saveStatus = '저장 실패');
+        Error.throwWithStackTrace(error, stackTrace);
+      },
+    );
   }
 
   Future<void> _saveReviewMetadata() async {
@@ -296,7 +397,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen> {
       title: widget.fieldBook.title,
       date: widget.fieldBook.date,
       startBmId: widget.fieldBook.startBmId,
-      startElevation: widget.fieldBook.startElevation,
+      startElevation: _startElevation,
       memo: widget.fieldBook.memo,
       surveyor: widget.fieldBook.surveyor,
       checker: widget.fieldBook.checker,
@@ -312,7 +413,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen> {
   }
 
   void _deleteRow(int index) {
-    if (_rows[index].hasData) {
+    if (_rows[index].hasContent) {
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
@@ -337,7 +438,9 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen> {
                 _scheduleAutosave();
                 Navigator.pop(ctx);
               },
-              style: FilledButton.styleFrom(backgroundColor: Colors.red),
+              style: FilledButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.error,
+              ),
               child: const Text('삭제'),
             ),
           ],
@@ -444,7 +547,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen> {
         final key = '${i}_$col';
         final text = col == 'bs' ? _rows[i].bsText : _rows[i].fsText;
         _controllers[key] = TextEditingController(text: text);
-        _focusNodes[key] = FocusNode();
+        _focusNodes[key] = _createFocusNode(key);
       }
     }
 
@@ -458,107 +561,128 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: true,
-      onPopInvokedWithResult: (didPop, _) {
-        if (didPop) _saveToDb();
-      },
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(widget.fieldBook.title),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.add),
-              tooltip: '10행 추가',
-              onPressed: () {
-                setState(() {
-                  for (int i = 0; i < 10; i++) {
-                    _rows.add(_RowData());
-                  }
-                });
-                _scheduleAutosave();
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.save),
-              tooltip: '저장',
-              onPressed: () async {
-                final messenger = ScaffoldMessenger.of(context);
-                await _saveToDb();
-                if (mounted) {
-                  messenger.showSnackBar(
-                    const SnackBar(
-                      content: Text('저장 완료'),
-                      duration: Duration(seconds: 1),
-                    ),
-                  );
-                }
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.ios_share),
-              tooltip: '내보내기',
-              onPressed: _export,
-            ),
-          ],
-        ),
-        body: !_loaded
-            ? const Center(child: CircularProgressIndicator())
-            : Column(
-                children: [
-                  _buildStartElevationBar(),
-                  _buildReviewPanel(),
-                  _buildTableHeader(),
-                  Expanded(child: _buildTableBody()),
-                  _buildValidationBar(),
-                  _buildSummary(),
-                ],
+    // The app-wide quick-memo FAB would cover the validation chips and the
+    // closure summary pinned to the bottom; it is offered from the app bar.
+    return HideQuickMemoFab(
+      child: PopScope(
+        canPop: true,
+        onPopInvokedWithResult: (didPop, _) {
+          if (didPop) _flushPendingEdits();
+        },
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text(widget.fieldBook.title),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.bolt),
+                tooltip: '빠른 메모',
+                onPressed: () => showQuickMemoComposer(context),
               ),
+              IconButton(
+                icon: const Icon(Icons.add),
+                tooltip: '10행 추가',
+                onPressed: () {
+                  setState(() {
+                    for (int i = 0; i < 10; i++) {
+                      _rows.add(_RowData());
+                    }
+                  });
+                  _scheduleAutosave();
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.save),
+                tooltip: '저장',
+                onPressed: () async {
+                  final messenger = ScaffoldMessenger.of(context);
+                  await _saveToDb();
+                  if (mounted) {
+                    messenger.showSnackBar(
+                      const SnackBar(
+                        content: Text('저장 완료'),
+                        duration: Duration(seconds: 1),
+                      ),
+                    );
+                  }
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.ios_share),
+                tooltip: '내보내기',
+                onPressed: _export,
+              ),
+            ],
+          ),
+          body: !_loaded
+              ? const Center(child: CircularProgressIndicator())
+              : Column(
+                  children: [
+                    _buildStartElevationBar(),
+                    _buildReviewPanel(),
+                    _buildTableHeader(),
+                    Expanded(child: _buildTableBody()),
+                    _buildValidationBar(),
+                    _buildSummary(),
+                  ],
+                ),
+        ),
       ),
     );
   }
 
   Widget _buildStartElevationBar() {
+    final colors = context.appColors;
+    const onDark = Colors.white;
+    final onDarkMuted = Colors.white.withValues(alpha: 0.62);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      color: AppTheme.ink,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      color: colors.darkSurface,
       child: Row(
         children: [
-          Icon(Icons.straighten, size: 18, color: AppTheme.paper),
-          const SizedBox(width: 8),
           Text(
             '시작 표고',
             style: TextStyle(
-              fontSize: 13,
+              fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: AppTheme.paper.withValues(alpha: 0.78),
+              color: onDarkMuted,
             ),
           ),
-          const SizedBox(width: 8),
+          const Spacer(),
           SizedBox(
-            width: 100,
+            width: 140,
             child: TextFormField(
               initialValue: _startElevation.toStringAsFixed(3),
-              style: TextStyle(
-                fontSize: 14,
+              style: const TextStyle(
+                fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.paper,
+                color: onDark,
+                fontFeatures: AppTypography.tabularFeatures,
               ),
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
               textAlign: TextAlign.center,
+              cursorColor: onDark,
               decoration: InputDecoration(
                 isDense: true,
                 contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 6,
-                  vertical: 4,
+                  horizontal: 12,
+                  vertical: 10,
                 ),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide.none,
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: onDark, width: 1.2),
                 ),
                 filled: true,
-                fillColor: Colors.white.withValues(alpha: 0.5),
+                fillColor: colors.darkSurface2,
               ),
               onChanged: (value) {
                 final elev = double.tryParse(value);
@@ -570,14 +694,8 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen> {
               },
             ),
           ),
-          const SizedBox(width: 4),
-          Text(
-            'm',
-            style: TextStyle(
-              fontSize: 13,
-              color: AppTheme.paper.withValues(alpha: 0.78),
-            ),
-          ),
+          const SizedBox(width: 8),
+          Text('m', style: TextStyle(fontSize: 14, color: onDarkMuted)),
         ],
       ),
     );
@@ -585,20 +703,23 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen> {
 
   Widget _buildReviewPanel() {
     final reviewedAt = _reviewedAt;
+    final colors = context.appColors;
     return Material(
-      color: AppTheme.panel,
+      color: colors.panel,
+      shape: Border(bottom: BorderSide(color: colors.line)),
       child: ExpansionTile(
-        tilePadding: const EdgeInsets.symmetric(horizontal: 12),
-        childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-        leading: const Icon(Icons.fact_check_outlined, size: 20),
+        controlAffinity: ListTileControlAffinity.leading,
+        tilePadding: const EdgeInsets.fromLTRB(8, 0, 16, 0),
+        childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
         title: Text('검토 정보', style: Theme.of(context).textTheme.titleSmall),
-        subtitle: Text(
+        trailing: Text(
           [
             _reviewStatus.label,
             if (reviewedAt != null) '검토일 ${_formatDate(reviewedAt)}',
           ].join(' · '),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
+          style: TextStyle(fontSize: 13, color: colors.subtext),
         ),
         children: [
           DropdownButtonFormField<FieldBookReviewStatus>(
@@ -656,33 +777,40 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen> {
   }
 
   Widget _buildTableHeader() {
+    final colors = context.appColors;
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.panel,
-        border: Border(bottom: BorderSide(color: AppTheme.line, width: 1.5)),
+        color: colors.soft,
+        border: Border(bottom: BorderSide(color: colors.line, width: 1)),
       ),
       child: Row(
         children: [
-          _headerCell('NO', flex: 1),
-          _headerCell('BS', flex: 2),
-          _headerCell('FS', flex: 2),
-          _headerCell('IH', flex: 2),
-          _headerCell('GH', flex: 2),
-          _headerCell('', flex: 1), // TP/비고
+          _headerCell('NO', flex: _flexNo),
+          _headerCell('BS', flex: _flexValue),
+          _headerCell('FS', flex: _flexValue),
+          _headerCell('IH', flex: _flexValue),
+          _headerCell('GH', flex: _flexValue),
+          _headerCell('', flex: _flexAction), // TP/비고
         ],
       ),
     );
   }
 
   Widget _headerCell(String text, {int flex = 1}) {
+    final colors = context.appColors;
     return Expanded(
       flex: flex,
       child: Container(
-        height: 36,
+        height: 40,
         alignment: Alignment.center,
         child: Text(
           text,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+          style: TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 12.5,
+            color: colors.subtext,
+            letterSpacing: 0.2,
+          ),
         ),
       ),
     );
@@ -699,104 +827,112 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen> {
 
   Widget _buildDataRow(int index) {
     final row = _rows[index];
-    final isEven = index % 2 == 0;
+    final colors = context.appColors;
 
-    Color? bgColor;
-    if (row.isTP) {
-      bgColor = AppTheme.surveyOrange.withValues(alpha: 0.1);
-    } else if (row.hasData) {
-      bgColor = isEven ? AppTheme.panel : const Color(0xFFFCFBF7);
-    } else {
-      bgColor = isEven ? AppTheme.panel : AppTheme.paper;
-    }
+    // TP rows tint the NO/BS/FS/action cells orange; IH/GH keep their
+    // per-column tint so the two columns stay color-identifiable in the field.
+    final rowBase = row.isTP ? colors.orangeSoft : colors.panel;
 
     return GestureDetector(
       onLongPress: () => _deleteRow(index),
       child: Container(
         height: 42,
         decoration: BoxDecoration(
-          color: bgColor,
-          border: Border(
-            bottom: BorderSide(
-              color: Theme.of(
-                context,
-              ).colorScheme.outlineVariant.withValues(alpha: 0.5),
-              width: 0.5,
-            ),
-          ),
+          color: rowBase,
+          border: Border(bottom: BorderSide(color: colors.zebra, width: 1)),
         ),
         child: Row(
           children: [
             // NO / 측점명
+            // Names wrap to two smaller lines; the full name is always one
+            // tap away in the edit dialog.
             Expanded(
-              flex: 1,
+              flex: _flexNo,
               child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
                 onTap: () => _editStationName(index),
-                child: Center(
-                  child: Text(
-                    row.stationName.isEmpty ? '${index + 1}' : row.stationName,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: row.stationName.isEmpty
-                          ? const Color(0xFF8A8276)
-                          : AppTheme.fieldGreen,
-                      fontWeight: row.stationName.isEmpty
-                          ? FontWeight.normal
-                          : FontWeight.w600,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 2),
+                  child: Center(
+                    child: Text(
+                      row.stationName.isEmpty
+                          ? '${index + 1}'
+                          : row.stationName,
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: row.stationName.length > 5 ? 11 : 13,
+                        height: 1.15,
+                        color: row.stationName.isEmpty
+                            ? colors.placeholder
+                            : colors.green,
+                        fontWeight: row.stationName.isEmpty
+                            ? FontWeight.normal
+                            : FontWeight.w600,
+                        fontFeatures: AppTypography.tabularFeatures,
+                      ),
                     ),
-                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ),
             ),
             // BS
-            Expanded(flex: 2, child: _editableCell(index, 'bs')),
+            Expanded(flex: _flexValue, child: _editableCell(index, 'bs')),
             // FS
-            Expanded(flex: 2, child: _editableCell(index, 'fs')),
-            // IH (read-only)
+            Expanded(flex: _flexValue, child: _editableCell(index, 'fs')),
+            // IH (read-only) — column-wide blue tint
             Expanded(
-              flex: 2,
+              flex: _flexValue,
               child: Container(
                 alignment: Alignment.centerRight,
                 padding: const EdgeInsets.only(right: 8),
-                child: Text(
-                  row.ih?.toStringAsFixed(3) ?? '',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: AppTheme.datumBlue,
+                color: colors.blueSoft,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    row.ih?.toStringAsFixed(3) ?? '',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: colors.blue,
+                      fontFeatures: AppTypography.tabularFeatures,
+                    ),
                   ),
                 ),
               ),
             ),
-            // GH (read-only)
+            // GH (read-only) — column-wide green tint
             Expanded(
-              flex: 2,
+              flex: _flexValue,
               child: Container(
                 alignment: Alignment.centerRight,
                 padding: const EdgeInsets.only(right: 8),
-                child: Text(
-                  row.gh?.toStringAsFixed(3) ?? '',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.fieldGreen,
+                color: colors.greenSoft,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    row.gh?.toStringAsFixed(3) ?? '',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: colors.green,
+                      fontFeatures: AppTypography.tabularFeatures,
+                    ),
                   ),
                 ),
               ),
             ),
             // TP indicator and row actions
             Expanded(
-              flex: 1,
+              flex: _flexAction,
               child: Center(
                 child: PopupMenuButton<String>(
                   padding: EdgeInsets.zero,
                   icon: row.isTP
-                      ? const Icon(
-                          Icons.flag,
-                          size: 18,
-                          color: AppTheme.surveyOrange,
-                        )
-                      : const Icon(Icons.more_vert, size: 18),
+                      ? Icon(Icons.flag, size: 18, color: colors.orange)
+                      : Icon(Icons.more_vert, size: 18, color: colors.subtext),
                   tooltip: '행 작업',
                   onSelected: (value) {
                     if (value == 'insert') _insertRowBelow(index);
@@ -829,21 +965,19 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen> {
   }
 
   Widget _editableCell(int rowIndex, String col) {
+    final colors = context.appColors;
     return Container(
       decoration: BoxDecoration(
-        border: Border(
-          left: BorderSide(
-            color: Theme.of(
-              context,
-            ).colorScheme.outlineVariant.withValues(alpha: 0.3),
-            width: 0.5,
-          ),
-        ),
+        border: Border(left: BorderSide(color: colors.zebra, width: 1)),
       ),
       child: TextField(
         controller: _getController(rowIndex, col),
         focusNode: _getFocusNode(rowIndex, col),
-        style: const TextStyle(fontSize: 14),
+        style: TextStyle(
+          fontSize: 14,
+          color: colors.ink,
+          fontFeatures: AppTypography.tabularFeatures,
+        ),
         keyboardType: const TextInputType.numberWithOptions(
           decimal: true,
           signed: true,
@@ -870,48 +1004,52 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen> {
   }
 
   Widget _buildSummary() {
-    double sumBs = 0, sumFs = 0;
     double? firstGh, lastGh;
-
     for (final row in _rows) {
-      if (row.bs != null) sumBs += row.bs!;
-      if (row.fs != null) sumFs += row.fs!;
       if (row.gh != null) {
         firstGh ??= row.gh;
         lastGh = row.gh;
       }
     }
 
-    final diff = sumBs - sumFs;
-    final ghDiff = (firstGh != null && lastGh != null) ? lastGh - firstGh : 0.0;
-    final error = diff - ghDiff;
+    final sums = LevelCheckSums.from(
+      _toMeasurements(),
+      startElevation: _startElevation,
+    );
+    final sumBs = sums.sumBs;
+    final sumFs = sums.sumFs;
+    final diff = sums.difference;
+    final error = LevelClosure.error(
+      _toMeasurements(),
+      startElevation: _startElevation,
+    );
+    final colors = context.appColors;
+    final errorColor = (firstGh != null && error.abs() < 0.001)
+        ? colors.green
+        : colors.err;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-      decoration: BoxDecoration(
-        color: AppTheme.panel,
-        border: Border(top: BorderSide(color: AppTheme.line, width: 1.5)),
-      ),
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      color: colors.darkSurface,
       child: Column(
         children: [
           Row(
             children: [
-              _summaryChip('ΣBS', sumBs.toStringAsFixed(3)),
-              _summaryChip('ΣFS', sumFs.toStringAsFixed(3)),
-              _summaryChip('차', diff.toStringAsFixed(3)),
+              _summaryItem('ΣBS', sumBs.toStringAsFixed(3)),
+              _summaryItem('ΣFS', sumFs.toStringAsFixed(3)),
+              _summaryItem('차', diff.toStringAsFixed(3)),
             ],
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 10),
           Row(
             children: [
-              _summaryChip('시작', firstGh?.toStringAsFixed(3) ?? '-'),
-              _summaryChip('최종', lastGh?.toStringAsFixed(3) ?? '-'),
-              _summaryChip(
+              _summaryItem('시작', firstGh?.toStringAsFixed(3) ?? '-'),
+              _summaryItem('최종', lastGh?.toStringAsFixed(3) ?? '-'),
+              _summaryItem(
                 '오차',
                 error.toStringAsFixed(4),
-                color: (firstGh != null && error.abs() < 0.001)
-                    ? AppTheme.fieldGreen
-                    : Theme.of(context).colorScheme.error,
+                valueColor: errorColor,
               ),
             ],
           ),
@@ -926,12 +1064,12 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen> {
       startElevation: _startElevation,
     );
     final isOk = validation.canExport;
+    final colors = context.appColors;
+    final accent = isOk ? colors.green : colors.err;
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      color: isOk
-          ? AppTheme.fieldGreen.withValues(alpha: 0.1)
-          : Theme.of(context).colorScheme.errorContainer,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      color: isOk ? colors.greenSoft : colors.errSoft,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -940,48 +1078,48 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen> {
               Icon(
                 isOk ? Icons.check_circle_outline : Icons.error_outline,
                 size: 18,
-                color: isOk
-                    ? AppTheme.fieldGreen
-                    : Theme.of(context).colorScheme.onErrorContainer,
+                color: accent,
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   isOk
-                      ? '검산 ${validation.judgementLabel} · $_saveStatus'
-                      : '${validation.messages.first} · $_saveStatus',
+                      ? '검산 ${validation.judgementLabel}'
+                      : validation.messages.first,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 12,
-                    color: isOk
-                        ? AppTheme.fieldGreen
-                        : Theme.of(context).colorScheme.onErrorContainer,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: accent,
                   ),
                 ),
               ),
-              if (_dirty)
+              const SizedBox(width: 8),
+              Text(
+                _saveStatus,
+                style: TextStyle(fontSize: 12, color: colors.subtext),
+              ),
+              if (_dirty) ...[
+                const SizedBox(width: 8),
                 const SizedBox(
                   width: 14,
                   height: 14,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 ),
+              ],
             ],
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 8),
           Wrap(
             spacing: 6,
-            runSpacing: 2,
+            runSpacing: 6,
             children: [
               for (final item in validation.checklist)
-                Text(
-                  '${item.passed ? '✓' : '!'} ${item.label}',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: item.passed
-                        ? AppTheme.fieldGreen
-                        : Theme.of(context).colorScheme.onErrorContainer,
-                  ),
+                SemanticPill(
+                  label: '${item.passed ? '✓' : '!'} ${item.label}',
+                  variant: item.passed
+                      ? SemanticPillVariant.green
+                      : SemanticPillVariant.err,
                 ),
             ],
           ),
@@ -1033,31 +1171,31 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen> {
     return true;
   }
 
-  Widget _summaryChip(String label, String value, {Color? color}) {
+  Widget _summaryItem(String label, String value, {Color? valueColor}) {
     return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 2),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              '$label ',
-              style: const TextStyle(fontSize: 11, color: Colors.grey),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: Colors.white.withValues(alpha: 0.55),
             ),
-            Expanded(
-              child: Text(
-                value,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                  color: color,
-                ),
-                textAlign: TextAlign.right,
-                overflow: TextOverflow.ellipsis,
-              ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: valueColor ?? Colors.white,
+              fontFeatures: AppTypography.tabularFeatures,
             ),
-          ],
-        ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
       ),
     );
   }
@@ -1072,8 +1210,10 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen> {
       final proceed = await _confirmExportValidation(validation);
       if (!proceed) return;
     }
-    final measRepo = ref.read(measurementRepositoryProvider);
-    final measurements = await measRepo.getByFieldBookId(widget.fieldBook.id!);
+    final measRepo = _container.read(measurementRepositoryProvider);
+    final measurements = MeasurementValidation.trimTrailingUnmeasured(
+      await measRepo.getByFieldBookId(widget.fieldBook.id!),
+    );
 
     if (measurements.isEmpty) {
       if (mounted) {

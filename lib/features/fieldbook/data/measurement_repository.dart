@@ -44,6 +44,41 @@ class MeasurementRepository {
     );
   }
 
+  /// Atomically replaces every measurement of [fieldBookId] with
+  /// [measurements] (ids are ignored and re-assigned). When [startElevation]
+  /// is given, the field book's start elevation is updated in the same
+  /// transaction so edits to 시작 표고 are never lost.
+  Future<void> replaceForFieldBook(
+    int fieldBookId,
+    List<Measurement> measurements, {
+    double? startElevation,
+  }) async {
+    final db = await _dbHelper.database;
+    await db.transaction((txn) async {
+      await txn.delete(
+        'measurements',
+        where: 'field_book_id = ?',
+        whereArgs: [fieldBookId],
+      );
+      final batch = txn.batch();
+      for (final m in measurements) {
+        final map = Map<String, dynamic>.from(m.toMap())
+          ..remove('id')
+          ..['field_book_id'] = fieldBookId;
+        batch.insert('measurements', map);
+      }
+      if (startElevation != null) {
+        batch.update(
+          'field_books',
+          {'start_elevation': startElevation},
+          where: 'id = ?',
+          whereArgs: [fieldBookId],
+        );
+      }
+      await batch.commit(noResult: true);
+    });
+  }
+
   Future<void> updateAll(List<Measurement> measurements) async {
     final db = await _dbHelper.database;
     final batch = db.batch();

@@ -35,15 +35,33 @@ class MeasurementValidationResult {
 }
 
 class MeasurementValidation {
+  /// Drops trailing rows that have no BS/FS yet (e.g. station names prepared
+  /// by '구조 복제' but not measured). They are kept in the field book but must
+  /// not count as the last observed station or block export as empty rows.
+  /// Unmeasured rows between observed rows are still reported.
+  static List<Measurement> trimTrailingUnmeasured(
+    List<Measurement> measurements,
+  ) {
+    var end = measurements.length;
+    while (end > 0 &&
+        measurements[end - 1].bs == null &&
+        measurements[end - 1].fs == null) {
+      end--;
+    }
+    return end == measurements.length
+        ? measurements
+        : measurements.sublist(0, end);
+  }
+
   static MeasurementValidationResult validate({
     required List<Measurement> measurements,
     required double startElevation,
     double tolerance = 0.001,
   }) {
     final messages = <String>[];
-    final rows = measurements
-        .where((row) => row.stationName.trim().isNotEmpty)
-        .toList();
+    final rows = trimTrailingUnmeasured(
+      measurements.where((row) => row.stationName.trim().isNotEmpty).toList(),
+    );
 
     if (rows.isEmpty) {
       const item = MeasurementValidationItem(
@@ -75,11 +93,10 @@ class MeasurementValidation {
     if (!tpComplete) messages.add('TP 행에는 후시(BS)와 전시(FS)가 모두 필요합니다.');
     if (!hasNoIncompleteRows) messages.add('측정값이 없는 행을 정리하세요.');
 
-    final sumBs = rows.fold<double>(0, (sum, row) => sum + (row.bs ?? 0));
-    final sumFs = rows.fold<double>(0, (sum, row) => sum + (row.fs ?? 0));
-    final firstGh = rows.first.gh ?? startElevation;
-    final lastGh = rows.last.gh ?? (startElevation + sumBs - sumFs);
-    final closureError = sumBs - sumFs - (lastGh - firstGh);
+    final closureError = LevelClosure.error(
+      rows,
+      startElevation: startElevation,
+    );
     final isSuitable =
         messages.isEmpty &&
         ExportJudgement.isSuitable(closureError, tolerance: tolerance);

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;background:#e9e7e2;font-family:'Pretendard',system-ui,sans-serif;color:#2a2a2a}
+  a{color:#2a6fb0;text-decoration:none}
+  a:hover{color:#1c4e7d}
+  /* option stack chrome */
+  .dv-turn{padding:48px 52px 40px;border-bottom:1px dashed rgba(0,0,0,.18)}
+  .dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 6px}
+  .dv-tid{font:700 11px ui-monospace,Menlo,monospace;padding:3px 8px;background:#1a1a1a;color:#fff;border-radius:5px;text-decoration:none}
+  .dv-tname{font:700 15px/1.2 'Pretendard',sans-serif;color:#1a1a1a}
+  .dv-tsub{margin:2px 0 26px;font:400 12.5px/1.5 'Pretendard',sans-serif;color:rgba(0,0,0,.5);max-width:640px}
+  .dv-opts{display:flex;flex-wrap:wrap;gap:44px;align-items:flex-start}
+  .dv-opt{flex:none;display:flex;flex-direction:column;gap:12px;scroll-margin-top:16px}
+  .dv-olabel{display:flex;align-items:center;gap:9px;font:400 12.5px/1.35 'Pretendard',sans-serif;color:rgba(0,0,0,.6);max-width:360px}
+  .dv-oid{font:700 11px ui-monospace,Menlo,monospace;padding:3px 8px;background:rgba(0,0,0,.1);color:#1a1a1a;border-radius:6px;text-decoration:none;flex:none}
+  .dv-opt:target .dv-oid{background:#2a6fb0;color:#fff}
+  .dv-next{margin:30px 0 0;font:400 12.5px/1.7 'Pretendard',sans-serif;color:rgba(0,0,0,.55);max-width:680px}
+
+  /* phone frame */
+  .ph{width:360px;background:#1c1c1c;border-radius:38px;padding:11px;box-shadow:0 12px 34px rgba(0,0,0,.22)}
+  .ph-screen{width:338px;height:718px;background:#f7f5f0;border-radius:28px;overflow:hidden;position:relative;display:flex;flex-direction:column}
+  .ph-status{height:26px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 18px;font:700 10px 'Pretendard',sans-serif;color:#4a4a4a;background:#f7f5f0}
+  .ph-body{flex:1;overflow:hidden;display:flex;flex-direction:column;position:relative}
+
+  /* wireframe primitives — grayscale */
+  .w-appbar{flex:none;height:46px;display:flex;align-items:center;gap:10px;padding:0 14px;background:#e4e1d9;border-bottom:1.5px solid #c9c5bb}
+  .w-appttl{font:800 15px 'Pretendard',sans-serif;color:#333}
+  .w-appttl.sm{font-size:13.5px}
+  .w-icon{width:26px;height:26px;border:1.5px solid #9a968c;border-radius:6px;display:flex;align-items:center;justify-content:center;font:400 12px 'Pretendard',sans-serif;color:#6a665c;flex:none}
+  .w-spacer{flex:1}
+  .w-tab{flex:none;height:40px;display:flex;border-bottom:1.5px solid #c9c5bb;background:#efece5}
+  .w-tabitem{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;font:700 12px 'Pretendard',sans-serif;color:#8a8578}
+  .w-tabitem.on{color:#333;border-bottom:2.5px solid #d98a3a}
+  .w-scroll{flex:1;overflow:hidden;padding:12px}
+
+  .w-card{background:#fff;border:1.5px solid #c9c5bb;border-radius:8px;padding:11px;display:flex;gap:11px;align-items:center}
+  .w-badge{width:40px;height:40px;border-radius:8px;flex:none;display:flex;align-items:center;justify-content:center;font:700 11px 'Pretendard',sans-serif;border:1.5px solid #a7a297;background:#eceae3;color:#555}
+  .w-badge.g{background:#e2ece4;border-color:#8fb59a;color:#3c6a4c}
+  .w-badge.b{background:#e0eaf0;border-color:#8aabc4;color:#33627e}
+  .w-badge.o{background:#f2e6d8;border-color:#c9a87c;color:#9a6a2c}
+  .w-line{height:9px;border-radius:3px;background:#d8d4ca}
+  .w-line.dk{background:#b9b4a8}
+  .w-txt{font:400 12.5px/1.4 'Pretendard',sans-serif;color:#4a463c}
+  .w-txt.dk{color:#2a2a2a;font-weight:700}
+  .w-sub{font:400 11px 'Pretendard',sans-serif;color:#8a8578}
+  .w-btn{border:1.5px solid #9a968c;border-radius:7px;padding:8px 12px;font:700 12px 'Pretendard',sans-serif;color:#444;background:#eceae3;display:flex;align-items:center;justify-content:center;gap:6px}
+  .w-btn.fill{background:#3a3a3a;color:#fff;border-color:#3a3a3a}
+  .w-btn.o{background:#e9d9c4;border-color:#c99a5c;color:#7a5320}
+  .w-fab{position:absolute;right:14px;bottom:14px;width:52px;height:52px;border-radius:50%;background:#d98a3a;color:#fff;display:flex;align-items:center;justify-content:center;font:400 24px 'Pretendard',sans-serif;box-shadow:0 4px 12px rgba(0,0,0,.25);border:2px solid #b06f26}
+  .w-fab.ext{width:auto;border-radius:26px;padding:0 18px;gap:7px;font:700 13px 'Pretendard',sans-serif}
+  .w-banner{flex:none;height:44px;background:repeating-linear-gradient(45deg,#e0ddd4,#e0ddd4 7px,#d6d3c9 7px,#d6d3c9 14px);display:flex;align-items:center;justify-content:center;font:400 10.5px 'Pretendard',sans-serif;color:#8a8578;border-top:1.5px solid #c9c5bb}
+
+  /* annotation callout */
+  .note{position:absolute;z-index:20;font:400 11px/1.3 'Pretendard',sans-serif;color:#b5561f;width:150px;pointer-events:none}
+  .note::before{content:'';position:absolute;width:7px;height:7px;background:#d9662a;border-radius:50%}
+  .note.r{padding-left:0}
+  .note-wrap{position:relative}
+
+  /* spreadsheet */
+  .ss{width:100%;border-collapse:collapse;font:400 12px 'Pretendard',sans-serif}
+  .ss th{background:#e4e1d9;border:1px solid #c9c5bb;padding:6px 2px;font:700 11px 'Pretendard',sans-serif;color:#555;text-align:center}
+  .ss td{border:1px solid #d3cfc5;padding:0;height:38px;text-align:center;color:#3a3a3a}
+  .ss .cell-in{color:#2a2a2a}
+  .ss .cell-ih{color:#33627e;background:#eef3f7}
+  .ss .cell-gh{color:#3c6a4c;background:#eef5ef;font-weight:700}
+  .ss tr.tp td{background:#f6ecdd}
+  .ss tr.tp .cell-ih{background:#eee6db}
+  .ss tr.tp .cell-gh{background:#eef0e2}
+  .ss .no{font-weight:700;color:#3c6a4c}
+  .ss .flag{color:#c9821f;font-weight:700}
+  .ss .zebra td{background:#faf8f3}
+</style>
+</helmet>
+
+<section class="dv-turn" id="t1">
+<div class="dv-thd"><a class="dv-tid" href="#t1">1</a><span class="dv-tname">S-04 야장 편집 (측정 입력) — 핵심 화면</span></div>
+<p class="dv-tsub">3초 질문: "이 측량은 지금 맞게 가고 있나(검산·판정), 다음 입력은 어디인가?" 세 안 모두 실데이터(별첨 A) 사용 · 시작표고 100.000 · 판정 '적합'. 탐색 포인트: 스프레드시트 입력/판정 레이아웃, 검산 결과 노출 위치, 한손·장갑 조작 액션 배치.</p>
+<div class="dv-opts">
+
+<!-- 1a : 클래식 스프레드시트 + 하단 고정 검증바 -->
+<div class="dv-opt" id="1a">
+<div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a>클래식 — 전체 표 + 하단 고정 검증바·합계칩. 표가 주인공, 판정은 하단에 상시 고정.</div>
+<div class="note-wrap">
+<div class="ph"><div class="ph-screen">
+<div class="ph-status"><span>9:41</span><span>▲ ◒ ▮</span></div>
+<div class="ph-body">
+  <div class="w-appbar">
+    <span class="w-icon">‹</span>
+    <span class="w-appttl sm">A구간 관로 수준측량</span>
+    <span class="w-spacer"></span>
+    <span class="w-icon">+10</span><span class="w-icon">💾</span><span class="w-icon">⤴</span>
+  </div>
+  <!-- 시작표고 바 -->
+  <div style="flex:none;background:#33302a;color:#e8e2d4;display:flex;align-items:center;gap:8px;padding:8px 14px;font:700 12px 'Pretendard',sans-serif">
+    <span>┌ 시작 표고</span><span class="w-spacer"></span>
+    <span style="background:#4a463c;border-radius:5px;padding:4px 14px;font:700 14px 'Pretendard',sans-serif">100.000</span><span>m</span>
+  </div>
+  <!-- 검토정보 접힘 -->
+  <div style="flex:none;display:flex;align-items:center;gap:8px;padding:9px 14px;background:#efece5;border-bottom:1.5px solid #c9c5bb;font:400 12px 'Pretendard',sans-serif;color:#5a564c">
+    <span>▸ 검토 정보</span><span class="w-spacer"></span><span class="w-sub">작성중 · 검토일 2026-07-08</span>
+  </div>
+  <!-- 표 -->
+  <div style="flex:1;overflow:hidden">
+  <table class="ss">
+    <thead><tr><th style="width:15%">NO</th><th style="width:20%">BS</th><th style="width:20%">FS</th><th style="width:20%">IH</th><th style="width:20%">GH</th><th style="width:12%">·</th></tr></thead>
+    <tbody>
+      <tr><td class="no">BM.1</td><td class="cell-in">1.250</td><td></td><td class="cell-ih">101.250</td><td class="cell-gh">100.000</td><td>⋮</td></tr>
+      <tr class="zebra"><td class="no">No.1</td><td></td><td class="cell-in">1.100</td><td class="cell-ih"></td><td class="cell-gh">100.150</td><td>⋮</td></tr>
+      <tr class="tp"><td class="no">TP.1</td><td class="cell-in">1.420</td><td class="cell-in">1.380</td><td class="cell-ih">101.290</td><td class="cell-gh">99.870</td><td class="flag">⚑</td></tr>
+      <tr class="zebra"><td class="no">No.2</td><td></td><td class="cell-in">1.210</td><td class="cell-ih"></td><td class="cell-gh">100.080</td><td>⋮</td></tr>
+      <tr class="tp"><td class="no">TP.2</td><td class="cell-in">0.980</td><td class="cell-in">1.535</td><td class="cell-ih">100.735</td><td class="cell-gh">99.755</td><td class="flag">⚑</td></tr>
+      <tr><td class="no">BM.2</td><td></td><td class="cell-in">0.732</td><td class="cell-ih"></td><td class="cell-gh">100.003</td><td>⋮</td></tr>
+      <tr class="zebra"><td style="color:#b3aea2">7</td><td></td><td></td><td></td><td></td><td>⋮</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <!-- 검증바 -->
+  <div style="flex:none;background:#e2ece4;border-top:1.5px solid #8fb59a;padding:8px 14px;display:flex;align-items:center;gap:8px;font:700 12.5px 'Pretendard',sans-serif;color:#3c6a4c">
+    ✓ 검산 적합<span class="w-spacer"></span><span class="w-sub" style="color:#4c7a5c">· 자동저장됨</span>
+  </div>
+  <div style="flex:none;display:flex;flex-wrap:wrap;gap:5px;padding:7px 14px;background:#eef5ef">
+    <span style="font:700 10px 'Pretendard';color:#3c6a4c;border:1px solid #8fb59a;border-radius:4px;padding:2px 6px">✓ 첫 BS</span>
+    <span style="font:700 10px 'Pretendard';color:#3c6a4c;border:1px solid #8fb59a;border-radius:4px;padding:2px 6px">✓ 마지막 FS</span>
+    <span style="font:700 10px 'Pretendard';color:#3c6a4c;border:1px solid #8fb59a;border-radius:4px;padding:2px 6px">✓ TP 완성</span>
+    <span style="font:700 10px 'Pretendard';color:#3c6a4c;border:1px solid #8fb59a;border-radius:4px;padding:2px 6px">✓ 허용오차</span>
+  </div>
+  <!-- 합계 칩 -->
+  <div style="flex:none;background:#33302a;color:#e8e2d4;padding:9px 12px;display:grid;grid-template-columns:repeat(3,1fr);gap:6px 4px">
+    <div><div style="font:400 9.5px 'Pretendard';color:#a7a08e">ΣBS</div><div style="font:700 13px 'Pretendard'">3.650</div></div>
+    <div><div style="font:400 9.5px 'Pretendard';color:#a7a08e">ΣFS</div><div style="font:700 13px 'Pretendard'">3.647</div></div>
+    <div><div style="font:400 9.5px 'Pretendard';color:#a7a08e">차</div><div style="font:700 13px 'Pretendard'">0.003</div></div>
+    <div><div style="font:400 9.5px 'Pretendard';color:#a7a08e">시작</div><div style="font:700 13px 'Pretendard'">100.000</div></div>
+    <div><div style="font:400 9.5px 'Pretendard';color:#a7a08e">최종</div><div style="font:700 13px 'Pretendard'">100.003</div></div>
+    <div><div style="font:400 9.5px 'Pretendard';color:#a7a08e">오차</div><div style="font:700 13px 'Pretendard';color:#8fd6a3">0.0000</div></div>
+  </div>
+</div>
+</div></div>
+<div class="note" style="top:120px;left:-92px">시작표고 바는<br>어두운 잉크색 고정</div>
+<div class="note" style="top:300px;left:372px">IH=파랑 / GH=초록<br>열 색 구분 필수</div>
+<div class="note" style="top:470px;left:372px">검증바 하단 상시고정<br>— 판정 항상 보임</div>
+<div class="note" style="top:600px;left:-96px">합계칩 6종<br>오차만 4자리</div>
+</div>
+</div>
+
+<!-- 1b : 포커스 입력 — 큰 현재행 에디터 + 컴팩트 표 -->
+<div class="dv-opt" id="1b">
+<div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a>포커스 입력 — 상단 컴팩트 표 + 하단 큰 "현재 행" 입력 카드. 장갑 낀 손 대형 타깃, 다음 셀 자동 이동.</div>
+<div class="note-wrap">
+<div class="ph"><div class="ph-screen">
+<div class="ph-status"><span>9:41</span><span>▲ ◒ ▮</span></div>
+<div class="ph-body">
+  <div class="w-appbar">
+    <span class="w-icon">‹</span><span class="w-appttl sm">A구간 관로 수준측량</span>
+    <span class="w-spacer"></span><span class="w-icon">⤴</span>
+  </div>
+  <!-- 판정 배너 상단 -->
+  <div style="flex:none;background:#e2ece4;border-bottom:2px solid #8fb59a;padding:9px 14px;display:flex;align-items:center;gap:9px">
+    <span style="width:26px;height:26px;border-radius:50%;background:#8fb59a;color:#fff;display:flex;align-items:center;justify-content:center;font:700 14px 'Pretendard'">✓</span>
+    <div><div style="font:800 13px 'Pretendard';color:#3c6a4c">검산 적합</div><div class="w-sub" style="color:#4c7a5c">오차 0.0000 · 자동저장됨</div></div>
+  </div>
+  <!-- 컴팩트 표 -->
+  <div style="flex:1;overflow:hidden;padding:8px 8px 0">
+  <table class="ss" style="font-size:11px">
+    <thead><tr><th>NO</th><th>BS</th><th>FS</th><th>GH</th></tr></thead>
+    <tbody>
+      <tr><td class="no">BM.1</td><td class="cell-in">1.250</td><td>–</td><td class="cell-gh">100.000</td></tr>
+      <tr class="zebra"><td class="no">No.1</td><td>–</td><td class="cell-in">1.100</td><td class="cell-gh">100.150</td></tr>
+      <tr class="tp"><td class="no">TP.1</td><td class="cell-in">1.420</td><td class="cell-in">1.380</td><td class="cell-gh">99.870</td></tr>
+      <tr class="zebra"><td class="no">No.2</td><td>–</td><td class="cell-in">1.210</td><td class="cell-gh">100.080</td></tr>
+      <tr class="tp" style="outline:2px solid #d98a3a;outline-offset:-2px"><td class="no">TP.2</td><td class="cell-in">0.980</td><td class="cell-in">1.535</td><td class="cell-gh">99.755</td></tr>
+    </tbody>
+  </table>
+  <div style="text-align:center;font:400 11px 'Pretendard';color:#a7a08e;padding:6px">⋯ BM.2 외 1행</div>
+  </div>
+  <!-- 큰 현재행 입력 카드 -->
+  <div style="flex:none;background:#33302a;border-radius:16px 16px 0 0;padding:14px;color:#e8e2d4">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="font:800 14px 'Pretendard';color:#f2c98a">TP.2 입력 중</span><span class="w-spacer"></span><span style="font:400 11px 'Pretendard';color:#a7a08e">5 / 7행</span></div>
+    <div style="display:flex;gap:9px">
+      <div style="flex:1"><div style="font:400 10.5px 'Pretendard';color:#a7a08e;margin-bottom:4px">후시 BS</div><div style="background:#4a463c;border:2px solid #6a655a;border-radius:9px;height:52px;display:flex;align-items:center;justify-content:center;font:700 20px 'Pretendard'">0.980</div></div>
+      <div style="flex:1"><div style="font:400 10.5px 'Pretendard';color:#f2c98a;margin-bottom:4px">전시 FS ◂</div><div style="background:#4a463c;border:2px solid #d98a3a;border-radius:9px;height:52px;display:flex;align-items:center;justify-content:center;font:700 20px 'Pretendard';color:#f2c98a">1.535</div></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-top:10px;font:400 11px 'Pretendard';color:#a7a08e">
+      <span>IH 100.735</span><span style="color:#8fd6a3">GH 99.755</span>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <div class="w-btn" style="flex:1;background:#4a463c;border-color:#6a655a;color:#e8e2d4">＋ 10행</div>
+      <div class="w-btn fill" style="flex:2;background:#d98a3a;border-color:#b06f26">다음 행 ▸</div>
+    </div>
+  </div>
+</div>
+</div></div>
+<div class="note" style="top:96px;left:372px">판정을 최상단으로<br>승격 — 먼저 읽힘</div>
+<div class="note" style="top:470px;left:-100px">현재 행만 크게<br>엄지존 대형 입력</div>
+<div class="note" style="top:640px;left:372px">자주 쓰는 액션<br>(＋10행·다음)<br>하단 고정</div>
+</div>
+</div>
+
+<!-- 1c : 판정 헤더 카드 + 표 + 엄지존 액션바 -->
+<div class="dv-opt" id="1c">
+<div class="dv-olabel"><a class="dv-oid" href="#1c">1c</a>판정 히어로 — 상단 큰 판정 카드(오차·게이지) + 표 + 하단 엄지존 액션바. "적합한가?"를 최우선 노출.</div>
+<div class="note-wrap">
+<div class="ph"><div class="ph-screen">
+<div class="ph-status"><span>9:41</span><span>▲ ◒ ▮</span></div>
+<div class="ph-body">
+  <div class="w-appbar">
+    <span class="w-icon">‹</span><span class="w-appttl sm">A구간 관로 수준측량</span>
+    <span class="w-spacer"></span><span class="w-sub" style="color:#8fb59a">● 자동저장됨</span>
+  </div>
+  <!-- 판정 히어로 카드 -->
+  <div style="flex:none;margin:12px 12px 0;background:#fff;border:2px solid #8fb59a;border-radius:12px;padding:13px">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:40px;height:40px;border-radius:50%;background:#e2ece4;border:2px solid #8fb59a;color:#3c6a4c;display:flex;align-items:center;justify-content:center;font:700 20px 'Pretendard'">✓</div>
+      <div style="flex:1"><div style="font:800 17px 'Pretendard';color:#3c6a4c">적합</div><div class="w-sub">폐합오차 0.0000 m · 허용 0.001</div></div>
+      <div style="text-align:right"><div class="w-sub">시작→최종</div><div style="font:700 12px 'Pretendard';color:#3a3a3a">100.000→100.003</div></div>
+    </div>
+    <!-- 게이지 -->
+    <div style="height:8px;border-radius:4px;background:#e0ddd4;margin-top:11px;position:relative;overflow:hidden">
+      <div style="position:absolute;left:50%;top:0;bottom:0;width:2px;background:#8a8578"></div>
+      <div style="position:absolute;left:calc(50% - 2px);top:0;bottom:0;width:4px;background:#3c6a4c;border-radius:2px"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font:400 9.5px 'Pretendard';color:#a7a08e;margin-top:3px"><span>−0.001</span><span>허용범위 이내</span><span>+0.001</span></div>
+  </div>
+  <!-- 표 -->
+  <div style="flex:1;overflow:hidden;padding:10px 12px 0">
+  <table class="ss" style="font-size:11.5px">
+    <thead><tr><th>NO</th><th>BS</th><th>FS</th><th>IH</th><th>GH</th></tr></thead>
+    <tbody>
+      <tr><td class="no">BM.1</td><td class="cell-in">1.250</td><td>–</td><td class="cell-ih">101.250</td><td class="cell-gh">100.000</td></tr>
+      <tr class="zebra"><td class="no">No.1</td><td>–</td><td class="cell-in">1.100</td><td class="cell-ih">–</td><td class="cell-gh">100.150</td></tr>
+      <tr class="tp"><td class="no">TP.1</td><td class="cell-in">1.420</td><td class="cell-in">1.380</td><td class="cell-ih">101.290</td><td class="cell-gh">99.870</td></tr>
+      <tr class="zebra"><td class="no">No.2</td><td>–</td><td class="cell-in">1.210</td><td class="cell-ih">–</td><td class="cell-gh">100.080</td></tr>
+      <tr class="tp"><td class="no">TP.2</td><td class="cell-in">0.980</td><td class="cell-in">1.535</td><td class="cell-ih">100.735</td><td class="cell-gh">99.755</td></tr>
+      <tr><td class="no">BM.2</td><td>–</td><td class="cell-in">0.732</td><td class="cell-ih">–</td><td class="cell-gh">100.003</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <!-- 엄지존 액션바 -->
+  <div style="flex:none;background:#e4e1d9;border-top:1.5px solid #c9c5bb;padding:10px 12px;display:flex;gap:8px">
+    <div class="w-btn" style="flex:1;flex-direction:column;gap:2px;height:48px"><span style="font-size:15px">＋</span><span style="font-size:9.5px">10행</span></div>
+    <div class="w-btn" style="flex:1;flex-direction:column;gap:2px;height:48px"><span style="font-size:15px">💾</span><span style="font-size:9.5px">저장</span></div>
+    <div class="w-btn o" style="flex:2;flex-direction:column;gap:2px;height:48px"><span style="font-size:15px">⤴</span><span style="font-size:9.5px">내보내기</span></div>
+  </div>
+</div>
+</div></div>
+<div class="note" style="top:100px;left:372px">판정 히어로 카드<br>+ 허용범위 게이지</div>
+<div class="note" style="top:640px;left:-96px">엄지존 액션바<br>큰 타깃 3개</div>
+</div>
+</div>
+
+</div>
+<p class="dv-next">다음: "<a class="dv-oid" href="#1a">1a</a> 방향으로 홈·목록도 그려줘" · "<a class="dv-oid" href="#1c">1c</a>의 판정 카드를 <a class="dv-oid" href="#1a">1a</a>에 얹어줘" · "확인 필요(오차 초과) 상태 버전도 보여줘"</p>
+</section>
+
+</x-dc>
+</body>
+</html>

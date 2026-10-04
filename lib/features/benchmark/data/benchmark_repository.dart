@@ -39,6 +39,15 @@ class BenchMarkRepository {
 
   Future<int> delete(int id) async {
     final db = await _dbHelper.database;
-    return await db.delete('benchmarks', where: 'id = ?', whereArgs: [id]);
+    return await db.transaction((txn) async {
+      // Explicit cleanup in addition to ON DELETE SET NULL.
+      await txn.update(
+        'field_books',
+        {'start_bm_id': null},
+        where: 'start_bm_id = ?',
+        whereArgs: [id],
+      );
+      return await txn.delete('benchmarks', where: 'id = ?', whereArgs: [id]);
+    });
   }
 }

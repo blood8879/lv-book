@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/theme/app_theme.dart';
+import '../../core/widgets/app_snackbar.dart';
 import '../ads/ad_providers.dart';
 import '../benchmark/data/benchmark_repository.dart';
 import '../fieldbook/data/fieldbook_providers.dart';
@@ -9,6 +11,7 @@ import '../fieldbook/domain/fieldbook.dart';
 import '../pro/pro_providers.dart';
 import '../project/data/project_providers.dart';
 import 'bulk_export_service.dart';
+import '../../core/constants/app_constants.dart';
 
 class BulkExportScreen extends ConsumerStatefulWidget {
   final int projectId;
@@ -50,7 +53,7 @@ class _BulkExportScreenState extends ConsumerState<BulkExportScreen> {
         title: const Text('일괄 내보내기'),
         actions: [
           TextButton(
-            onPressed: _selectedIds.isEmpty ? null : _toggleAll,
+            onPressed: widget.fieldBooks.isEmpty ? null : _toggleAll,
             child: Text(
               _selectedIds.length == widget.fieldBooks.length ? '해제' : '전체',
             ),
@@ -60,27 +63,41 @@ class _BulkExportScreenState extends ConsumerState<BulkExportScreen> {
       body: Column(
         children: [
           if (!isPro) _buildLockedBanner(),
-          _buildFormatSelector(),
-          _buildPackageOptions(isPro),
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(8),
-              itemCount: widget.fieldBooks.length,
-              itemBuilder: (context, index) {
-                final fieldBook = widget.fieldBooks[index];
-                final id = fieldBook.id!;
-                final selected = _selectedIds.contains(id);
+            child: Opacity(
+              opacity: isPro ? 1.0 : 0.5,
+              child: Column(
+                children: [
+                  _buildFormatSelector(),
+                  _buildPackageOptions(isPro),
+                  Expanded(
+                    child: ListView.builder(
+                      padding: const EdgeInsets.fromLTRB(
+                        8,
+                        8,
+                        8,
+                        AppConstants.quickMemoFabClearance,
+                      ),
+                      itemCount: widget.fieldBooks.length,
+                      itemBuilder: (context, index) {
+                        final fieldBook = widget.fieldBooks[index];
+                        final id = fieldBook.id!;
+                        final selected = _selectedIds.contains(id);
 
-                return CheckboxListTile(
-                  value: selected,
-                  onChanged: (_) => _toggle(id),
-                  title: Text(fieldBook.title),
-                  subtitle: Text(
-                    DateFormat('yyyy-MM-dd').format(fieldBook.date),
+                        return CheckboxListTile(
+                          value: selected,
+                          onChanged: (_) => _toggle(id),
+                          title: Text(fieldBook.title),
+                          subtitle: Text(
+                            DateFormat('yyyy-MM-dd').format(fieldBook.date),
+                          ),
+                          secondary: const Icon(Icons.description_outlined),
+                        );
+                      },
+                    ),
                   ),
-                  secondary: const Icon(Icons.description_outlined),
-                );
-              },
+                ],
+              ),
             ),
           ),
           SafeArea(
@@ -111,15 +128,48 @@ class _BulkExportScreenState extends ConsumerState<BulkExportScreen> {
   }
 
   Widget _buildLockedBanner() {
-    return Material(
-      color: Theme.of(context).colorScheme.secondaryContainer,
-      child: ListTile(
-        leading: Icon(
-          Icons.lock_outline,
-          color: Theme.of(context).colorScheme.onSecondaryContainer,
-        ),
-        title: const Text('Pro 전용 기능'),
-        subtitle: const Text('여러 야장을 한 번에 PDF/CSV로 공유할 수 있습니다.'),
+    final colors = context.appColors;
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colors.darkSurface,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: colors.darkSurface2,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(Icons.lock_outline, color: colors.amber),
+          ),
+          const SizedBox(width: 14),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Pro 전용 기능',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: 2),
+                Text(
+                  '여러 야장을 한 번에 PDF/CSV로 공유할 수 있습니다.',
+                  style: TextStyle(color: Colors.white70, fontSize: 13),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -204,7 +254,6 @@ class _BulkExportScreenState extends ConsumerState<BulkExportScreen> {
   }
 
   Future<void> _share() async {
-    final messenger = ScaffoldMessenger.of(context);
     final selected = widget.fieldBooks
         .where((fieldBook) => _selectedIds.contains(fieldBook.id))
         .toList();
@@ -230,17 +279,13 @@ class _BulkExportScreenState extends ConsumerState<BulkExportScreen> {
 
       if (!mounted) return;
       if (fileCount == 0) {
-        messenger.showSnackBar(
-          const SnackBar(content: Text('내보낼 데이터가 있는 야장이 없습니다')),
-        );
+        AppSnackbar.error(context, '내보낼 데이터가 있는 야장이 없습니다');
       } else {
-        messenger.showSnackBar(
-          SnackBar(content: Text('$fileCount개 파일을 공유했습니다')),
-        );
+        AppSnackbar.success(context, '$fileCount개 파일을 공유했습니다');
       }
     } catch (error) {
       if (!mounted) return;
-      messenger.showSnackBar(SnackBar(content: Text('일괄 내보내기 실패: $error')));
+      AppSnackbar.error(context, '일괄 내보내기 실패: $error');
     } finally {
       if (mounted) {
         setState(() => _sharing = false);

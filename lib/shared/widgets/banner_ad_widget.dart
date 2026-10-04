@@ -15,46 +15,91 @@ class BannerAdWidget extends ConsumerStatefulWidget {
 }
 
 class _BannerAdWidgetState extends ConsumerState<BannerAdWidget> {
+  /// Width changes smaller than this (logical px) don't trigger a reload.
+  static const _widthTolerance = 8;
+
   BannerAd? _bannerAd;
   bool _isLoaded = false;
-  int? _loadedWidth;
 
-  @override
-  void initState() {
-    super.initState();
+  /// True while an adaptive-size lookup / ad creation is in flight, so a
+  /// rebuild during that async gap can't start a second (leaked) BannerAd.
+  bool _loading = false;
+
+  /// Width the current (or last attempted) ad was requested for. A failed load
+  /// keeps this so we don't retry on every rebuild for the same width.
+  int? _requestedWidth;
+
+  /// Most recent width seen in build, used to catch up after an in-flight load.
+  int? _latestWidth;
+
+  void _maybeLoad(int width) {
+    _latestWidth = width;
+    if (_loading) return;
+    final requested = _requestedWidth;
+    if (requested != null && (requested - width).abs() < _widthTolerance) {
+      return;
+    }
+    _requestedWidth = width;
+    _loadAd(width);
   }
 
   Future<void> _loadAd(int width) async {
-    if (_loadedWidth == width && _bannerAd != null) return;
-    await _bannerAd?.dispose();
+    _loading = true;
+    final previous = _bannerAd;
     _bannerAd = null;
     _isLoaded = false;
-    _loadedWidth = width;
+    if (previous != null) {
+      // The previous AdWidget may still be mounted in the current frame;
+      // dispose only after it has been removed from the tree.
+      WidgetsBinding.instance.addPostFrameCallback((_) => previous.dispose());
+    }
 
-    final size = await AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(
-      width,
-    );
-    if (size == null || !mounted) return;
+    try {
+      final size =
+          await AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(width);
+      if (size == null || !mounted) return;
 
-    _bannerAd = BannerAd(
-      adUnitId: widget.adUnitId,
-      size: size,
-      request: const AdRequest(),
-      listener: BannerAdListener(
-        onAdLoaded: (ad) {
-          if (mounted) setState(() => _isLoaded = true);
-        },
-        onAdFailedToLoad: (ad, error) {
-          ad.dispose();
-          _bannerAd = null;
-        },
-      ),
-    )..load();
+      final ad = BannerAd(
+        adUnitId: widget.adUnitId,
+        size: size,
+        request: const AdRequest(),
+        listener: BannerAdListener(
+          onAdLoaded: (ad) {
+            if (!mounted || !identical(ad, _bannerAd)) {
+              ad.dispose();
+              return;
+            }
+            setState(() => _isLoaded = true);
+          },
+          onAdFailedToLoad: (ad, error) {
+            ad.dispose();
+            if (identical(ad, _bannerAd)) {
+              _bannerAd = null;
+              _isLoaded = false;
+            }
+          },
+        ),
+      );
+      _bannerAd = ad;
+      await ad.load();
+    } catch (_) {
+      // Ads are best-effort; leave the slot empty.
+    } finally {
+      _loading = false;
+      final latest = _latestWidth;
+      if (mounted &&
+          latest != null &&
+          (latest - width).abs() >= _widthTolerance) {
+        _requestedWidth = latest;
+        _loadAd(latest);
+      }
+    }
   }
 
   @override
   void dispose() {
     _bannerAd?.dispose();
+    _bannerAd = null;
     super.dispose();
   }
 
@@ -67,17 +112,19 @@ class _BannerAdWidgetState extends ConsumerState<BannerAdWidget> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
+        if (!constraints.hasBoundedWidth) return const SizedBox.shrink();
         final width = constraints.maxWidth.truncate();
         if (width <= 0) return const SizedBox.shrink();
 
-        _loadAd(width);
+        _maybeLoad(width);
 
-        if (!_isLoaded || _bannerAd == null) return const SizedBox.shrink();
+        final ad = _bannerAd;
+        if (!_isLoaded || ad == null) return const SizedBox.shrink();
         return Center(
           child: SizedBox(
-            width: _bannerAd!.size.width.toDouble(),
-            height: _bannerAd!.size.height.toDouble(),
-            child: AdWidget(ad: _bannerAd!),
+            width: ad.size.width.toDouble(),
+            height: ad.size.height.toDouble(),
+            child: AdWidget(ad: ad),
           ),
         );
       },

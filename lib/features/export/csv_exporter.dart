@@ -6,6 +6,13 @@ import 'export_judgement.dart';
 import 'package:intl/intl.dart';
 
 class CsvExporter {
+  /// UTF-8 byte order mark. Excel needs it to open Korean CSV correctly.
+  static const utf8Bom = '\uFEFF';
+
+  /// Prepends [utf8Bom] for writing a CSV file (no-op if already present).
+  static String withBom(String csv) =>
+      csv.startsWith(utf8Bom) ? csv : '$utf8Bom$csv';
+
   static String generateFieldBookCsv({
     required FieldBook fieldBook,
     required List<Measurement> measurements,
@@ -65,29 +72,25 @@ class CsvExporter {
       ]);
     }
 
-    // Summary
-    double sumBs = 0;
-    double sumFs = 0;
-    for (final m in measurements) {
-      if (m.bs != null) sumBs += m.bs!;
-      if (m.fs != null) sumFs += m.fs!;
-    }
+    // Summary (검산): ΣFS counts only turning points and the final point so
+    // that ΣBS − ΣFS equals 최종 GH − 시작 GH, consistent with LevelClosure.
+    final sums = LevelCheckSums.from(
+      measurements,
+      startElevation: startElevation,
+    );
     rows.add([]);
     rows.add([
       'ΣBS',
-      sumBs.toStringAsFixed(3),
+      sums.sumBs.toStringAsFixed(3),
       'ΣFS',
-      sumFs.toStringAsFixed(3),
+      sums.sumFs.toStringAsFixed(3),
     ]);
-    rows.add(['ΣBS - ΣFS', (sumBs - sumFs).toStringAsFixed(3)]);
+    rows.add(['ΣBS - ΣFS', sums.difference.toStringAsFixed(3)]);
     if (proSettings?.includeCheckJudgement == true) {
-      final firstGh = measurements.isNotEmpty
-          ? (measurements.first.gh ?? startElevation)
-          : startElevation;
-      final lastGh = measurements.isNotEmpty
-          ? (measurements.last.gh ?? firstGh)
-          : firstGh;
-      final error = sumBs - sumFs - (lastGh - firstGh);
+      final error = LevelClosure.error(
+        measurements,
+        startElevation: startElevation,
+      );
       rows.add(['오차', error.toStringAsFixed(4)]);
       rows.add(['검산 판정', ExportJudgement.label(error)]);
     }

@@ -4,12 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/empty_state.dart';
+import '../../../core/widgets/semantic_pill.dart';
+import '../../../core/widgets/skeleton.dart';
 import '../data/benchmark_media_services.dart';
 import '../data/benchmark_providers.dart';
 import '../domain/benchmark.dart';
 import '../../../shared/widgets/banner_ad_widget.dart';
 import '../../ads/ad_manager.dart';
 import '../../ads/ad_providers.dart';
+import '../../../core/constants/app_constants.dart';
 
 class BenchmarkListScreen extends ConsumerWidget {
   final int projectId;
@@ -20,125 +24,43 @@ class BenchmarkListScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final benchmarksAsync = ref.watch(benchmarkListProvider(projectId));
     final isPro = ref.watch(adsRemovedProvider).valueOrNull ?? false;
+    final colors = context.appColors;
 
     return Scaffold(
       body: Column(
         children: [
           Expanded(
             child: benchmarksAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const Padding(
+                padding: EdgeInsets.only(top: 8),
+                child: ListSkeleton(),
+              ),
               error: (e, _) => Center(child: Text('오류: $e')),
               data: (benchmarks) {
                 if (benchmarks.isEmpty) {
-                  return const Center(
-                    child: Text(
-                      'BM(기준점)이 없습니다.\n+ 버튼을 눌러 추가하세요.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 16, color: Colors.grey),
-                    ),
+                  return EmptyState(
+                    icon: Icons.flag_outlined,
+                    title: 'BM(기준점)을 등록하세요',
+                    message:
+                        '+ 버튼으로 표고 기준이 되는 BM/TBM을 추가하면\n야장 작성 시 시작 표고로 바로 불러올 수 있습니다.',
+                    accent: colors.blue,
+                    accentSoft: colors.blueSoft,
                   );
                 }
                 return ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(8, 8, 8, 96),
+                  padding: const EdgeInsets.fromLTRB(
+                    8,
+                    8,
+                    8,
+                    AppConstants.quickMemoFabClearance,
+                  ),
                   itemCount: benchmarks.length,
                   itemBuilder: (context, index) {
-                    final bm = benchmarks[index];
-                    return Card(
-                      child: ListTile(
-                        onTap: () =>
-                            _showLocationPanel(context, ref, bm, isPro: isPro),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 10,
-                        ),
-                        leading: Container(
-                          width: 42,
-                          height: 42,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: bm.isSelectableForFieldBook
-                                ? AppTheme.fieldGreen.withValues(alpha: 0.1)
-                                : Theme.of(context).colorScheme.errorContainer,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            bm.kind.label,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w900,
-                              color: bm.isSelectableForFieldBook
-                                  ? AppTheme.fieldGreen
-                                  : Theme.of(context).colorScheme.error,
-                            ),
-                          ),
-                        ),
-                        title: Text(
-                          bm.name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('표고 ${bm.elevation.toStringAsFixed(3)} m'),
-                            Text(
-                              '종류: ${bm.kind.label}',
-                              style: const TextStyle(color: Color(0xFF6D665B)),
-                            ),
-                            Text(
-                              '상태: ${bm.status.label}',
-                              style: TextStyle(
-                                color: bm.isSelectableForFieldBook
-                                    ? const Color(0xFF6D665B)
-                                    : Theme.of(context).colorScheme.error,
-                              ),
-                            ),
-                            if (bm.locationHint != null &&
-                                bm.locationHint!.isNotEmpty)
-                              Text(
-                                '위치: ${bm.locationHint!}',
-                                style: const TextStyle(
-                                  color: Color(0xFF6D665B),
-                                ),
-                              ),
-                            if (bm.description != null &&
-                                bm.description!.isNotEmpty)
-                              Text(
-                                bm.description!,
-                                style: const TextStyle(
-                                  color: Color(0xFF6D665B),
-                                ),
-                              ),
-                            if (bm.protectionNote != null &&
-                                bm.protectionNote!.isNotEmpty)
-                              Text(
-                                '보호: ${bm.protectionNote!}',
-                                style: const TextStyle(
-                                  color: Color(0xFF6D665B),
-                                ),
-                              ),
-                          ],
-                        ),
-                        trailing: PopupMenuButton<String>(
-                          onSelected: (value) {
-                            if (value == 'edit') {
-                              _showEditDialog(context, ref, bm);
-                            } else if (value == 'delete') {
-                              _showDeleteDialog(context, ref, bm);
-                            }
-                          },
-                          itemBuilder: (context) => [
-                            const PopupMenuItem(
-                              value: 'edit',
-                              child: Text('수정'),
-                            ),
-                            const PopupMenuItem(
-                              value: 'delete',
-                              child: Text('삭제'),
-                            ),
-                          ],
-                        ),
-                      ),
+                    return _buildBenchmarkCard(
+                      context,
+                      ref,
+                      benchmarks[index],
+                      isPro: isPro,
                     );
                   },
                 );
@@ -155,6 +77,123 @@ class BenchmarkListScreen extends ConsumerWidget {
     );
   }
 
+  Widget _buildBenchmarkCard(
+    BuildContext context,
+    WidgetRef ref,
+    BenchMark bm, {
+    required bool isPro,
+  }) {
+    final colors = context.appColors;
+    final (
+      Color badgeFg,
+      Color badgeBg,
+      SemanticPillVariant variant,
+    ) = switch (bm.status) {
+      BenchMarkStatus.available => (
+        colors.green,
+        colors.greenSoft,
+        SemanticPillVariant.green,
+      ),
+      BenchMarkStatus.damagedSuspected => (
+        colors.orange,
+        colors.orangeSoft,
+        SemanticPillVariant.orange,
+      ),
+      BenchMarkStatus.stopped => (
+        colors.err,
+        colors.errSoft,
+        SemanticPillVariant.err,
+      ),
+    };
+    final isStopped = bm.status == BenchMarkStatus.stopped;
+    final lineColor = isStopped ? colors.err : colors.subtext;
+
+    return Card(
+      color: isStopped ? colors.errSoft : null,
+      shape: isStopped
+          ? RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(color: colors.err),
+            )
+          : null,
+      child: ListTile(
+        onTap: () => _showLocationPanel(context, ref, bm, isPro: isPro),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 10,
+        ),
+        leading: Container(
+          width: 42,
+          height: 42,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: badgeBg,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            bm.kind.label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: badgeFg,
+            ),
+          ),
+        ),
+        title: Row(
+          children: [
+            Flexible(
+              child: Text(
+                bm.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: 8),
+            SemanticPill(label: bm.status.label, variant: variant),
+          ],
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '표고 ${bm.elevation.toStringAsFixed(3)} m',
+              style: TextStyle(
+                color: isStopped ? colors.err : null,
+                fontFeatures: AppTypography.tabularFeatures,
+              ),
+            ),
+            Text('종류: ${bm.kind.label}', style: TextStyle(color: lineColor)),
+            if (bm.locationHint != null && bm.locationHint!.isNotEmpty)
+              Text(
+                '위치: ${bm.locationHint!}',
+                style: TextStyle(color: lineColor),
+              ),
+            if (bm.description != null && bm.description!.isNotEmpty)
+              Text(bm.description!, style: TextStyle(color: lineColor)),
+            if (bm.protectionNote != null && bm.protectionNote!.isNotEmpty)
+              Text(
+                '보호: ${bm.protectionNote!}',
+                style: TextStyle(color: lineColor),
+              ),
+          ],
+        ),
+        trailing: PopupMenuButton<String>(
+          onSelected: (value) {
+            if (value == 'edit') {
+              _showEditDialog(context, ref, bm);
+            } else if (value == 'delete') {
+              _showDeleteDialog(context, ref, bm);
+            }
+          },
+          itemBuilder: (context) => [
+            const PopupMenuItem(value: 'edit', child: Text('수정')),
+            const PopupMenuItem(value: 'delete', child: Text('삭제')),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _showAddDialog(BuildContext context, WidgetRef ref) {
     final nameController = TextEditingController();
     final elevationController = TextEditingController();
@@ -163,6 +202,8 @@ class BenchmarkListScreen extends ConsumerWidget {
     final protectionController = TextEditingController();
     var status = BenchMarkStatus.available;
     var kind = BenchMarkKind.bm;
+    String? nameError;
+    String? elevationError;
 
     showDialog(
       context: context,
@@ -175,22 +216,35 @@ class BenchmarkListScreen extends ConsumerWidget {
               children: [
                 TextField(
                   controller: nameController,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'BM 이름 *',
                     hintText: '예: BM.1',
+                    errorText: nameError,
                   ),
                   autofocus: true,
+                  onChanged: (value) {
+                    if (nameError != null && value.trim().isNotEmpty) {
+                      setState(() => nameError = null);
+                    }
+                  },
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: elevationController,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: '표고 (m) *',
                     hintText: '예: 100.000',
+                    errorText: elevationError,
                   ),
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
+                  onChanged: (value) {
+                    if (elevationError != null &&
+                        double.tryParse(value.trim()) != null) {
+                      setState(() => elevationError = null);
+                    }
+                  },
                 ),
                 const SizedBox(height: 12),
                 TextField(
@@ -253,6 +307,12 @@ class BenchmarkListScreen extends ConsumerWidget {
                 final elevation = double.tryParse(
                   elevationController.text.trim(),
                 );
+                setState(() {
+                  nameError = name.isEmpty ? 'BM 이름을 입력하세요' : null;
+                  elevationError = elevation == null
+                      ? '표고를 숫자(m)로 입력하세요'
+                      : null;
+                });
                 if (name.isNotEmpty && elevation != null) {
                   ref
                       .read(benchmarkListProvider(projectId).notifier)
@@ -293,6 +353,8 @@ class BenchmarkListScreen extends ConsumerWidget {
     );
     var status = bm.status;
     var kind = bm.kind;
+    String? nameError;
+    String? elevationError;
 
     showDialog(
       context: context,
@@ -305,15 +367,32 @@ class BenchmarkListScreen extends ConsumerWidget {
               children: [
                 TextField(
                   controller: nameController,
-                  decoration: const InputDecoration(labelText: 'BM 이름 *'),
+                  decoration: InputDecoration(
+                    labelText: 'BM 이름 *',
+                    errorText: nameError,
+                  ),
+                  onChanged: (value) {
+                    if (nameError != null && value.trim().isNotEmpty) {
+                      setState(() => nameError = null);
+                    }
+                  },
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: elevationController,
-                  decoration: const InputDecoration(labelText: '표고 (m) *'),
+                  decoration: InputDecoration(
+                    labelText: '표고 (m) *',
+                    errorText: elevationError,
+                  ),
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
+                  onChanged: (value) {
+                    if (elevationError != null &&
+                        double.tryParse(value.trim()) != null) {
+                      setState(() => elevationError = null);
+                    }
+                  },
                 ),
                 const SizedBox(height: 12),
                 TextField(
@@ -376,6 +455,12 @@ class BenchmarkListScreen extends ConsumerWidget {
                 final elevation = double.tryParse(
                   elevationController.text.trim(),
                 );
+                setState(() {
+                  nameError = name.isEmpty ? 'BM 이름을 입력하세요' : null;
+                  elevationError = elevation == null
+                      ? '표고를 숫자(m)로 입력하세요'
+                      : null;
+                });
                 if (name.isNotEmpty && elevation != null) {
                   ref
                       .read(benchmarkListProvider(projectId).notifier)
@@ -421,6 +506,7 @@ class BenchmarkListScreen extends ConsumerWidget {
       showDragHandle: true,
       builder: (context) => StatefulBuilder(
         builder: (context, setModalState) {
+          final colors = context.appColors;
           final coordinate = current.formattedCoordinate;
           return SafeArea(
             child: SingleChildScrollView(
@@ -438,14 +524,14 @@ class BenchmarkListScreen extends ConsumerWidget {
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color: AppTheme.fieldGreen.withValues(alpha: 0.12),
+                            color: colors.greenSoft,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
                             current.kind.label,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w900,
-                              color: AppTheme.fieldGreen,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              color: colors.green,
                             ),
                           ),
                         ),
@@ -456,7 +542,7 @@ class BenchmarkListScreen extends ConsumerWidget {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: Theme.of(context).textTheme.titleLarge
-                                ?.copyWith(fontWeight: FontWeight.w800),
+                                ?.copyWith(fontWeight: FontWeight.w700),
                           ),
                         ),
                       ],
@@ -465,7 +551,7 @@ class BenchmarkListScreen extends ConsumerWidget {
                     Text(
                       'Pro 위치 기록',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -479,14 +565,34 @@ class BenchmarkListScreen extends ConsumerWidget {
                         const Text('Pro에서 TBM/BM 사진과 좌표를 저장할 수 있습니다.'),
                     ] else ...[
                       if (coordinate != null) ...[
-                        Text(
-                          coordinate,
-                          style: const TextStyle(fontWeight: FontWeight.w800),
-                        ),
-                        if (current.coordinateAccuracyM != null)
-                          Text(
-                            '정확도 ${current.coordinateAccuracyM!.toStringAsFixed(1)}m',
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: colors.soft,
+                            borderRadius: BorderRadius.circular(8),
                           ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                coordinate,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontFeatures: AppTypography.tabularFeatures,
+                                ),
+                              ),
+                              if (current.coordinateAccuracyM != null)
+                                Text(
+                                  '정확도 ${current.coordinateAccuracyM!.toStringAsFixed(1)}m',
+                                  style: TextStyle(
+                                    color: colors.subtext,
+                                    fontFeatures: AppTypography.tabularFeatures,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
                       ] else
                         const Text('저장된 좌표가 없습니다.'),
                       const SizedBox(height: 14),
@@ -626,7 +732,7 @@ class BenchmarkListScreen extends ConsumerWidget {
                               child: Image.file(
                                 file,
                                 key: const Key('benchmark-photo-preview'),
-                                height: 160,
+                                height: 120,
                                 width: double.infinity,
                                 fit: BoxFit.cover,
                               ),
@@ -673,6 +779,10 @@ class BenchmarkListScreen extends ConsumerWidget {
                         SizedBox(
                           width: double.infinity,
                           child: OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: colors.err,
+                              side: BorderSide(color: colors.err),
+                            ),
                             onPressed: () async {
                               try {
                                 final updated = await ref
@@ -774,7 +884,9 @@ class BenchmarkListScreen extends ConsumerWidget {
                   .deleteBenchmark(bm.id!);
               Navigator.pop(context);
             },
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
             child: const Text('삭제'),
           ),
         ],

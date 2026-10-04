@@ -4,12 +4,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:lv_book/core/constants/app_constants.dart';
 
 void main() {
-  test('benchmark location schema is declared for database version 6', () {
+  test('benchmark location schema is declared for database version 7', () {
     final helper = File(
       'lib/core/database/database_helper.dart',
     ).readAsStringSync();
 
-    expect(AppConstants.dbVersion, 6);
+    expect(AppConstants.dbVersion, greaterThanOrEqualTo(7));
     for (final column in [
       "kind TEXT NOT NULL DEFAULT 'bm'",
       'photo_path TEXT',

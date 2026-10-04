@@ -42,6 +42,63 @@ void main() {
     );
   });
 
+  group('LevelClosure.error', () {
+    Measurement m({double? bs, double? fs, double? gh, bool tp = false}) =>
+        Measurement(
+          fieldBookId: 1,
+          orderIndex: 0,
+          stationName: 'p',
+          type: tp ? MeasurementType.tp : MeasurementType.normal,
+          bs: bs,
+          fs: fs,
+          gh: gh,
+        );
+
+    test('intermediate point foresight is excluded from misclosure', () {
+      // From the reported screenshot: row 2 is an intermediate point
+      // (FS only, no BS) so its 3.3 must not inflate the misclosure.
+      final rows = [
+        m(bs: 1.11, gh: 12.000),
+        m(fs: 3.3, gh: 9.810), // intermediate point
+        m(fs: 2.2, gh: 10.910),
+      ];
+      final error = LevelClosure.error(rows, startElevation: 12.000);
+      expect(error, closeTo(0.0, 0.0001));
+    });
+
+    test('turning point foresight is included', () {
+      // BM(bs) -> TP(fs+bs) -> No.1(fs); a consistent run closes to 0.
+      final rows = [
+        m(bs: 1.500, gh: 100.000),
+        m(bs: 1.200, fs: 1.000, gh: 100.500, tp: true),
+        m(fs: 0.600, gh: 101.100),
+      ];
+      final error = LevelClosure.error(rows, startElevation: 100.000);
+      expect(error, closeTo(0.0, 0.0001));
+    });
+
+    test('genuine misclosure is still detected', () {
+      // Last GH manually off by 0.05 from the computed value.
+      final rows = [
+        m(bs: 1.500, gh: 100.000),
+        m(fs: 1.000, gh: 100.550), // should be 100.500
+      ];
+      final error = LevelClosure.error(rows, startElevation: 100.000);
+      expect(error, closeTo(-0.05, 0.0001));
+    });
+
+    test('trailing empty rows do not affect the final station', () {
+      final rows = [
+        m(bs: 1.11, gh: 12.000),
+        m(fs: 3.3, gh: 9.810),
+        m(fs: 2.2, gh: 10.910),
+        m(), // empty trailing row
+      ];
+      final error = LevelClosure.error(rows, startElevation: 12.000);
+      expect(error, closeTo(0.0, 0.0001));
+    });
+  });
+
   group('Measurement recalculation', () {
     // We test the recalculate method by creating an instance directly
     // Since MeasurementListNotifier requires Riverpod, we test the logic inline

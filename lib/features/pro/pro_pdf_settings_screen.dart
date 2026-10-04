@@ -1,11 +1,17 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/theme/app_theme.dart';
+import '../../core/widgets/app_snackbar.dart';
 import '../export/export_history_repository.dart';
 import '../fieldbook/domain/fieldbook.dart';
 import 'pro_pdf_settings.dart';
 import 'pro_providers.dart';
+import 'signature_pad_dialog.dart';
+import '../../core/constants/app_constants.dart';
 
 class ProPdfSettingsScreen extends ConsumerStatefulWidget {
   const ProPdfSettingsScreen({super.key});
@@ -24,6 +30,7 @@ class _ProPdfSettingsScreenState extends ConsumerState<ProPdfSettingsScreen> {
   bool _includeSignatureLines = true;
   ProDocumentTemplate _documentTemplate = ProDocumentTemplate.basic;
   ProFileNamePattern _fileNamePattern = ProFileNamePattern.titleOnly;
+  String _signaturePng = '';
   String? _activePresetId;
   bool _loaded = false;
 
@@ -52,6 +59,7 @@ class _ProPdfSettingsScreenState extends ConsumerState<ProPdfSettingsScreen> {
     _includeSignatureLines = settings.includeSignatureLines;
     _documentTemplate = settings.documentTemplate;
     _fileNamePattern = settings.fileNamePattern;
+    _signaturePng = settings.signaturePng;
   }
 
   @override
@@ -60,6 +68,7 @@ class _ProPdfSettingsScreenState extends ConsumerState<ProPdfSettingsScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Pro PDF 설정')),
+      bottomNavigationBar: _buildFooter(),
       body: presetsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => Center(child: Text('설정을 불러오지 못했습니다: $error')),
@@ -67,7 +76,12 @@ class _ProPdfSettingsScreenState extends ConsumerState<ProPdfSettingsScreen> {
           _applyPresets(presets);
 
           return ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(
+              16,
+              16,
+              16,
+              AppConstants.quickMemoFabClearance,
+            ),
             children: [
               Row(
                 children: [
@@ -218,20 +232,9 @@ class _ProPdfSettingsScreenState extends ConsumerState<ProPdfSettingsScreen> {
                 onChanged: (value) =>
                     setState(() => _includeSignatureLines = value),
               ),
+              if (_includeSignatureLines) _buildSignatureCard(),
               const SizedBox(height: 12),
               _FilenamePreview(settings: _currentSettings()),
-              const SizedBox(height: 20),
-              FilledButton.icon(
-                onPressed: _save,
-                icon: const Icon(Icons.save),
-                label: const Text('저장'),
-              ),
-              const SizedBox(height: 12),
-              OutlinedButton.icon(
-                onPressed: _showExportHistory,
-                icon: const Icon(Icons.history),
-                label: const Text('내보내기 이력'),
-              ),
             ],
           );
         },
@@ -239,8 +242,142 @@ class _ProPdfSettingsScreenState extends ConsumerState<ProPdfSettingsScreen> {
     );
   }
 
+  Widget _buildFooter() {
+    final colors = context.appColors;
+    return Container(
+      decoration: BoxDecoration(
+        border: Border(top: BorderSide(color: colors.line)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+          child: Row(
+            children: [
+              Expanded(
+                flex: 3,
+                child: OutlinedButton.icon(
+                  onPressed: _showExportHistory,
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size(0, 48),
+                  ),
+                  icon: const Icon(Icons.history),
+                  label: const Text('내보내기 이력'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                flex: 4,
+                child: FilledButton.icon(
+                  onPressed: _save,
+                  style: FilledButton.styleFrom(minimumSize: const Size(0, 48)),
+                  icon: const Icon(Icons.save),
+                  label: const Text('저장'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSignatureCard() {
+    final colors = context.appColors;
+    final hasSignature = _signaturePng.trim().isNotEmpty;
+    return Card(
+      margin: const EdgeInsets.only(top: 8),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.gesture, size: 18),
+                const SizedBox(width: 6),
+                const Expanded(
+                  child: Text(
+                    '작성자 서명',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              "PDF '작성'란에 들어갈 손글씨 서명을 등록합니다.",
+              style: TextStyle(fontSize: 12, color: colors.subtext),
+            ),
+            const SizedBox(height: 8),
+            if (hasSignature)
+              Container(
+                height: 80,
+                width: double.infinity,
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(color: Theme.of(context).dividerColor),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Image.memory(
+                  base64Decode(_signaturePng),
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, _, _) =>
+                      const Center(child: Text('서명을 표시할 수 없습니다')),
+                ),
+              )
+            else
+              Container(
+                height: 80,
+                width: double.infinity,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Theme.of(context).dividerColor),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  '등록된 서명이 없습니다',
+                  style: TextStyle(color: colors.subtext),
+                ),
+              ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _captureSignature,
+                    icon: const Icon(Icons.edit, size: 18),
+                    label: Text(hasSignature ? '다시 서명' : '서명 등록'),
+                  ),
+                ),
+                if (hasSignature) ...[
+                  const SizedBox(width: 8),
+                  OutlinedButton.icon(
+                    onPressed: () => setState(() => _signaturePng = ''),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: colors.err,
+                      side: BorderSide(color: colors.err),
+                    ),
+                    icon: const Icon(Icons.delete_outline, size: 18),
+                    label: const Text('삭제'),
+                  ),
+                ],
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _captureSignature() async {
+    final result = await SignaturePadDialog.show(context);
+    if (result == null || !mounted) return;
+    setState(() => _signaturePng = result);
+  }
+
   Future<void> _save() async {
-    final messenger = ScaffoldMessenger.of(context);
     final settings = _currentSettings();
 
     await ref.read(proSettingsRepositoryProvider).savePdfSettings(settings);
@@ -248,7 +385,7 @@ class _ProPdfSettingsScreenState extends ConsumerState<ProPdfSettingsScreen> {
     ref.invalidate(proPdfSettingsProvider);
 
     if (!mounted) return;
-    messenger.showSnackBar(const SnackBar(content: Text('Pro PDF 설정을 저장했습니다')));
+    AppSnackbar.success(context, 'Pro PDF 설정을 저장했습니다');
   }
 
   ProPdfSettings _currentSettings() {
@@ -261,6 +398,7 @@ class _ProPdfSettingsScreenState extends ConsumerState<ProPdfSettingsScreen> {
       watermarkText: _watermarkController.text,
       footerNote: _footerNoteController.text,
       fileNamePattern: _fileNamePattern,
+      signaturePng: _signaturePng,
     );
   }
 
@@ -272,13 +410,12 @@ class _ProPdfSettingsScreenState extends ConsumerState<ProPdfSettingsScreen> {
   }
 
   Future<void> _deletePreset(String presetId) async {
-    final messenger = ScaffoldMessenger.of(context);
     await ref.read(proSettingsRepositoryProvider).deletePreset(presetId);
     _loaded = false;
     ref.invalidate(proDocumentPresetsProvider);
     ref.invalidate(proPdfSettingsProvider);
     if (!mounted) return;
-    messenger.showSnackBar(const SnackBar(content: Text('프리셋을 삭제했습니다')));
+    AppSnackbar.success(context, '프리셋을 삭제했습니다');
   }
 
   Future<void> _createPreset(ProPdfSettings settings) async {
@@ -303,33 +440,14 @@ class _ProPdfSettingsScreenState extends ConsumerState<ProPdfSettingsScreen> {
   Future<String?> _askPresetName({
     required String title,
     required String initialValue,
-  }) async {
-    final controller = TextEditingController(text: initialValue);
-    try {
-      return showDialog<String>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text(title),
-          content: TextField(
-            controller: controller,
-            autofocus: true,
-            decoration: const InputDecoration(labelText: '프리셋 이름'),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('취소'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(context, controller.text.trim()),
-              child: const Text('저장'),
-            ),
-          ],
-        ),
-      );
-    } finally {
-      controller.dispose();
-    }
+  }) {
+    // The dialog owns its TextEditingController so it is disposed only after
+    // the route (including its exit animation) is fully torn down.
+    return showDialog<String>(
+      context: context,
+      builder: (context) =>
+          _PresetNameDialog(title: title, initialValue: initialValue),
+    );
   }
 
   Future<void> _showExportHistory() async {
@@ -411,6 +529,50 @@ class _FilenamePreview extends StatelessWidget {
           Text(preview),
         ],
       ),
+    );
+  }
+}
+
+class _PresetNameDialog extends StatefulWidget {
+  final String title;
+  final String initialValue;
+
+  const _PresetNameDialog({required this.title, required this.initialValue});
+
+  @override
+  State<_PresetNameDialog> createState() => _PresetNameDialogState();
+}
+
+class _PresetNameDialogState extends State<_PresetNameDialog> {
+  late final TextEditingController _controller = TextEditingController(
+    text: widget.initialValue,
+  );
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(widget.title),
+      content: TextField(
+        controller: _controller,
+        autofocus: true,
+        decoration: const InputDecoration(labelText: '프리셋 이름'),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('취소'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(context, _controller.text.trim()),
+          child: const Text('저장'),
+        ),
+      ],
     );
   }
 }

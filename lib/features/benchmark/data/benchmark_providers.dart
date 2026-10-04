@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../ads/ad_providers.dart';
+import '../../fieldbook/data/fieldbook_providers.dart';
 import 'benchmark_media_services.dart';
 import 'benchmark_repository.dart';
 import '../domain/benchmark.dart';
@@ -84,5 +85,8 @@ class BenchmarkListNotifier extends FamilyAsyncNotifier<List<BenchMark>, int> {
         .read(benchmarkPhotoStorageProvider)
         .deletePhoto(benchmark?.photoPath);
     ref.invalidateSelf();
+    // Field books referencing this BM had start_bm_id nulled by the FK rule;
+    // drop the cached copies so a later full-row update can't write it back.
+    ref.invalidate(fieldBookListProvider(arg));
   }
 }

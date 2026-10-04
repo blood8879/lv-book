@@ -27,6 +27,10 @@ class ProPdfSettings {
   final String footerNote;
   final ProFileNamePattern fileNamePattern;
 
+  /// Base64-encoded PNG of the author's handwritten signature. Empty when
+  /// no signature has been registered.
+  final String signaturePng;
+
   const ProPdfSettings({
     this.companyName = '',
     this.authorName = '',
@@ -36,6 +40,7 @@ class ProPdfSettings {
     this.watermarkText = '',
     this.footerNote = '',
     this.fileNamePattern = ProFileNamePattern.titleOnly,
+    this.signaturePng = '',
   });
 
   factory ProPdfSettings.fromJson(Map<String, dynamic> json) {
@@ -56,8 +61,11 @@ class ProPdfSettings {
         json['fileNamePattern'] as String?,
         ProFileNamePattern.titleOnly,
       ),
+      signaturePng: json['signaturePng'] as String? ?? '',
     );
   }
+
+  bool get hasSignature => signaturePng.trim().isNotEmpty;
 
   bool get hasBranding =>
       companyName.trim().isNotEmpty || authorName.trim().isNotEmpty;
@@ -71,6 +79,7 @@ class ProPdfSettings {
     String? watermarkText,
     String? footerNote,
     ProFileNamePattern? fileNamePattern,
+    String? signaturePng,
   }) {
     return ProPdfSettings(
       companyName: companyName ?? this.companyName,
@@ -83,6 +92,7 @@ class ProPdfSettings {
       watermarkText: watermarkText ?? this.watermarkText,
       footerNote: footerNote ?? this.footerNote,
       fileNamePattern: fileNamePattern ?? this.fileNamePattern,
+      signaturePng: signaturePng ?? this.signaturePng,
     );
   }
 
@@ -96,6 +106,7 @@ class ProPdfSettings {
       'watermarkText': watermarkText,
       'footerNote': footerNote,
       'fileNamePattern': fileNamePattern.name,
+      'signaturePng': signaturePng,
     };
   }
 

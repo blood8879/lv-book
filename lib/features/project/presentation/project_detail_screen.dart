@@ -11,6 +11,7 @@ class ProjectDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.appColors;
     return DefaultTabController(
       length: 2,
       child: Scaffold(
@@ -24,7 +25,7 @@ class ProjectDetailScreen extends StatelessWidget {
           ),
         ),
         body: Container(
-          color: AppTheme.paper,
+          color: colors.paper,
           child: TabBarView(
             children: [
               FieldBookListScreen(projectId: project.id!),

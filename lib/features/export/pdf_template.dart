@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -46,7 +48,7 @@ class PdfExporter {
           _buildSummary(measurements, startElevation, ttf, proSettings),
           if (proSettings?.includeSignatureLines == true) ...[
             pw.SizedBox(height: 20),
-            _buildSignatureLines(ttf),
+            _buildSignatureLines(ttf, proSettings),
           ],
         ],
       ),
@@ -106,12 +108,13 @@ class PdfExporter {
                 : '직접수준측량 야장 · ${proSettings.documentTemplate.title}',
             style: pw.TextStyle(
               font: ttf,
-              fontSize: 20,
+              fontSize: 21,
               fontWeight: pw.FontWeight.bold,
+              letterSpacing: -0.3,
             ),
           ),
         ),
-        pw.SizedBox(height: 12),
+        pw.SizedBox(height: 14),
         pw.Row(
           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
           children: [
@@ -148,7 +151,8 @@ class PdfExporter {
               style: pw.TextStyle(font: ttf, fontSize: 10),
             ),
           ),
-        pw.Divider(),
+        pw.SizedBox(height: 6),
+        pw.Divider(thickness: 0.7, color: PdfColors.grey500),
       ],
     );
   }
@@ -204,8 +208,11 @@ class PdfExporter {
       cellStyle: style,
       headerAlignment: pw.Alignment.center,
       cellAlignment: pw.Alignment.center,
-      border: pw.TableBorder.all(width: 0.5),
-      headerDecoration: const pw.BoxDecoration(color: PdfColors.grey300),
+      cellHeight: 22,
+      headerPadding: const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+      cellPadding: const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+      border: pw.TableBorder.all(color: PdfColors.grey500, width: 0.7),
+      headerDecoration: const pw.BoxDecoration(color: PdfColors.grey200),
       headers: ['No.', '측점명', '후시(BS)', '전시(FS)', '기계고(IH)', '지반고(GH)', '비고'],
       data: measurements.asMap().entries.map((entry) {
         final i = entry.key;
@@ -229,27 +236,29 @@ class PdfExporter {
     pw.Font ttf,
     ProPdfSettings? proSettings,
   ) {
-    double sumBs = 0;
-    double sumFs = 0;
-    for (final m in measurements) {
-      if (m.bs != null) sumBs += m.bs!;
-      if (m.fs != null) sumFs += m.fs!;
-    }
-
-    final firstGh = measurements.isNotEmpty
-        ? (measurements.first.gh ?? startElevation)
-        : startElevation;
-    final lastGh = measurements.isNotEmpty
-        ? (measurements.last.gh ?? firstGh)
-        : firstGh;
-    final error = sumBs - sumFs - (lastGh - firstGh);
+    final sums = LevelCheckSums.from(
+      measurements,
+      startElevation: startElevation,
+    );
+    final sumBs = sums.sumBs;
+    final sumFs = sums.sumFs;
+    final firstGh = sums.firstGh;
+    final lastGh = sums.lastGh;
+    final error = LevelClosure.error(
+      measurements,
+      startElevation: startElevation,
+    );
     final isOk = ExportJudgement.isSuitable(error);
 
     final style = pw.TextStyle(font: ttf, fontSize: 10);
 
     return pw.Container(
-      padding: const pw.EdgeInsets.all(8),
-      decoration: pw.BoxDecoration(border: pw.Border.all(width: 0.5)),
+      padding: const pw.EdgeInsets.all(10),
+      decoration: pw.BoxDecoration(
+        color: PdfColors.grey100,
+        border: pw.Border.all(color: PdfColors.grey500, width: 0.7),
+        borderRadius: pw.BorderRadius.circular(4),
+      ),
       child: pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
@@ -261,7 +270,7 @@ class PdfExporter {
               fontWeight: pw.FontWeight.bold,
             ),
           ),
-          pw.SizedBox(height: 4),
+          pw.SizedBox(height: 6),
           pw.Row(
             mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
             children: [
@@ -294,15 +303,16 @@ class PdfExporter {
             pw.SizedBox(height: 6),
             pw.Container(
               padding: const pw.EdgeInsets.symmetric(
-                horizontal: 8,
-                vertical: 5,
+                horizontal: 10,
+                vertical: 6,
               ),
               decoration: pw.BoxDecoration(
                 color: isOk ? PdfColors.green50 : PdfColors.red50,
                 border: pw.Border.all(
                   color: isOk ? PdfColors.green : PdfColors.red,
-                  width: 0.5,
+                  width: 0.8,
                 ),
+                borderRadius: pw.BorderRadius.circular(4),
               ),
               child: pw.Text(
                 '검산 판정: ${isOk ? '적합' : '확인 필요'}',
@@ -320,33 +330,72 @@ class PdfExporter {
     );
   }
 
-  static pw.Widget _buildSignatureLines(pw.Font ttf) {
-    pw.Widget cell(String title) {
+  static pw.Widget _buildSignatureLines(
+    pw.Font ttf,
+    ProPdfSettings? proSettings,
+  ) {
+    pw.MemoryImage? signatureImage;
+    final signature = proSettings?.signaturePng.trim() ?? '';
+    if (signature.isNotEmpty) {
+      try {
+        signatureImage = pw.MemoryImage(base64Decode(signature));
+      } catch (_) {
+        signatureImage = null;
+      }
+    }
+
+    pw.Widget cell(String title, {pw.MemoryImage? image}) {
       return pw.Expanded(
         child: pw.Container(
-          height: 54,
-          decoration: pw.BoxDecoration(border: pw.Border.all(width: 0.5)),
+          height: 72,
+          decoration: pw.BoxDecoration(
+            border: pw.Border.all(color: PdfColors.grey500, width: 0.7),
+          ),
           child: pw.Column(
             children: [
               pw.Container(
                 width: double.infinity,
-                padding: const pw.EdgeInsets.symmetric(vertical: 4),
-                decoration: const pw.BoxDecoration(color: PdfColors.grey200),
+                padding: const pw.EdgeInsets.symmetric(vertical: 5),
+                decoration: const pw.BoxDecoration(
+                  color: PdfColors.grey200,
+                  border: pw.Border(
+                    bottom: pw.BorderSide(color: PdfColors.grey500, width: 0.7),
+                  ),
+                ),
                 child: pw.Center(
                   child: pw.Text(
                     title,
-                    style: pw.TextStyle(font: ttf, fontSize: 10),
+                    style: pw.TextStyle(
+                      font: ttf,
+                      fontSize: 10,
+                      fontWeight: pw.FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
-              pw.Expanded(child: pw.SizedBox()),
+              pw.Expanded(
+                child: image == null
+                    ? pw.SizedBox()
+                    : pw.Padding(
+                        padding: const pw.EdgeInsets.all(4),
+                        child: pw.Image(image, fit: pw.BoxFit.contain),
+                      ),
+              ),
             ],
           ),
         ),
       );
     }
 
-    return pw.Row(children: [cell('작성'), cell('검토'), cell('승인')]);
+    return pw.Row(
+      children: [
+        cell('작성', image: signatureImage),
+        pw.SizedBox(width: 8),
+        cell('검토'),
+        pw.SizedBox(width: 8),
+        cell('승인'),
+      ],
+    );
   }
 
   static pw.Widget _buildFooter(

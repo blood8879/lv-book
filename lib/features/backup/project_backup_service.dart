@@ -483,12 +483,12 @@ class ProjectBackupService {
       benchmarkIds.add(id);
     }
 
+    // A start BM missing from the backup (e.g. deleted before foreign keys
+    // were enforced) is not fatal: restore remaps it to null.
     for (final fieldBook in data.fieldBooks) {
       final id = fieldBook.id;
-      final startBmId = fieldBook.startBmId;
       if (id == null ||
-          (projectId != null && fieldBook.projectId != projectId) ||
-          (startBmId != null && !benchmarkIds.contains(startBmId))) {
+          (projectId != null && fieldBook.projectId != projectId)) {
         throw const ProjectBackupException('야장 데이터가 손상되었습니다.');
       }
       fieldBookIds.add(id);

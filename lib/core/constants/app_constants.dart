@@ -1,5 +1,10 @@
 class AppConstants {
   static const String appName = '레벨 야장';
   static const String dbName = 'lv_book.db';
-  static const int dbVersion = 6;
+  static const int dbVersion = 8;
+
+  /// Bottom space (from the bottom safe-area edge) a scrollable list should
+  /// reserve so its last item can scroll clear of the app-wide quick-memo FAB
+  /// (52pt button + 80pt bottom offset + 16pt gap).
+  static const double quickMemoFabClearance = 148;
 }
