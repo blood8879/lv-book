@@ -1,0 +1,23 @@
+{
+  "@@locale": "ko",
+  "coreAdd": "추가",
+  "coreAppName": "레벨 야장",
+  "coreAppProName": "레벨 야장 Pro",
+  "coreCancel": "취소",
+  "coreClose": "닫기",
+  "coreConfirm": "확인",
+  "coreDelete": "삭제",
+  "coreEdit": "수정",
+  "coreErrorWithDetail": "오류: {error}",
+  "coreFileNotUtf8": "UTF-8 형식의 파일만 지원합니다. Excel에서 \"CSV UTF-8(쉼표로 분리)\" 형식으로 다시 저장해 주세요.",
+  "coreJudgementCheckRequired": "확인 필요",
+  "coreJudgementOk": "적합",
+  "coreJudgementWithinTolerance": "적합",
+  "coreProcessing": "처리 중",
+  "coreRetry": "다시 시도",
+  "coreSave": "저장",
+  "coreSaved": "저장됨",
+  "coreSelectedCount": "{count, plural, =0{선택 없음} other{{count}개 선택됨}}",
+  "projectDetailTabBenchmarks": "BM 관리",
+  "projectDetailTabLevelBooks": "야장"
+}

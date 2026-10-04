@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Launcher label. English is the default; Korean in values-ko. -->
+    <string name="app_name">Lv Book</string>
+</resources>

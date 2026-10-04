@@ -3,18 +3,24 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 
-/// Thrown when a picked file is not valid UTF-8 (e.g. CP949/EUC-KR CSV saved
-/// by Excel). [message] is a user-facing Korean message.
-class TextFileEncodingException implements Exception {
-  final String message;
+import '../../l10n/l10n.dart';
 
-  const TextFileEncodingException([
-    this.message =
-        'UTF-8 형식의 파일만 지원합니다. Excel에서 "CSV UTF-8(쉼표로 분리)" 형식으로 다시 저장해 주세요.',
-  ]);
+/// Thrown when a picked file is not valid UTF-8 (e.g. CP949/EUC-KR CSV saved
+/// by Excel).
+///
+/// UI shows `error.localizedMessage(context.l10n)`. [message] is the Korean
+/// text, kept for callers not yet converted.
+class TextFileEncodingException implements Exception {
+  const TextFileEncodingException();
+
+  /// User-facing message in the language of [l10n].
+  String localizedMessage(AppLocalizations l10n) => l10n.coreFileNotUtf8;
+
+  /// Korean message (legacy; prefer [localizedMessage]).
+  String get message => localizedMessage(l10nKo);
 
   @override
-  String toString() => message;
+  String toString() => localizedMessage(l10nKo);
 }
 
 /// Opens the platform file picker and returns the selected file's text

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
-import 'core/constants/app_constants.dart';
 import 'features/project/presentation/project_list_screen.dart';
 import 'features/purchase/purchase_providers.dart';
 import 'features/quickmemo/presentation/quick_memo_fab.dart';
+import 'l10n/l10n.dart';
 
 class LvBookApp extends ConsumerStatefulWidget {
   const LvBookApp({super.key});
@@ -37,7 +37,12 @@ class _LvBookAppState extends ConsumerState<LvBookApp> {
   Widget build(BuildContext context) {
     final navigatorKey = LvBookApp.navigatorKey;
     return MaterialApp(
-      title: AppConstants.appName,
+      // Task-switcher title follows the app language.
+      onGenerateTitle: (context) => context.l10n.coreAppName,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      // Korean device -> ko, anything else -> en.
+      localeListResolutionCallback: (locales, _) => resolveAppLocale(locales),
       navigatorKey: navigatorKey,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,

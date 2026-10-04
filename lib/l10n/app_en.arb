@@ -1,0 +1,69 @@
+{
+  "@@locale": "en",
+  "coreAdd": "Add",
+  "coreAppName": "Lv Book",
+  "@coreAppName": {
+    "description": "App name (MaterialApp title, app bar). Korean: 레벨 야장."
+  },
+  "coreAppProName": "Lv Book Pro",
+  "@coreAppProName": {
+    "description": "Name of the one-time Pro purchase. Never call it a subscription."
+  },
+  "coreCancel": "Cancel",
+  "coreClose": "Close",
+  "coreConfirm": "OK",
+  "@coreConfirm": {
+    "description": "Generic confirm/acknowledge button (Korean 확인)."
+  },
+  "coreDelete": "Delete",
+  "coreEdit": "Edit",
+  "@coreEdit": {
+    "description": "Generic edit button (Korean 수정)."
+  },
+  "coreErrorWithDetail": "Error: {error}",
+  "@coreErrorWithDetail": {
+    "description": "Generic error with technical detail appended.",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "coreFileNotUtf8": "Only UTF-8 files are supported. In Excel, save the file again as \"CSV UTF-8 (Comma delimited)\".",
+  "@coreFileNotUtf8": {
+    "description": "Shown when a picked CSV/JSON file is not valid UTF-8."
+  },
+  "coreJudgementCheckRequired": "Check required",
+  "@coreJudgementCheckRequired": {
+    "description": "Misclosure judgement: exceeds tolerance (Korean 확인 필요). A warning, never 'Fail'/'Rejected'."
+  },
+  "coreJudgementOk": "OK",
+  "@coreJudgementOk": {
+    "description": "Short form of the within-tolerance judgement for tight cells/pills (Korean 적합)."
+  },
+  "coreJudgementWithinTolerance": "Within tolerance",
+  "@coreJudgementWithinTolerance": {
+    "description": "Misclosure judgement: within tolerance (Korean 적합). Long form."
+  },
+  "coreProcessing": "Processing…",
+  "coreRetry": "Retry",
+  "coreSave": "Save",
+  "coreSaved": "Saved",
+  "coreSelectedCount": "{count, plural, =0{None selected} =1{1 selected} other{{count} selected}}",
+  "@coreSelectedCount": {
+    "description": "Number of selected items.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "projectDetailTabBenchmarks": "Benchmarks",
+  "@projectDetailTabBenchmarks": {
+    "description": "Project detail tab for BM/TBM management (Korean BM 관리)."
+  },
+  "projectDetailTabLevelBooks": "Level books",
+  "@projectDetailTabLevelBooks": {
+    "description": "Project detail tab listing level books (Korean 야장)."
+  }
+}

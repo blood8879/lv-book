@@ -1,0 +1,11 @@
+{
+  "@@locale": "en",
+  "projectDetailTabLevelBooks": "Level books",
+  "@projectDetailTabLevelBooks": {
+    "description": "Project detail tab listing level books (Korean 야장)."
+  },
+  "projectDetailTabBenchmarks": "Benchmarks",
+  "@projectDetailTabBenchmarks": {
+    "description": "Project detail tab for BM/TBM management (Korean BM 관리)."
+  }
+}

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../l10n/l10n.dart';
 import '../domain/project.dart';
 import '../../benchmark/presentation/benchmark_list_screen.dart';
 import '../../fieldbook/presentation/fieldbook_list_screen.dart';
@@ -17,10 +18,16 @@ class ProjectDetailScreen extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           title: Text(project.name),
-          bottom: const TabBar(
+          bottom: TabBar(
             tabs: [
-              Tab(icon: Icon(Icons.description_outlined), text: '야장'),
-              Tab(icon: Icon(Icons.pin_drop_outlined), text: 'BM 관리'),
+              Tab(
+                icon: const Icon(Icons.description_outlined),
+                text: context.l10n.projectDetailTabLevelBooks,
+              ),
+              Tab(
+                icon: const Icon(Icons.pin_drop_outlined),
+                text: context.l10n.projectDetailTabBenchmarks,
+              ),
             ],
           ),
         ),
