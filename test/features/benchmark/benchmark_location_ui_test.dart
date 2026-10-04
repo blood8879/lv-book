@@ -9,6 +9,7 @@ import 'package:lv_book/features/benchmark/data/benchmark_media_services.dart';
 import 'package:lv_book/features/benchmark/data/benchmark_providers.dart';
 import 'package:lv_book/features/benchmark/domain/benchmark.dart';
 import 'package:lv_book/features/benchmark/presentation/benchmark_list_screen.dart';
+import 'package:lv_book/l10n/l10n.dart';
 
 void main() {
   testWidgets(
@@ -178,6 +179,60 @@ void main() {
 
     expect(find.text('지도 앱을 열 수 없습니다. 좌표를 복사해 사용하세요.'), findsOneWidget);
   });
+
+  _englishTests();
+}
+
+void _englishTests() {
+  testWidgets('BM list renders English status pills and panel', (tester) async {
+    await tester.pumpWidget(
+      _buildScreen(
+        adsRemoved: false,
+        locale: const Locale('en'),
+        benchmarks: [
+          BenchMark(id: 1, projectId: 1, name: 'BM.1', elevation: 100),
+          BenchMark(
+            id: 2,
+            projectId: 1,
+            name: 'BM.2',
+            elevation: 101.5,
+            status: BenchMarkStatus.damagedSuspected,
+          ),
+          BenchMark(
+            id: 3,
+            projectId: 1,
+            name: 'TBM.3',
+            elevation: 99,
+            kind: BenchMarkKind.tbm,
+            status: BenchMarkStatus.stopped,
+          ),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Usable'), findsOneWidget);
+    expect(find.text('Possibly damaged'), findsOneWidget);
+    expect(find.text('Out of service'), findsOneWidget);
+    expect(find.text('Elevation 101.500 m'), findsOneWidget);
+    expect(find.text('사용 가능'), findsNothing);
+
+    await tester.tap(find.text('BM.1'));
+    await tester.pumpAndSettle();
+    expect(find.text('Pro location record'), findsOneWidget);
+    expect(
+      find.text('With Pro you can save TBM/BM photos and coordinates.'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('empty BM list is English', (tester) async {
+    await tester.pumpWidget(
+      _buildScreen(adsRemoved: true, locale: const Locale('en')),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Add a BM (benchmark)'), findsOneWidget);
+  });
 }
 
 Widget _buildScreen({
@@ -188,6 +243,7 @@ Widget _buildScreen({
   BenchmarkImagePicker? imagePicker,
   BenchmarkPhotoStorage? photoStorage,
   BenchmarkMapLauncher? mapLauncher,
+  Locale? locale,
 }) {
   final activeNotifier = notifier ?? _BenchmarkNotifier(benchmarks ?? const []);
   return ProviderScope(
@@ -203,7 +259,14 @@ Widget _buildScreen({
       if (mapLauncher != null)
         benchmarkMapLauncherProvider.overrideWithValue(mapLauncher),
     ],
-    child: const MaterialApp(home: BenchmarkListScreen(projectId: 1)),
+    child: locale == null
+        ? const MaterialApp(home: BenchmarkListScreen(projectId: 1))
+        : MaterialApp(
+            locale: locale,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const BenchmarkListScreen(projectId: 1),
+          ),
   );
 }
 

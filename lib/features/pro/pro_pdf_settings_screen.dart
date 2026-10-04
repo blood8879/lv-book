@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_snackbar.dart';
+import '../../l10n/l10n.dart';
 import '../export/export_history_repository.dart';
 import '../fieldbook/domain/fieldbook.dart';
 import 'pro_pdf_settings.dart';
@@ -65,13 +66,15 @@ class _ProPdfSettingsScreenState extends ConsumerState<ProPdfSettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final presetsAsync = ref.watch(proDocumentPresetsProvider);
+    final l10n = context.l10n;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Pro PDF 설정')),
+      appBar: AppBar(title: Text(l10n.proPdfSettingsTitle)),
       bottomNavigationBar: _buildFooter(),
       body: presetsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('설정을 불러오지 못했습니다: $error')),
+        error: (error, _) =>
+            Center(child: Text(l10n.proPdfLoadError('$error'))),
         data: (presets) {
           _applyPresets(presets);
 
@@ -88,15 +91,15 @@ class _ProPdfSettingsScreenState extends ConsumerState<ProPdfSettingsScreen> {
                   Expanded(
                     child: DropdownButtonFormField<String>(
                       initialValue: presets.active.id,
-                      decoration: const InputDecoration(
-                        labelText: '문서 프리셋',
-                        prefixIcon: Icon(Icons.tune_outlined),
+                      decoration: InputDecoration(
+                        labelText: l10n.proPdfPresetLabel,
+                        prefixIcon: const Icon(Icons.tune_outlined),
                       ),
                       items: presets.presets
                           .map(
                             (preset) => DropdownMenuItem(
                               value: preset.id,
-                              child: Text(preset.name),
+                              child: Text(preset.displayName(l10n)),
                             ),
                           )
                           .toList(),
@@ -110,13 +113,13 @@ class _ProPdfSettingsScreenState extends ConsumerState<ProPdfSettingsScreen> {
                   const SizedBox(width: 8),
                   IconButton.filledTonal(
                     onPressed: () => _createPreset(presets.active.settings),
-                    tooltip: '프리셋 추가',
+                    tooltip: l10n.proPdfPresetAdd,
                     icon: const Icon(Icons.add),
                   ),
                   const SizedBox(width: 8),
                   IconButton.filledTonal(
                     onPressed: () => _renamePreset(presets.active),
-                    tooltip: '프리셋 이름 변경',
+                    tooltip: l10n.proPdfPresetRename,
                     icon: const Icon(Icons.edit_outlined),
                   ),
                   const SizedBox(width: 8),
@@ -124,7 +127,7 @@ class _ProPdfSettingsScreenState extends ConsumerState<ProPdfSettingsScreen> {
                     onPressed: presets.presets.length > 1
                         ? () => _deletePreset(presets.active.id)
                         : null,
-                    tooltip: '프리셋 삭제',
+                    tooltip: l10n.proPdfPresetDeleteTooltip,
                     icon: const Icon(Icons.delete_outline),
                   ),
                 ],
@@ -132,33 +135,33 @@ class _ProPdfSettingsScreenState extends ConsumerState<ProPdfSettingsScreen> {
               const SizedBox(height: 12),
               TextField(
                 controller: _companyController,
-                decoration: const InputDecoration(
-                  labelText: '회사명',
-                  hintText: '예: 주식회사 레벨측량',
-                  prefixIcon: Icon(Icons.business),
+                decoration: InputDecoration(
+                  labelText: l10n.proPdfCompanyLabel,
+                  hintText: l10n.proPdfCompanyHint,
+                  prefixIcon: const Icon(Icons.business),
                 ),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: _authorController,
-                decoration: const InputDecoration(
-                  labelText: '작성자',
-                  hintText: '예: 홍길동',
-                  prefixIcon: Icon(Icons.person_outline),
+                decoration: InputDecoration(
+                  labelText: l10n.proPdfAuthorLabel,
+                  hintText: l10n.proPdfAuthorHint,
+                  prefixIcon: const Icon(Icons.person_outline),
                 ),
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<ProDocumentTemplate>(
                 initialValue: _documentTemplate,
-                decoration: const InputDecoration(
-                  labelText: '문서 템플릿',
-                  prefixIcon: Icon(Icons.description_outlined),
+                decoration: InputDecoration(
+                  labelText: l10n.proPdfTemplateLabel,
+                  prefixIcon: const Icon(Icons.description_outlined),
                 ),
                 items: ProDocumentTemplate.values
                     .map(
                       (template) => DropdownMenuItem(
                         value: template,
-                        child: Text(template.title),
+                        child: Text(template.label(l10n)),
                       ),
                     )
                     .toList(),
@@ -171,24 +174,18 @@ class _ProPdfSettingsScreenState extends ConsumerState<ProPdfSettingsScreen> {
               const SizedBox(height: 12),
               DropdownButtonFormField<ProFileNamePattern>(
                 initialValue: _fileNamePattern,
-                decoration: const InputDecoration(
-                  labelText: '파일명 규칙',
-                  prefixIcon: Icon(Icons.drive_file_rename_outline),
+                decoration: InputDecoration(
+                  labelText: l10n.proPdfFileNameRuleLabel,
+                  prefixIcon: const Icon(Icons.drive_file_rename_outline),
                 ),
-                items: const [
-                  DropdownMenuItem(
-                    value: ProFileNamePattern.titleOnly,
-                    child: Text('야장명'),
-                  ),
-                  DropdownMenuItem(
-                    value: ProFileNamePattern.siteDateTitle,
-                    child: Text('현장_날짜_야장명'),
-                  ),
-                  DropdownMenuItem(
-                    value: ProFileNamePattern.siteSectionDateTitle,
-                    child: Text('현장_작업구간_날짜_야장명'),
-                  ),
-                ],
+                items: ProFileNamePattern.values
+                    .map(
+                      (pattern) => DropdownMenuItem(
+                        value: pattern,
+                        child: Text(pattern.label(l10n)),
+                      ),
+                    )
+                    .toList(),
                 onChanged: (value) {
                   if (value != null) {
                     setState(() => _fileNamePattern = value);
@@ -198,27 +195,27 @@ class _ProPdfSettingsScreenState extends ConsumerState<ProPdfSettingsScreen> {
               const SizedBox(height: 12),
               TextField(
                 controller: _watermarkController,
-                decoration: const InputDecoration(
-                  labelText: '워터마크',
-                  hintText: '예: 검측용',
-                  prefixIcon: Icon(Icons.water_drop_outlined),
+                decoration: InputDecoration(
+                  labelText: l10n.proPdfWatermarkLabel,
+                  hintText: l10n.proPdfWatermarkHint,
+                  prefixIcon: const Icon(Icons.water_drop_outlined),
                 ),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: _footerNoteController,
-                decoration: const InputDecoration(
-                  labelText: '하단 메모',
-                  hintText: '예: 현장대리인 확인',
-                  prefixIcon: Icon(Icons.notes_outlined),
+                decoration: InputDecoration(
+                  labelText: l10n.proPdfFooterNoteLabel,
+                  hintText: l10n.proPdfFooterNoteHint,
+                  prefixIcon: const Icon(Icons.notes_outlined),
                 ),
               ),
               const SizedBox(height: 16),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
                 secondary: const Icon(Icons.fact_check_outlined),
-                title: const Text('검산 판정 표시'),
-                subtitle: const Text('PDF/CSV에 적합 또는 확인 필요 판정을 포함합니다.'),
+                title: Text(l10n.proPdfShowJudgementTitle),
+                subtitle: Text(l10n.proPdfShowJudgementSubtitle),
                 value: _includeCheckJudgement,
                 onChanged: (value) =>
                     setState(() => _includeCheckJudgement = value),
@@ -226,8 +223,8 @@ class _ProPdfSettingsScreenState extends ConsumerState<ProPdfSettingsScreen> {
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
                 secondary: const Icon(Icons.draw_outlined),
-                title: const Text('확인 서명란 표시'),
-                subtitle: const Text('제출용 PDF 하단에 작성/검토/승인란을 추가합니다.'),
+                title: Text(l10n.proPdfSignatureLinesTitle),
+                subtitle: Text(l10n.proPdfSignatureLinesSubtitle),
                 value: _includeSignatureLines,
                 onChanged: (value) =>
                     setState(() => _includeSignatureLines = value),
@@ -244,6 +241,7 @@ class _ProPdfSettingsScreenState extends ConsumerState<ProPdfSettingsScreen> {
 
   Widget _buildFooter() {
     final colors = context.appColors;
+    final l10n = context.l10n;
     return Container(
       decoration: BoxDecoration(
         border: Border(top: BorderSide(color: colors.line)),
@@ -262,7 +260,7 @@ class _ProPdfSettingsScreenState extends ConsumerState<ProPdfSettingsScreen> {
                     minimumSize: const Size(0, 48),
                   ),
                   icon: const Icon(Icons.history),
-                  label: const Text('내보내기 이력'),
+                  label: Text(l10n.proPdfExportHistory),
                 ),
               ),
               const SizedBox(width: 12),
@@ -272,7 +270,7 @@ class _ProPdfSettingsScreenState extends ConsumerState<ProPdfSettingsScreen> {
                   onPressed: _save,
                   style: FilledButton.styleFrom(minimumSize: const Size(0, 48)),
                   icon: const Icon(Icons.save),
-                  label: const Text('저장'),
+                  label: Text(l10n.coreSave),
                 ),
               ),
             ],
@@ -284,6 +282,7 @@ class _ProPdfSettingsScreenState extends ConsumerState<ProPdfSettingsScreen> {
 
   Widget _buildSignatureCard() {
     final colors = context.appColors;
+    final l10n = context.l10n;
     final hasSignature = _signaturePng.trim().isNotEmpty;
     return Card(
       margin: const EdgeInsets.only(top: 8),
@@ -296,17 +295,17 @@ class _ProPdfSettingsScreenState extends ConsumerState<ProPdfSettingsScreen> {
               children: [
                 const Icon(Icons.gesture, size: 18),
                 const SizedBox(width: 6),
-                const Expanded(
+                Expanded(
                   child: Text(
-                    '작성자 서명',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    l10n.proPdfSignatureTitle,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 4),
             Text(
-              "PDF '작성'란에 들어갈 손글씨 서명을 등록합니다.",
+              l10n.proPdfSignatureDescription,
               style: TextStyle(fontSize: 12, color: colors.subtext),
             ),
             const SizedBox(height: 8),
@@ -324,7 +323,7 @@ class _ProPdfSettingsScreenState extends ConsumerState<ProPdfSettingsScreen> {
                   base64Decode(_signaturePng),
                   fit: BoxFit.contain,
                   errorBuilder: (_, _, _) =>
-                      const Center(child: Text('서명을 표시할 수 없습니다')),
+                      Center(child: Text(l10n.proPdfSignatureDisplayError)),
                 ),
               )
             else
@@ -337,7 +336,7 @@ class _ProPdfSettingsScreenState extends ConsumerState<ProPdfSettingsScreen> {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  '등록된 서명이 없습니다',
+                  l10n.proPdfSignatureEmpty,
                   style: TextStyle(color: colors.subtext),
                 ),
               ),
@@ -348,7 +347,11 @@ class _ProPdfSettingsScreenState extends ConsumerState<ProPdfSettingsScreen> {
                   child: OutlinedButton.icon(
                     onPressed: _captureSignature,
                     icon: const Icon(Icons.edit, size: 18),
-                    label: Text(hasSignature ? '다시 서명' : '서명 등록'),
+                    label: Text(
+                      hasSignature
+                          ? l10n.proPdfSignatureRedo
+                          : l10n.proPdfSignatureRegister,
+                    ),
                   ),
                 ),
                 if (hasSignature) ...[
@@ -360,7 +363,7 @@ class _ProPdfSettingsScreenState extends ConsumerState<ProPdfSettingsScreen> {
                       side: BorderSide(color: colors.err),
                     ),
                     icon: const Icon(Icons.delete_outline, size: 18),
-                    label: const Text('삭제'),
+                    label: Text(l10n.coreDelete),
                   ),
                 ],
               ],
@@ -385,7 +388,7 @@ class _ProPdfSettingsScreenState extends ConsumerState<ProPdfSettingsScreen> {
     ref.invalidate(proPdfSettingsProvider);
 
     if (!mounted) return;
-    AppSnackbar.success(context, 'Pro PDF 설정을 저장했습니다');
+    AppSnackbar.success(context, context.l10n.proPdfSavedMessage);
   }
 
   ProPdfSettings _currentSettings() {
@@ -415,11 +418,15 @@ class _ProPdfSettingsScreenState extends ConsumerState<ProPdfSettingsScreen> {
     ref.invalidate(proDocumentPresetsProvider);
     ref.invalidate(proPdfSettingsProvider);
     if (!mounted) return;
-    AppSnackbar.success(context, '프리셋을 삭제했습니다');
+    AppSnackbar.success(context, context.l10n.proPdfPresetDeletedMessage);
   }
 
   Future<void> _createPreset(ProPdfSettings settings) async {
-    final name = await _askPresetName(title: '프리셋 추가', initialValue: '새 프리셋');
+    final l10n = context.l10n;
+    final name = await _askPresetName(
+      title: l10n.proPdfPresetAdd,
+      initialValue: l10n.proPdfPresetNewName,
+    );
     if (name == null) return;
     await ref.read(proSettingsRepositoryProvider).addPreset(name, settings);
     _loaded = false;
@@ -428,9 +435,10 @@ class _ProPdfSettingsScreenState extends ConsumerState<ProPdfSettingsScreen> {
   }
 
   Future<void> _renamePreset(ProDocumentPreset preset) async {
+    final l10n = context.l10n;
     final name = await _askPresetName(
-      title: '프리셋 이름 변경',
-      initialValue: preset.name,
+      title: l10n.proPdfPresetRename,
+      initialValue: preset.displayName(l10n),
     );
     if (name == null) return;
     await ref.read(proSettingsRepositoryProvider).renamePreset(preset.id, name);
@@ -451,17 +459,18 @@ class _ProPdfSettingsScreenState extends ConsumerState<ProPdfSettingsScreen> {
   }
 
   Future<void> _showExportHistory() async {
+    final l10n = context.l10n;
     final repository = ExportHistoryRepository();
     final records = await repository.all();
     if (!mounted) return;
     await showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('내보내기 이력'),
+        title: Text(l10n.proPdfExportHistory),
         content: SizedBox(
           width: double.maxFinite,
           child: records.isEmpty
-              ? const Text('내보내기 이력이 없습니다.')
+              ? Text(l10n.proPdfExportHistoryEmpty)
               : ListView.separated(
                   shrinkWrap: true,
                   itemCount: records.length,
@@ -487,11 +496,11 @@ class _ProPdfSettingsScreenState extends ConsumerState<ProPdfSettingsScreen> {
                 await repository.clear();
                 if (context.mounted) Navigator.pop(context);
               },
-              child: const Text('전체 삭제'),
+              child: Text(l10n.proPdfExportHistoryClearAll),
             ),
           FilledButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('닫기'),
+            child: Text(l10n.coreClose),
           ),
         ],
       ),
@@ -506,11 +515,12 @@ class _FilenamePreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final preview = settings.formatFileName(
-      projectName: '강남 현장',
+      projectName: l10n.proPdfPreviewSampleSite,
       fieldBook: FieldBook(
         projectId: 1,
-        title: 'A구간 야장',
+        title: l10n.proPdfPreviewSampleTitle,
         date: DateTime(2026, 6, 8),
         workSection: 'STA.0+000',
       ),
@@ -524,7 +534,10 @@ class _FilenamePreview extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('파일명 미리보기', style: Theme.of(context).textTheme.labelMedium),
+          Text(
+            l10n.proPdfFileNamePreviewLabel,
+            style: Theme.of(context).textTheme.labelMedium,
+          ),
           const SizedBox(height: 4),
           Text(preview),
         ],
@@ -561,16 +574,18 @@ class _PresetNameDialogState extends State<_PresetNameDialog> {
       content: TextField(
         controller: _controller,
         autofocus: true,
-        decoration: const InputDecoration(labelText: '프리셋 이름'),
+        decoration: InputDecoration(
+          labelText: context.l10n.proPdfPresetNameLabel,
+        ),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('취소'),
+          child: Text(context.l10n.coreCancel),
         ),
         FilledButton(
           onPressed: () => Navigator.pop(context, _controller.text.trim()),
-          child: const Text('저장'),
+          child: Text(context.l10n.coreSave),
         ),
       ],
     );

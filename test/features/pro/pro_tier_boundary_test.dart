@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:lv_book/features/export/bulk_export_service.dart';
 import 'package:lv_book/features/export/csv_exporter.dart';
 import 'package:lv_book/features/fieldbook/domain/fieldbook.dart';
+import 'package:lv_book/l10n/l10n.dart';
 
 void main() {
   test('free user can still use single PDF and CSV export', () {
@@ -10,6 +11,7 @@ void main() {
       measurements: const [],
       bmName: 'BM.1',
       startElevation: 100,
+      l10n: l10nKo,
     );
 
     expect(csv, contains('무료 야장'));

@@ -8,6 +8,7 @@ import 'package:lv_book/features/export/submission_summary_report.dart';
 import 'package:lv_book/features/fieldbook/domain/fieldbook.dart';
 import 'package:lv_book/features/fieldbook/domain/measurement.dart';
 import 'package:lv_book/features/pro/pro_pdf_settings.dart';
+import 'package:lv_book/l10n/l10n.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -63,6 +64,7 @@ void main() {
       bmName: 'BM.1',
       startElevation: 100,
       proSettings: const ProPdfSettings(),
+      l10n: l10nKo,
     );
 
     expect(csv, contains('검토 상태,검토완료'));
@@ -74,7 +76,7 @@ void main() {
     'review status memo and date are included in Pro PDF metadata',
     () async {
       final fieldBook = _reviewedFieldBook();
-      final labels = PdfExporter.metadataLabelsForTest(fieldBook);
+      final labels = PdfExporter.metadataLabelsForTest(fieldBook, l10n: l10nKo);
 
       expect(labels, contains('검토 상태: 검토완료'));
       expect(labels, contains('검토 메모: 감리 확인 완료'));
@@ -86,6 +88,7 @@ void main() {
         bmName: 'BM.1',
         startElevation: 100,
         proSettings: const ProPdfSettings(),
+        l10n: l10nKo,
       );
 
       expect(bytes.length, greaterThan(1000));
@@ -102,12 +105,13 @@ void main() {
         startElevation: 100,
         measurements: _measurements(),
       ),
-    ]);
+    ], l10n: l10nKo);
     final manifest = ProjectSubmissionPackage.buildManifest(
       projectName: '현장 A',
       fieldBooks: [fieldBook],
       measurementsByFieldBookId: {1: _measurements()},
       fileNames: const ['야장.pdf'],
+      l10n: l10nKo,
     );
 
     expect(summary, contains('검토완료'));
@@ -131,7 +135,7 @@ void main() {
         startElevation: 100,
         measurements: _measurements(),
       ),
-    ]);
+    ], l10n: l10nKo);
 
     expect(summary, contains('확인필요'));
     expect(summary, contains('재확인 필요'));

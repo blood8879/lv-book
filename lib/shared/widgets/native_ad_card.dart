@@ -5,6 +5,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../../core/theme/app_theme.dart';
 import '../../features/ads/ad_manager.dart';
 import '../../features/ads/ad_providers.dart';
+import '../../l10n/l10n.dart';
 
 /// Small native ad rendered as a card matching the app's Card tone.
 ///
@@ -128,7 +129,7 @@ class _NativeAdCardState extends ConsumerState<NativeAdCard>
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
             child: Text(
-              'AD 광고',
+              context.l10n.adsNativeAdLabel,
               style: TextStyle(
                 fontFamily: 'Pretendard',
                 fontSize: 11.5,

@@ -11,6 +11,7 @@ import 'package:record/record.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_snackbar.dart';
+import '../../../l10n/l10n.dart';
 import '../data/quick_memo_audio_paths.dart';
 import '../data/quick_memo_providers.dart';
 
@@ -295,7 +296,9 @@ class _QuickMemoComposerState extends ConsumerState<QuickMemoComposer> {
 
     final hasPermission = await _recorder.hasPermission();
     if (!hasPermission) {
-      if (mounted) AppSnackbar.error(context, '마이크 권한이 필요합니다.');
+      if (mounted) {
+        AppSnackbar.error(context, context.l10n.quickMemoMicPermissionRequired);
+      }
       return;
     }
 
@@ -340,6 +343,7 @@ class _QuickMemoComposerState extends ConsumerState<QuickMemoComposer> {
   }
 
   Future<void> _save() async {
+    final l10n = context.l10n;
     if (_isRecording) {
       _recordedPath = await _recorder.stop();
       _timer?.cancel();
@@ -355,11 +359,11 @@ class _QuickMemoComposerState extends ConsumerState<QuickMemoComposer> {
           .addMemo(text: text.isEmpty ? null : text, audioPath: _recordedPath);
       if (!mounted) return;
       Navigator.pop(context);
-      AppSnackbar.success(context, '메모를 저장했습니다.');
+      AppSnackbar.success(context, l10n.quickMemoSavedMessage);
     } catch (error) {
       if (!mounted) return;
       setState(() => _saving = false);
-      AppSnackbar.error(context, '저장 실패: $error');
+      AppSnackbar.error(context, l10n.quickMemoSaveError('$error'));
     }
   }
 
@@ -374,6 +378,7 @@ class _QuickMemoComposerState extends ConsumerState<QuickMemoComposer> {
     final colors = AppColors.of(context);
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
     final hasRecording = _recordedPath != null;
+    final l10n = context.l10n;
 
     return Padding(
       padding: EdgeInsets.only(
@@ -390,7 +395,10 @@ class _QuickMemoComposerState extends ConsumerState<QuickMemoComposer> {
             children: [
               Icon(Icons.bolt, color: colors.orange, size: 20),
               const SizedBox(width: 6),
-              Text('빠른 현장 메모', style: Theme.of(context).textTheme.titleMedium),
+              Text(
+                l10n.quickMemoComposerTitle,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
             ],
           ),
           const SizedBox(height: 12),
@@ -399,17 +407,17 @@ class _QuickMemoComposerState extends ConsumerState<QuickMemoComposer> {
             minLines: 2,
             maxLines: 4,
             textInputAction: TextInputAction.newline,
-            decoration: const InputDecoration(hintText: '메모를 입력하세요 (선택)'),
+            decoration: InputDecoration(hintText: l10n.quickMemoTextHint),
           ),
           const SizedBox(height: 12),
           _RecordingRow(
             isRecording: _isRecording,
             hasRecording: hasRecording,
             label: _isRecording
-                ? '녹음 중 · ${_formatDuration(_elapsed)}'
+                ? l10n.quickMemoRecording(_formatDuration(_elapsed))
                 : hasRecording
-                ? '음성 녹음됨 · 다시 녹음하려면 마이크를 누르세요'
-                : '마이크를 눌러 음성 메모를 녹음하세요',
+                ? l10n.quickMemoRecorded
+                : l10n.quickMemoRecordHint,
             colors: colors,
             onToggle: _toggleRecording,
             onDiscard: hasRecording && !_isRecording ? _discardRecording : null,
@@ -426,7 +434,7 @@ class _QuickMemoComposerState extends ConsumerState<QuickMemoComposer> {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Icon(Icons.check, size: 18),
-              label: const Text('저장'),
+              label: Text(l10n.coreSave),
             ),
           ),
         ],
@@ -492,7 +500,7 @@ class _RecordingRow extends StatelessWidget {
           ),
           if (onDiscard != null)
             IconButton(
-              tooltip: '녹음 삭제',
+              tooltip: context.l10n.quickMemoDeleteRecordingTooltip,
               onPressed: onDiscard,
               icon: Icon(Icons.delete_outline, color: colors.subtext),
             ),

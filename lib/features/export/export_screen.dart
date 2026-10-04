@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_snackbar.dart';
+import '../../l10n/l10n.dart';
 import '../fieldbook/domain/fieldbook.dart';
 import '../fieldbook/domain/measurement.dart';
 import 'pdf_template.dart';
@@ -120,18 +121,19 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('내보내기'),
+        title: Text(l10n.exportScreenTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.picture_as_pdf),
-            tooltip: 'PDF 공유',
+            tooltip: l10n.exportSharePdfTooltip,
             onPressed: () => _sharePdf(context),
           ),
           IconButton(
             icon: const Icon(Icons.table_chart),
-            tooltip: 'CSV 공유',
+            tooltip: l10n.exportShareCsvTooltip,
             onPressed: () => _shareCsv(context),
           ),
         ],
@@ -143,6 +145,7 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
           bmName: widget.bmName,
           startElevation: widget.startElevation,
           proSettings: _proPdfSettings,
+          l10n: l10n,
         ),
         scrollViewDecoration: BoxDecoration(color: context.appColors.soft),
         canChangeOrientation: false,
@@ -155,6 +158,7 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
   }
 
   Future<void> _sharePdf(BuildContext context) async {
+    final l10n = context.l10n;
     try {
       final pdfBytes = await PdfExporter.generateFieldBookPdf(
         fieldBook: widget.fieldBook,
@@ -162,6 +166,7 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
         bmName: widget.bmName,
         startElevation: widget.startElevation,
         proSettings: _proPdfSettings,
+        l10n: l10n,
       );
       final dir = await getTemporaryDirectory();
       final fileName = ExportFileNamer().next(
@@ -184,12 +189,13 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
       await _showInterstitialAd();
     } catch (e) {
       if (context.mounted) {
-        AppSnackbar.error(context, 'PDF 생성 실패: $e');
+        AppSnackbar.error(context, l10n.exportPdfError('$e'));
       }
     }
   }
 
   Future<void> _shareCsv(BuildContext context) async {
+    final l10n = context.l10n;
     try {
       final csvString = CsvExporter.generateFieldBookCsv(
         fieldBook: widget.fieldBook,
@@ -197,6 +203,7 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
         bmName: widget.bmName,
         startElevation: widget.startElevation,
         proSettings: _proPdfSettings,
+        l10n: l10n,
       );
       final dir = await getTemporaryDirectory();
       final fileName = ExportFileNamer().next(
@@ -219,7 +226,7 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
       await _showInterstitialAd();
     } catch (e) {
       if (context.mounted) {
-        AppSnackbar.error(context, 'CSV 생성 실패: $e');
+        AppSnackbar.error(context, l10n.exportCsvError('$e'));
       }
     }
   }

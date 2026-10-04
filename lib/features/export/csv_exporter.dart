@@ -1,8 +1,10 @@
 import 'package:csv/csv.dart';
+import '../../l10n/l10n.dart';
 import '../fieldbook/domain/fieldbook.dart';
 import '../fieldbook/domain/measurement.dart';
 import '../pro/pro_pdf_settings.dart';
 import 'export_judgement.dart';
+import 'export_labels.dart';
 import 'package:intl/intl.dart';
 
 class CsvExporter {
@@ -13,50 +15,59 @@ class CsvExporter {
   static String withBom(String csv) =>
       csv.startsWith(utf8Bom) ? csv : '$utf8Bom$csv';
 
+  /// Labels follow the app language ([l10n]); `CsvImporter` accepts both the
+  /// Korean and English labels, and the 'TP' remark marker is not localized.
   static String generateFieldBookCsv({
     required FieldBook fieldBook,
     required List<Measurement> measurements,
     required String bmName,
     required double startElevation,
     ProPdfSettings? proSettings,
+    required AppLocalizations l10n,
   }) {
     final rows = <List<dynamic>>[];
 
     // Header info
-    rows.add(['직접수준측량 야장']);
+    rows.add([l10n.exportDocTitle]);
     if (proSettings?.hasBranding == true) {
       if (proSettings!.companyName.trim().isNotEmpty) {
-        rows.add(['회사명', proSettings.companyName.trim()]);
+        rows.add([l10n.exportFieldCompany, proSettings.companyName.trim()]);
       }
       if (proSettings.authorName.trim().isNotEmpty) {
-        rows.add(['작성자', proSettings.authorName.trim()]);
+        rows.add([l10n.exportFieldAuthor, proSettings.authorName.trim()]);
       }
     }
-    rows.add(['야장명', fieldBook.title]);
-    rows.add(['날짜', DateFormat('yyyy-MM-dd').format(fieldBook.date)]);
-    _addMetadata(rows, '측량자', fieldBook.surveyor);
-    _addMetadata(rows, '검측자', fieldBook.checker);
-    _addMetadata(rows, '장비', fieldBook.instrument);
-    _addMetadata(rows, '날씨', fieldBook.weather);
-    _addMetadata(rows, '작업구간', fieldBook.workSection);
-    _addMetadata(rows, '공사번호', fieldBook.jobNumber);
+    rows.add([l10n.exportFieldTitle, fieldBook.title]);
+    rows.add([
+      l10n.exportFieldDate,
+      DateFormat('yyyy-MM-dd').format(fieldBook.date),
+    ]);
+    _addMetadata(rows, l10n.exportFieldSurveyor, fieldBook.surveyor);
+    _addMetadata(rows, l10n.exportFieldChecker, fieldBook.checker);
+    _addMetadata(rows, l10n.exportFieldInstrument, fieldBook.instrument);
+    _addMetadata(rows, l10n.exportFieldWeather, fieldBook.weather);
+    _addMetadata(rows, l10n.exportFieldSection, fieldBook.workSection);
+    _addMetadata(rows, l10n.exportFieldJobNumber, fieldBook.jobNumber);
     if (proSettings != null) {
-      rows.add(['검토 상태', fieldBook.reviewStatus.label]);
-      _addMetadata(rows, '검토 메모', fieldBook.reviewMemo);
+      rows.add([
+        l10n.exportFieldReviewStatus,
+        exportReviewStatusLabel(l10n, fieldBook.reviewStatus),
+      ]);
+      _addMetadata(rows, l10n.exportFieldReviewMemo, fieldBook.reviewMemo);
       _addMetadata(
         rows,
-        '검토일',
+        l10n.exportFieldReviewDate,
         fieldBook.reviewedAt == null
             ? null
             : DateFormat('yyyy-MM-dd').format(fieldBook.reviewedAt!),
       );
     }
-    rows.add(['시작 BM', bmName]);
-    rows.add(['BM 표고', startElevation.toStringAsFixed(3)]);
+    rows.add([l10n.exportFieldStartBm, bmName]);
+    rows.add([l10n.exportFieldBmElevation, startElevation.toStringAsFixed(3)]);
     rows.add([]);
 
     // Table header
-    rows.add(['No.', '측점명', '후시(BS)', '전시(FS)', '기계고(IH)', '지반고(GH)', '비고']);
+    rows.add(exportTableHeaders(l10n));
 
     // Data rows
     for (int i = 0; i < measurements.length; i++) {
@@ -85,14 +96,17 @@ class CsvExporter {
       'ΣFS',
       sums.sumFs.toStringAsFixed(3),
     ]);
-    rows.add(['ΣBS - ΣFS', sums.difference.toStringAsFixed(3)]);
+    rows.add([l10n.exportCheckDifference, sums.difference.toStringAsFixed(3)]);
     if (proSettings?.includeCheckJudgement == true) {
       final error = LevelClosure.error(
         measurements,
         startElevation: startElevation,
       );
-      rows.add(['오차', error.toStringAsFixed(4)]);
-      rows.add(['검산 판정', ExportJudgement.label(error)]);
+      rows.add([l10n.exportCheckMisclosure, error.toStringAsFixed(4)]);
+      rows.add([
+        l10n.exportCheckResult,
+        ExportJudgement.label(error, l10n: l10n),
+      ]);
     }
 
     return const ListToCsvConverter().convert(rows);

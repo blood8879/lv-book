@@ -14,6 +14,7 @@ import '../../../shared/widgets/banner_ad_widget.dart';
 import '../../ads/ad_manager.dart';
 import '../../ads/ad_providers.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../l10n/l10n.dart';
 
 class BenchmarkListScreen extends ConsumerWidget {
   final int projectId;
@@ -35,14 +36,14 @@ class BenchmarkListScreen extends ConsumerWidget {
                 padding: EdgeInsets.only(top: 8),
                 child: ListSkeleton(),
               ),
-              error: (e, _) => Center(child: Text('오류: $e')),
+              error: (e, _) =>
+                  Center(child: Text(context.l10n.coreErrorWithDetail('$e'))),
               data: (benchmarks) {
                 if (benchmarks.isEmpty) {
                   return EmptyState(
                     icon: Icons.flag_outlined,
-                    title: 'BM(기준점)을 등록하세요',
-                    message:
-                        '+ 버튼으로 표고 기준이 되는 BM/TBM을 추가하면\n야장 작성 시 시작 표고로 바로 불러올 수 있습니다.',
+                    title: context.l10n.benchmarkEmptyTitle,
+                    message: context.l10n.benchmarkEmptyMessage,
                     accent: colors.blue,
                     accentSoft: colors.blueSoft,
                   );
@@ -84,6 +85,7 @@ class BenchmarkListScreen extends ConsumerWidget {
     required bool isPro,
   }) {
     final colors = context.appColors;
+    final l10n = context.l10n;
     final (
       Color badgeFg,
       Color badgeBg,
@@ -149,30 +151,36 @@ class BenchmarkListScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(width: 8),
-            SemanticPill(label: bm.status.label, variant: variant),
+            SemanticPill(
+              label: bm.status.localizedLabel(l10n),
+              variant: variant,
+            ),
           ],
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '표고 ${bm.elevation.toStringAsFixed(3)} m',
+              l10n.benchmarkElevationLine(bm.elevation.toStringAsFixed(3)),
               style: TextStyle(
                 color: isStopped ? colors.err : null,
                 fontFeatures: AppTypography.tabularFeatures,
               ),
             ),
-            Text('종류: ${bm.kind.label}', style: TextStyle(color: lineColor)),
+            Text(
+              l10n.benchmarkKindLine(bm.kind.label),
+              style: TextStyle(color: lineColor),
+            ),
             if (bm.locationHint != null && bm.locationHint!.isNotEmpty)
               Text(
-                '위치: ${bm.locationHint!}',
+                l10n.benchmarkLocationLine(bm.locationHint!),
                 style: TextStyle(color: lineColor),
               ),
             if (bm.description != null && bm.description!.isNotEmpty)
               Text(bm.description!, style: TextStyle(color: lineColor)),
             if (bm.protectionNote != null && bm.protectionNote!.isNotEmpty)
               Text(
-                '보호: ${bm.protectionNote!}',
+                l10n.benchmarkProtectionLine(bm.protectionNote!),
                 style: TextStyle(color: lineColor),
               ),
           ],
@@ -186,8 +194,8 @@ class BenchmarkListScreen extends ConsumerWidget {
             }
           },
           itemBuilder: (context) => [
-            const PopupMenuItem(value: 'edit', child: Text('수정')),
-            const PopupMenuItem(value: 'delete', child: Text('삭제')),
+            PopupMenuItem(value: 'edit', child: Text(l10n.coreEdit)),
+            PopupMenuItem(value: 'delete', child: Text(l10n.coreDelete)),
           ],
         ),
       ),
@@ -195,6 +203,7 @@ class BenchmarkListScreen extends ConsumerWidget {
   }
 
   void _showAddDialog(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final nameController = TextEditingController();
     final elevationController = TextEditingController();
     final descController = TextEditingController();
@@ -209,7 +218,7 @@ class BenchmarkListScreen extends ConsumerWidget {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: const Text('새 BM 추가'),
+          title: Text(l10n.benchmarkAddDialogTitle),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -217,8 +226,8 @@ class BenchmarkListScreen extends ConsumerWidget {
                 TextField(
                   controller: nameController,
                   decoration: InputDecoration(
-                    labelText: 'BM 이름 *',
-                    hintText: '예: BM.1',
+                    labelText: l10n.benchmarkNameLabel,
+                    hintText: l10n.benchmarkNameHint,
                     errorText: nameError,
                   ),
                   autofocus: true,
@@ -232,8 +241,8 @@ class BenchmarkListScreen extends ConsumerWidget {
                 TextField(
                   controller: elevationController,
                   decoration: InputDecoration(
-                    labelText: '표고 (m) *',
-                    hintText: '예: 100.000',
+                    labelText: l10n.benchmarkElevationLabel,
+                    hintText: l10n.benchmarkElevationHint,
                     errorText: elevationError,
                   ),
                   keyboardType: const TextInputType.numberWithOptions(
@@ -249,27 +258,35 @@ class BenchmarkListScreen extends ConsumerWidget {
                 const SizedBox(height: 12),
                 TextField(
                   controller: descController,
-                  decoration: const InputDecoration(labelText: '설명 (선택)'),
+                  decoration: InputDecoration(
+                    labelText: l10n.benchmarkDescriptionLabel,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: locationController,
-                  decoration: const InputDecoration(labelText: '현장 위치 힌트'),
+                  decoration: InputDecoration(
+                    labelText: l10n.benchmarkLocationHintLabel,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: protectionController,
-                  decoration: const InputDecoration(labelText: '보호/확인 메모'),
+                  decoration: InputDecoration(
+                    labelText: l10n.benchmarkProtectionLabel,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<BenchMarkStatus>(
                   initialValue: status,
-                  decoration: const InputDecoration(labelText: '상태'),
+                  decoration: InputDecoration(
+                    labelText: l10n.benchmarkStatusLabel,
+                  ),
                   items: BenchMarkStatus.values
                       .map(
                         (value) => DropdownMenuItem(
                           value: value,
-                          child: Text(value.label),
+                          child: Text(value.localizedLabel(l10n)),
                         ),
                       )
                       .toList(),
@@ -280,7 +297,9 @@ class BenchmarkListScreen extends ConsumerWidget {
                 const SizedBox(height: 12),
                 DropdownButtonFormField<BenchMarkKind>(
                   initialValue: kind,
-                  decoration: const InputDecoration(labelText: '종류'),
+                  decoration: InputDecoration(
+                    labelText: l10n.benchmarkKindLabel,
+                  ),
                   items: BenchMarkKind.values
                       .map(
                         (value) => DropdownMenuItem(
@@ -299,7 +318,7 @@ class BenchmarkListScreen extends ConsumerWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('취소'),
+              child: Text(l10n.coreCancel),
             ),
             FilledButton(
               onPressed: () {
@@ -308,9 +327,11 @@ class BenchmarkListScreen extends ConsumerWidget {
                   elevationController.text.trim(),
                 );
                 setState(() {
-                  nameError = name.isEmpty ? 'BM 이름을 입력하세요' : null;
+                  nameError = name.isEmpty
+                      ? l10n.benchmarkNameRequiredError
+                      : null;
                   elevationError = elevation == null
-                      ? '표고를 숫자(m)로 입력하세요'
+                      ? l10n.benchmarkElevationInvalidError
                       : null;
                 });
                 if (name.isNotEmpty && elevation != null) {
@@ -331,7 +352,7 @@ class BenchmarkListScreen extends ConsumerWidget {
                   Navigator.pop(context);
                 }
               },
-              child: const Text('추가'),
+              child: Text(l10n.coreAdd),
             ),
           ],
         ),
@@ -340,6 +361,7 @@ class BenchmarkListScreen extends ConsumerWidget {
   }
 
   void _showEditDialog(BuildContext context, WidgetRef ref, BenchMark bm) {
+    final l10n = context.l10n;
     final nameController = TextEditingController(text: bm.name);
     final elevationController = TextEditingController(
       text: bm.elevation.toString(),
@@ -360,7 +382,7 @@ class BenchmarkListScreen extends ConsumerWidget {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: const Text('BM 수정'),
+          title: Text(l10n.benchmarkEditDialogTitle),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -368,7 +390,7 @@ class BenchmarkListScreen extends ConsumerWidget {
                 TextField(
                   controller: nameController,
                   decoration: InputDecoration(
-                    labelText: 'BM 이름 *',
+                    labelText: l10n.benchmarkNameLabel,
                     errorText: nameError,
                   ),
                   onChanged: (value) {
@@ -381,7 +403,7 @@ class BenchmarkListScreen extends ConsumerWidget {
                 TextField(
                   controller: elevationController,
                   decoration: InputDecoration(
-                    labelText: '표고 (m) *',
+                    labelText: l10n.benchmarkElevationLabel,
                     errorText: elevationError,
                   ),
                   keyboardType: const TextInputType.numberWithOptions(
@@ -397,27 +419,35 @@ class BenchmarkListScreen extends ConsumerWidget {
                 const SizedBox(height: 12),
                 TextField(
                   controller: descController,
-                  decoration: const InputDecoration(labelText: '설명 (선택)'),
+                  decoration: InputDecoration(
+                    labelText: l10n.benchmarkDescriptionLabel,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: locationController,
-                  decoration: const InputDecoration(labelText: '현장 위치 힌트'),
+                  decoration: InputDecoration(
+                    labelText: l10n.benchmarkLocationHintLabel,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: protectionController,
-                  decoration: const InputDecoration(labelText: '보호/확인 메모'),
+                  decoration: InputDecoration(
+                    labelText: l10n.benchmarkProtectionLabel,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<BenchMarkStatus>(
                   initialValue: status,
-                  decoration: const InputDecoration(labelText: '상태'),
+                  decoration: InputDecoration(
+                    labelText: l10n.benchmarkStatusLabel,
+                  ),
                   items: BenchMarkStatus.values
                       .map(
                         (value) => DropdownMenuItem(
                           value: value,
-                          child: Text(value.label),
+                          child: Text(value.localizedLabel(l10n)),
                         ),
                       )
                       .toList(),
@@ -428,7 +458,9 @@ class BenchmarkListScreen extends ConsumerWidget {
                 const SizedBox(height: 12),
                 DropdownButtonFormField<BenchMarkKind>(
                   initialValue: kind,
-                  decoration: const InputDecoration(labelText: '종류'),
+                  decoration: InputDecoration(
+                    labelText: l10n.benchmarkKindLabel,
+                  ),
                   items: BenchMarkKind.values
                       .map(
                         (value) => DropdownMenuItem(
@@ -447,7 +479,7 @@ class BenchmarkListScreen extends ConsumerWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('취소'),
+              child: Text(l10n.coreCancel),
             ),
             FilledButton(
               onPressed: () {
@@ -456,9 +488,11 @@ class BenchmarkListScreen extends ConsumerWidget {
                   elevationController.text.trim(),
                 );
                 setState(() {
-                  nameError = name.isEmpty ? 'BM 이름을 입력하세요' : null;
+                  nameError = name.isEmpty
+                      ? l10n.benchmarkNameRequiredError
+                      : null;
                   elevationError = elevation == null
-                      ? '표고를 숫자(m)로 입력하세요'
+                      ? l10n.benchmarkElevationInvalidError
                       : null;
                 });
                 if (name.isNotEmpty && elevation != null) {
@@ -483,7 +517,7 @@ class BenchmarkListScreen extends ConsumerWidget {
                   Navigator.pop(context);
                 }
               },
-              child: const Text('저장'),
+              child: Text(l10n.coreSave),
             ),
           ],
         ),
@@ -507,6 +541,7 @@ class BenchmarkListScreen extends ConsumerWidget {
       builder: (context) => StatefulBuilder(
         builder: (context, setModalState) {
           final colors = context.appColors;
+          final l10n = context.l10n;
           final coordinate = current.formattedCoordinate;
           return SafeArea(
             child: SingleChildScrollView(
@@ -549,7 +584,7 @@ class BenchmarkListScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 14),
                     Text(
-                      'Pro 위치 기록',
+                      l10n.benchmarkProLocationTitle,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w700,
                       ),
@@ -557,12 +592,12 @@ class BenchmarkListScreen extends ConsumerWidget {
                     const SizedBox(height: 8),
                     if (!isPro) ...[
                       if (current.hasPhoto || current.hasCoordinate)
-                        const Text(
-                          'Pro 위치 정보 저장됨',
-                          style: TextStyle(fontWeight: FontWeight.w700),
+                        Text(
+                          l10n.benchmarkProLocationSaved,
+                          style: const TextStyle(fontWeight: FontWeight.w700),
                         )
                       else
-                        const Text('Pro에서 TBM/BM 사진과 좌표를 저장할 수 있습니다.'),
+                        Text(l10n.benchmarkProLocationPromo),
                     ] else ...[
                       if (coordinate != null) ...[
                         Container(
@@ -584,7 +619,10 @@ class BenchmarkListScreen extends ConsumerWidget {
                               ),
                               if (current.coordinateAccuracyM != null)
                                 Text(
-                                  '정확도 ${current.coordinateAccuracyM!.toStringAsFixed(1)}m',
+                                  l10n.benchmarkAccuracy(
+                                    current.coordinateAccuracyM!
+                                        .toStringAsFixed(1),
+                                  ),
                                   style: TextStyle(
                                     color: colors.subtext,
                                     fontFeatures: AppTypography.tabularFeatures,
@@ -594,7 +632,7 @@ class BenchmarkListScreen extends ConsumerWidget {
                           ),
                         ),
                       ] else
-                        const Text('저장된 좌표가 없습니다.'),
+                        Text(l10n.benchmarkNoSavedCoordinate),
                       const SizedBox(height: 14),
                       SizedBox(
                         width: double.infinity,
@@ -626,13 +664,17 @@ class BenchmarkListScreen extends ConsumerWidget {
                                     error
                                   ) {
                                     setModalState(() {
-                                      errorMessage = error.message;
+                                      errorMessage = error.localizedMessage(
+                                        l10n,
+                                      );
                                     });
                                   } on BenchmarkProActionException catch (
                                     error
                                   ) {
                                     setModalState(() {
-                                      errorMessage = error.message;
+                                      errorMessage = error.localizedMessage(
+                                        l10n,
+                                      );
                                     });
                                   } finally {
                                     setModalState(() {
@@ -641,7 +683,11 @@ class BenchmarkListScreen extends ConsumerWidget {
                                   }
                                 },
                           icon: const Icon(Icons.my_location),
-                          label: Text(isCapturing ? '좌표 저장 중' : '현재 좌표 저장'),
+                          label: Text(
+                            isCapturing
+                                ? l10n.benchmarkSavingCoordinate
+                                : l10n.benchmarkSaveCurrentCoordinate,
+                          ),
                         ),
                       ),
                       if (current.hasCoordinate) ...[
@@ -654,23 +700,27 @@ class BenchmarkListScreen extends ConsumerWidget {
                                   try {
                                     await ref
                                         .read(benchmarkProActionServiceProvider)
-                                        .copyCoordinate(current);
+                                        .copyCoordinate(current, l10n: l10n);
                                   } on BenchmarkMapLaunchException catch (
                                     error
                                   ) {
                                     setModalState(() {
-                                      errorMessage = error.message;
+                                      errorMessage = error.localizedMessage(
+                                        l10n,
+                                      );
                                     });
                                   } on BenchmarkProActionException catch (
                                     error
                                   ) {
                                     setModalState(() {
-                                      errorMessage = error.message;
+                                      errorMessage = error.localizedMessage(
+                                        l10n,
+                                      );
                                     });
                                   }
                                 },
                                 icon: const Icon(Icons.copy),
-                                label: const Text('좌표 복사'),
+                                label: Text(l10n.benchmarkCopyCoordinateButton),
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -685,18 +735,22 @@ class BenchmarkListScreen extends ConsumerWidget {
                                     error
                                   ) {
                                     setModalState(() {
-                                      errorMessage = error.message;
+                                      errorMessage = error.localizedMessage(
+                                        l10n,
+                                      );
                                     });
                                   } on BenchmarkProActionException catch (
                                     error
                                   ) {
                                     setModalState(() {
-                                      errorMessage = error.message;
+                                      errorMessage = error.localizedMessage(
+                                        l10n,
+                                      );
                                     });
                                   }
                                 },
                                 icon: const Icon(Icons.map),
-                                label: const Text('지도 열기'),
+                                label: Text(l10n.benchmarkOpenMapButton),
                               ),
                             ),
                           ],
@@ -704,7 +758,9 @@ class BenchmarkListScreen extends ConsumerWidget {
                       ],
                       const SizedBox(height: 14),
                       Text(
-                        current.hasPhoto ? '사진 저장됨' : '저장된 사진이 없습니다.',
+                        current.hasPhoto
+                            ? l10n.benchmarkPhotoSaved
+                            : l10n.benchmarkNoSavedPhoto,
                         style: const TextStyle(fontWeight: FontWeight.w700),
                       ),
                       if (current.hasPhoto) ...[
@@ -725,7 +781,7 @@ class BenchmarkListScreen extends ConsumerWidget {
                               );
                             }
                             if (file == null) {
-                              return const Text('사진 파일을 찾을 수 없습니다.');
+                              return Text(l10n.benchmarkPhotoFileMissing);
                             }
                             return ClipRRect(
                               borderRadius: BorderRadius.circular(8),
@@ -749,12 +805,13 @@ class BenchmarkListScreen extends ConsumerWidget {
                                 ref,
                                 current,
                                 ImageSource.camera,
+                                l10n: l10n,
                                 setModalState: setModalState,
                                 onUpdated: (updated) => current = updated,
                                 onError: (message) => errorMessage = message,
                               ),
                               icon: const Icon(Icons.photo_camera),
-                              label: const Text('사진 촬영'),
+                              label: Text(l10n.benchmarkTakePhotoButton),
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -764,12 +821,13 @@ class BenchmarkListScreen extends ConsumerWidget {
                                 ref,
                                 current,
                                 ImageSource.gallery,
+                                l10n: l10n,
                                 setModalState: setModalState,
                                 onUpdated: (updated) => current = updated,
                                 onError: (message) => errorMessage = message,
                               ),
                               icon: const Icon(Icons.photo_library),
-                              label: const Text('사진 선택'),
+                              label: Text(l10n.benchmarkPickPhotoButton),
                             ),
                           ),
                         ],
@@ -802,12 +860,12 @@ class BenchmarkListScreen extends ConsumerWidget {
                                 });
                               } on BenchmarkProActionException catch (error) {
                                 setModalState(() {
-                                  errorMessage = error.message;
+                                  errorMessage = error.localizedMessage(l10n);
                                 });
                               }
                             },
                             icon: const Icon(Icons.delete_outline),
-                            label: const Text('사진 제거'),
+                            label: Text(l10n.benchmarkRemovePhotoButton),
                           ),
                         ),
                       ],
@@ -835,13 +893,14 @@ class BenchmarkListScreen extends ConsumerWidget {
     WidgetRef ref,
     BenchMark current,
     ImageSource source, {
+    required AppLocalizations l10n,
     required StateSetter setModalState,
     required ValueChanged<BenchMark> onUpdated,
     required ValueChanged<String> onError,
   }) async {
     final benchmarkId = current.id;
     if (benchmarkId == null) {
-      setModalState(() => onError('저장된 BM만 사진을 추가할 수 있습니다.'));
+      setModalState(() => onError(l10n.benchmarkPhotoNeedsSavedBm));
       return;
     }
 
@@ -860,22 +919,25 @@ class BenchmarkListScreen extends ConsumerWidget {
         onUpdated(updated);
       });
     } on BenchmarkProActionException catch (error) {
-      setModalState(() => onError(error.message));
+      setModalState(() => onError(error.localizedMessage(l10n)));
     } catch (_) {
-      setModalState(() => onError('사진을 저장하지 못했습니다.'));
+      setModalState(() => onError(l10n.benchmarkPhotoSaveError));
     }
   }
 
   void _showDeleteDialog(BuildContext context, WidgetRef ref, BenchMark bm) {
+    final l10n = context.l10n;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('BM 삭제'),
-        content: Text('"${bm.name}" (표고: ${bm.elevation})을 삭제하시겠습니까?'),
+        title: Text(l10n.benchmarkDeleteDialogTitle),
+        content: Text(
+          l10n.benchmarkDeleteConfirm(bm.name, bm.elevation.toString()),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('취소'),
+            child: Text(l10n.coreCancel),
           ),
           FilledButton(
             onPressed: () {
@@ -887,7 +949,7 @@ class BenchmarkListScreen extends ConsumerWidget {
             style: FilledButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.error,
             ),
-            child: const Text('삭제'),
+            child: Text(l10n.coreDelete),
           ),
         ],
       ),

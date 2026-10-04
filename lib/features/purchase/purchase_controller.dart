@@ -3,11 +3,89 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 
+import '../../l10n/l10n.dart';
 import '../ads/ad_settings_repository.dart';
+
+/// What happened in the last purchase/restore step. The controller stores a
+/// code (plus optional technical detail); the UI renders it with
+/// [PurchaseNotice.localizedMessage] in the app language.
+enum PurchaseNoticeCode {
+  storeUnsupportedPlatform,
+  updateError,
+  storeUnavailable,
+  productLoadError,
+  productNotFound,
+  storeInitError,
+  productNotReady,
+  startError,
+  startFailed,
+  restoreError,
+  nothingToRestore,
+  pending,
+  proActivated,
+  purchaseError,
+  canceled,
+}
+
+@immutable
+class PurchaseNotice {
+  final PurchaseNoticeCode code;
+
+  /// Technical detail (exception text, store error message, product id).
+  final String? detail;
+
+  const PurchaseNotice(this.code, [this.detail]);
+
+  /// Whether the notice should be shown as an error rather than a success.
+  bool get isError => switch (code) {
+    PurchaseNoticeCode.pending || PurchaseNoticeCode.proActivated => false,
+    _ => true,
+  };
+
+  String localizedMessage(AppLocalizations l10n) {
+    final detail = this.detail ?? '';
+    return switch (code) {
+      PurchaseNoticeCode.storeUnsupportedPlatform =>
+        l10n.purchaseStoreUnsupportedPlatform,
+      PurchaseNoticeCode.updateError => l10n.purchaseUpdateError(detail),
+      PurchaseNoticeCode.storeUnavailable => l10n.purchaseStoreUnavailable,
+      PurchaseNoticeCode.productLoadError => l10n.purchaseProductLoadError(
+        detail,
+      ),
+      PurchaseNoticeCode.productNotFound => l10n.purchaseProductNotFound(
+        detail,
+      ),
+      PurchaseNoticeCode.storeInitError => l10n.purchaseStoreInitError(detail),
+      PurchaseNoticeCode.productNotReady => l10n.purchaseProductNotReady,
+      PurchaseNoticeCode.startError => l10n.purchaseStartError(detail),
+      PurchaseNoticeCode.startFailed => l10n.purchaseStartFailed,
+      PurchaseNoticeCode.restoreError => l10n.purchaseRestoreError(detail),
+      PurchaseNoticeCode.nothingToRestore => l10n.purchaseNothingToRestore,
+      PurchaseNoticeCode.pending => l10n.purchasePendingMessage,
+      PurchaseNoticeCode.proActivated => l10n.purchaseProActivatedMessage,
+      // The store's own error text is already localized by the store.
+      PurchaseNoticeCode.purchaseError =>
+        (this.detail?.trim().isNotEmpty ?? false)
+            ? this.detail!
+            : l10n.purchaseFailedMessage,
+      PurchaseNoticeCode.canceled => l10n.purchaseCanceledMessage,
+    };
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      other is PurchaseNotice && other.code == code && other.detail == detail;
+
+  @override
+  int get hashCode => Object.hash(code, detail);
+}
 
 class PurchaseController extends ChangeNotifier {
   static const proProductId = 'lv_book_pro';
-  static const noPurchasesToRestoreMessage = '복원할 구매 내역이 없습니다.';
+
+  /// Legacy Korean text of [PurchaseNoticeCode.nothingToRestore].
+  static String get noPurchasesToRestoreMessage =>
+      l10nKo.purchaseNothingToRestore;
 
   final AdSettingsRepository adSettingsRepository;
   final InAppPurchase _inAppPurchase;
@@ -32,7 +110,7 @@ class PurchaseController extends ChangeNotifier {
   bool _storeAvailable = false;
   bool _loading = false;
   bool _purchasePending = false;
-  String? _message;
+  PurchaseNotice? _notice;
 
   PurchaseController({
     required this.adSettingsRepository,
@@ -52,16 +130,22 @@ class PurchaseController extends ChangeNotifier {
   bool get storeAvailable => _storeAvailable;
   bool get loading => _loading;
   bool get purchasePending => _purchasePending;
-  String? get message => _message;
 
-  /// Increments every time [message] is set, so listeners can show the same
+  /// Last purchase/restore notice; render with
+  /// [PurchaseNotice.localizedMessage].
+  PurchaseNotice? get notice => _notice;
+
+  /// Legacy Korean text of [notice].
+  String? get message => _notice?.localizedMessage(l10nKo);
+
+  /// Increments every time [notice] is set, so listeners can show the same
   /// text twice in a row (e.g. two restores with nothing to restore).
   int get messageSerial => _messageSerial;
 
   bool _disposed = false;
 
-  void _setMessage(String? value) {
-    _message = value;
+  void _setMessage(PurchaseNotice? value) {
+    _notice = value;
     if (value != null) _messageSerial++;
   }
 
@@ -79,7 +163,9 @@ class PurchaseController extends ChangeNotifier {
     if (!supportsStorePurchases) {
       _loading = false;
       _storeAvailable = false;
-      _setMessage('현재 플랫폼에서는 스토어 결제를 사용할 수 없습니다.');
+      _setMessage(
+        const PurchaseNotice(PurchaseNoticeCode.storeUnsupportedPlatform),
+      );
       _notify();
       return;
     }
@@ -91,7 +177,7 @@ class PurchaseController extends ChangeNotifier {
         onError: (Object error) {
           _finishRestore();
           _purchasePending = false;
-          _setMessage('결제 업데이트를 처리하지 못했습니다: $error');
+          _setMessage(PurchaseNotice(PurchaseNoticeCode.updateError, '$error'));
           _notify();
         },
       );
@@ -99,22 +185,32 @@ class PurchaseController extends ChangeNotifier {
       _storeAvailable = await _inAppPurchase.isAvailable();
       if (!_storeAvailable) {
         _loading = false;
-        _setMessage('스토어 결제를 사용할 수 없습니다.');
+        _setMessage(const PurchaseNotice(PurchaseNoticeCode.storeUnavailable));
         _notify();
         return;
       }
 
       final response = await _inAppPurchase.queryProductDetails({proProductId});
       if (response.error != null) {
-        _setMessage('상품 정보를 불러오지 못했습니다: ${response.error!.message}');
+        _setMessage(
+          PurchaseNotice(
+            PurchaseNoticeCode.productLoadError,
+            response.error!.message,
+          ),
+        );
       } else if (response.productDetails.isEmpty) {
-        _setMessage('Play Console에서 $proProductId 상품을 찾지 못했습니다.');
+        _setMessage(
+          const PurchaseNotice(
+            PurchaseNoticeCode.productNotFound,
+            proProductId,
+          ),
+        );
       } else {
         _proProduct = response.productDetails.first;
       }
     } catch (error) {
       _storeAvailable = false;
-      _setMessage('스토어 결제를 초기화하지 못했습니다: $error');
+      _setMessage(PurchaseNotice(PurchaseNoticeCode.storeInitError, '$error'));
     }
 
     _loading = false;
@@ -124,7 +220,7 @@ class PurchaseController extends ChangeNotifier {
   Future<void> buyPro() async {
     final product = _proProduct;
     if (product == null) {
-      _setMessage('Pro 상품 정보가 아직 준비되지 않았습니다.');
+      _setMessage(const PurchaseNotice(PurchaseNoticeCode.productNotReady));
       _notify();
       return;
     }
@@ -141,21 +237,21 @@ class PurchaseController extends ChangeNotifier {
       );
     } catch (error) {
       _purchasePending = false;
-      _setMessage('결제를 시작하지 못했습니다: $error');
+      _setMessage(PurchaseNotice(PurchaseNoticeCode.startError, '$error'));
       _notify();
       return;
     }
 
     if (!started) {
       _purchasePending = false;
-      _setMessage('결제를 시작하지 못했습니다.');
+      _setMessage(const PurchaseNotice(PurchaseNoticeCode.startFailed));
       _notify();
     }
   }
 
   Future<void> restorePurchases() async {
     if (!_storeAvailable) {
-      _setMessage('스토어 결제를 사용할 수 없습니다.');
+      _setMessage(const PurchaseNotice(PurchaseNoticeCode.storeUnavailable));
       _notify();
       return;
     }
@@ -175,7 +271,7 @@ class PurchaseController extends ChangeNotifier {
       if (!_restoreInProgress) return;
       _finishRestore();
       _purchasePending = false;
-      _setMessage('구매 복원에 실패했습니다: $error');
+      _setMessage(PurchaseNotice(PurchaseNoticeCode.restoreError, '$error'));
       _notify();
       return;
     }
@@ -183,12 +279,12 @@ class PurchaseController extends ChangeNotifier {
     if (!_restoreInProgress || _disposed) return;
     // Restored purchases arrive on the purchase stream; when there is nothing
     // to restore the stores send no event at all, so stop waiting after a
-    // short grace period instead of leaving the buttons in '처리 중' forever.
+    // short grace period instead of leaving the buttons in the processing state forever.
     _restoreTimer = Timer(restoreGracePeriod, () {
       if (!_restoreInProgress) return;
       _finishRestore();
       _purchasePending = false;
-      _setMessage(noPurchasesToRestoreMessage);
+      _setMessage(const PurchaseNotice(PurchaseNoticeCode.nothingToRestore));
       _notify();
     });
   }
@@ -206,24 +302,29 @@ class PurchaseController extends ChangeNotifier {
       switch (purchase.status) {
         case PurchaseStatus.pending:
           _purchasePending = true;
-          _setMessage('결제를 처리하는 중입니다.');
+          _setMessage(const PurchaseNotice(PurchaseNoticeCode.pending));
           break;
         case PurchaseStatus.purchased:
         case PurchaseStatus.restored:
           if (purchase.productID == proProductId) {
             await adSettingsRepository.setAdsRemoved(true);
             entitlementChanged = true;
-            _setMessage('레벨 야장 Pro가 활성화되었습니다.');
+            _setMessage(const PurchaseNotice(PurchaseNoticeCode.proActivated));
           }
           _purchasePending = false;
           break;
         case PurchaseStatus.error:
           _purchasePending = false;
-          _setMessage(purchase.error?.message ?? '결제가 실패했습니다.');
+          _setMessage(
+            PurchaseNotice(
+              PurchaseNoticeCode.purchaseError,
+              purchase.error?.message,
+            ),
+          );
           break;
         case PurchaseStatus.canceled:
           _purchasePending = false;
-          _setMessage('결제가 취소되었습니다.');
+          _setMessage(const PurchaseNotice(PurchaseNoticeCode.canceled));
           break;
       }
 

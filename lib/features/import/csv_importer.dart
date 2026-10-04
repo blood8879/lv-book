@@ -1,5 +1,6 @@
 import 'package:csv/csv.dart';
 
+import '../../l10n/l10n.dart';
 import '../fieldbook/domain/fieldbook.dart';
 import '../fieldbook/domain/measurement.dart';
 
@@ -19,21 +20,76 @@ class CsvImportResult {
   });
 }
 
+/// Metadata rows the importer understands.
+enum _CsvField {
+  title,
+  date,
+  bmElevation,
+  surveyor,
+  checker,
+  instrument,
+  weather,
+  section,
+  jobNumber,
+}
+
+/// Imports CSV files exported by Lv Book in either language.
+///
+/// Labels are matched against both the Korean labels (every file exported
+/// before English support, and Korean-language exports) and the English
+/// labels, case-insensitively. Errors and warnings are returned in the
+/// language of [l10n].
 class CsvImporter {
-  static const utf8OnlyMessage =
-      'UTF-8 CSV만 지원합니다. 글자가 깨진 문자가 있어 가져올 수 없습니다. '
-      'Excel에서 "CSV UTF-8(쉼표로 분리)" 형식으로 다시 저장해 주세요.';
+  /// Accepted metadata labels (lowercased) per field. Keep in sync with
+  /// `CsvExporter` / the `exportField*` keys; never remove a legacy label.
+  static const Map<String, _CsvField> _metadataAliases = {
+    '야장명': _CsvField.title,
+    'level book': _CsvField.title,
+    'level book name': _CsvField.title,
+    'title': _CsvField.title,
+    '날짜': _CsvField.date,
+    'date': _CsvField.date,
+    'bm 표고': _CsvField.bmElevation,
+    'bm elevation': _CsvField.bmElevation,
+    'bm rl': _CsvField.bmElevation,
+    '측량자': _CsvField.surveyor,
+    'surveyor': _CsvField.surveyor,
+    '검측자': _CsvField.checker,
+    'checker': _CsvField.checker,
+    '장비': _CsvField.instrument,
+    'instrument': _CsvField.instrument,
+    '날씨': _CsvField.weather,
+    'weather': _CsvField.weather,
+    '작업구간': _CsvField.section,
+    'section': _CsvField.section,
+    'work section': _CsvField.section,
+    '공사번호': _CsvField.jobNumber,
+    'job no.': _CsvField.jobNumber,
+    'job no': _CsvField.jobNumber,
+    'job number': _CsvField.jobNumber,
+  };
+
+  /// Table header cells that mark the start of the measurement table.
+  static const _rowNumberHeaders = {'no.', 'no'};
+  static const _stationHeaders = {'측점명', 'station'};
+
+  /// Remarks values that mark a turning point (Korean and English files).
+  static const _turningPointMarkers = {'tp', 't.p.', 'turning point', '전환점'};
+
+  static String _normalize(Object? cell) =>
+      cell.toString().replaceAll('\ufeff', '').trim().toLowerCase();
 
   static CsvImportResult parse(
     String csv, {
     required int projectId,
     required DateTime fallbackDate,
+    required AppLocalizations l10n,
   }) {
     if (csv.contains('\uFFFD')) {
-      return const CsvImportResult(
+      return CsvImportResult(
         fieldBook: null,
-        measurements: [],
-        errors: [utf8OnlyMessage],
+        measurements: const [],
+        errors: [l10n.exportImportUtf8Only],
       );
     }
     final withoutBom = csv.startsWith('\uFEFF') ? csv.substring(1) : csv;
@@ -46,51 +102,62 @@ class CsvImporter {
     ).convert(normalizedCsv);
     final errors = <String>[];
     final warnings = <String>[];
-    String title = '가져온 야장';
+    String title = l10n.exportImportDefaultTitle;
     DateTime date = fallbackDate;
     var dateFound = false;
     double? startElevation;
-    final metadata = <String, String>{};
+    final metadata = <_CsvField, String>{};
     var tableHeaderIndex = -1;
 
     for (var i = 0; i < rows.length; i++) {
       final row = rows[i];
       if (row.isEmpty) continue;
-      final label = row.first.toString().replaceAll('\ufeff', '').trim();
-      if (label == 'No.' ||
-          row.any((cell) => cell.toString().trim() == '측점명')) {
+      final label = _normalize(row.first);
+      if (_rowNumberHeaders.contains(label) ||
+          row.any((cell) => _stationHeaders.contains(_normalize(cell)))) {
         tableHeaderIndex = i;
         break;
       }
       if (row.length < 2) continue;
       final value = row[1].toString().trim();
-      if (label == '야장명' && value.isNotEmpty) title = value;
-      if (label == '날짜') {
-        dateFound = true;
-        final parsed = parseDate(value);
-        if (parsed != null) {
-          date = parsed;
-        } else {
-          warnings.add(
-            '날짜 "$value"를 인식할 수 없어 ${_formatDate(fallbackDate)}로 '
-            '설정했습니다.',
-          );
-        }
-      }
-      if (label == 'BM 표고') startElevation = double.tryParse(value);
-      if (_metadataLabels.contains(label) && value.isNotEmpty) {
-        metadata[label] = value;
+      final field = _metadataAliases[label];
+      if (field == null) continue;
+      switch (field) {
+        case _CsvField.title:
+          if (value.isNotEmpty) title = value;
+        case _CsvField.date:
+          dateFound = true;
+          final parsed = parseDate(value);
+          if (parsed != null) {
+            date = parsed;
+          } else {
+            warnings.add(
+              l10n.exportImportDateUnrecognized(
+                value,
+                _formatDate(fallbackDate),
+              ),
+            );
+          }
+        case _CsvField.bmElevation:
+          startElevation = double.tryParse(value);
+        case _CsvField.surveyor ||
+            _CsvField.checker ||
+            _CsvField.instrument ||
+            _CsvField.weather ||
+            _CsvField.section ||
+            _CsvField.jobNumber:
+          if (value.isNotEmpty) metadata[field] = value;
       }
     }
     if (!dateFound) {
-      warnings.add('날짜 항목이 없어 ${_formatDate(fallbackDate)}로 설정했습니다.');
+      warnings.add(l10n.exportImportDateMissing(_formatDate(fallbackDate)));
     }
 
     if (tableHeaderIndex < 0) {
-      return const CsvImportResult(
+      return CsvImportResult(
         fieldBook: null,
-        measurements: [],
-        errors: ['측량 표 헤더를 찾을 수 없습니다.'],
+        measurements: const [],
+        errors: [l10n.exportImportHeaderNotFound],
       );
     }
 
@@ -109,6 +176,7 @@ class CsvImporter {
         rowNumber: i + 1,
         orderIndex: measurements.length,
         fieldBookId: 0,
+        l10n: l10n,
       );
       if (parsed.error != null) {
         errors.add(parsed.error!);
@@ -132,20 +200,18 @@ class CsvImporter {
         title: title,
         date: date,
         startElevation: startElevation,
-        surveyor: metadata['측량자'],
-        checker: metadata['검측자'],
-        instrument: metadata['장비'],
-        weather: metadata['날씨'],
-        workSection: metadata['작업구간'],
-        jobNumber: metadata['공사번호'],
+        surveyor: metadata[_CsvField.surveyor],
+        checker: metadata[_CsvField.checker],
+        instrument: metadata[_CsvField.instrument],
+        weather: metadata[_CsvField.weather],
+        workSection: metadata[_CsvField.section],
+        jobNumber: metadata[_CsvField.jobNumber],
       ),
       measurements: measurements,
       errors: const [],
       warnings: warnings,
     );
   }
-
-  static const _metadataLabels = {'측량자', '검측자', '장비', '날씨', '작업구간', '공사번호'};
 
   /// Parses yyyy-MM-dd, yyyy/M/d, yyyy.M.d (optionally trailing '.') and ISO
   /// timestamps. Returns null for invalid dates such as 2026-02-31.
@@ -195,14 +261,35 @@ class CsvImporter {
     required int rowNumber,
     required int orderIndex,
     required int fieldBookId,
+    required AppLocalizations l10n,
   }) {
-    final bs = _parseDouble(_cell(row, 2), rowNumber, '후시(BS)');
+    final bs = _parseDouble(
+      _cell(row, 2),
+      rowNumber,
+      l10n.exportColumnBs,
+      l10n,
+    );
     if (bs.error != null) return _ParsedMeasurement.error(bs.error!);
-    final fs = _parseDouble(_cell(row, 3), rowNumber, '전시(FS)');
+    final fs = _parseDouble(
+      _cell(row, 3),
+      rowNumber,
+      l10n.exportColumnFs,
+      l10n,
+    );
     if (fs.error != null) return _ParsedMeasurement.error(fs.error!);
-    final ih = _parseDouble(_cell(row, 4), rowNumber, '기계고(IH)');
+    final ih = _parseDouble(
+      _cell(row, 4),
+      rowNumber,
+      l10n.exportColumnHi,
+      l10n,
+    );
     if (ih.error != null) return _ParsedMeasurement.error(ih.error!);
-    final gh = _parseDouble(_cell(row, 5), rowNumber, '지반고(GH)');
+    final gh = _parseDouble(
+      _cell(row, 5),
+      rowNumber,
+      l10n.exportColumnRl,
+      l10n,
+    );
     if (gh.error != null) return _ParsedMeasurement.error(gh.error!);
     final note = _cell(row, 6);
 
@@ -211,7 +298,9 @@ class CsvImporter {
         fieldBookId: fieldBookId,
         orderIndex: orderIndex,
         stationName: _cell(row, 1),
-        type: note == 'TP' ? MeasurementType.tp : MeasurementType.normal,
+        type: _turningPointMarkers.contains(note.toLowerCase())
+            ? MeasurementType.tp
+            : MeasurementType.normal,
         bs: bs.value,
         fs: fs.value,
         ih: ih.value,
@@ -225,11 +314,18 @@ class CsvImporter {
     return row[index].toString().trim();
   }
 
-  static _ParsedDouble _parseDouble(String value, int rowNumber, String label) {
+  static _ParsedDouble _parseDouble(
+    String value,
+    int rowNumber,
+    String label,
+    AppLocalizations l10n,
+  ) {
     if (value.isEmpty) return const _ParsedDouble.value(null);
     final parsed = double.tryParse(value);
     if (parsed == null) {
-      return _ParsedDouble.error('$rowNumber행 $label 숫자 형식이 올바르지 않습니다.');
+      return _ParsedDouble.error(
+        l10n.exportImportInvalidNumber(rowNumber, label),
+      );
     }
     return _ParsedDouble.value(parsed);
   }

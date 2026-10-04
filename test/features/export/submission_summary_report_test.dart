@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:lv_book/features/export/submission_summary_report.dart';
 import 'package:lv_book/features/fieldbook/domain/fieldbook.dart';
 import 'package:lv_book/features/fieldbook/domain/measurement.dart';
+import 'package:lv_book/l10n/l10n.dart';
 
 void main() {
   test(
@@ -50,7 +51,7 @@ void main() {
             ),
           ],
         ),
-      ]);
+      ], l10n: l10nKo);
 
       expect(rows.map((row) => row.judgement), containsAll(['적합', '확인 필요']));
     },
@@ -58,7 +59,7 @@ void main() {
 
   test('summary report rejects empty field book selection', () {
     expect(
-      () => SubmissionSummaryReport.buildRows(const []),
+      () => SubmissionSummaryReport.buildRows(const [], l10n: l10nKo),
       throwsA(isA<SubmissionSummaryException>()),
     );
   });

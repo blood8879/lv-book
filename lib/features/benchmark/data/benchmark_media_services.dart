@@ -7,6 +7,7 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart' as url_launcher;
 
+import '../../../l10n/l10n.dart';
 import '../domain/benchmark.dart';
 
 typedef DirectoryProvider = Future<Directory> Function();
@@ -130,10 +131,22 @@ class BenchmarkPosition {
   });
 }
 
-class BenchmarkLocationException implements Exception {
-  final String message;
+enum BenchmarkLocationError { serviceDisabled, denied, deniedForever }
 
-  const BenchmarkLocationException(this.message);
+class BenchmarkLocationException implements Exception {
+  final BenchmarkLocationError code;
+
+  const BenchmarkLocationException(this.code);
+
+  String localizedMessage(AppLocalizations l10n) => switch (code) {
+    BenchmarkLocationError.serviceDisabled => l10n.benchmarkLocationServiceOff,
+    BenchmarkLocationError.denied => l10n.benchmarkLocationPermissionDenied,
+    BenchmarkLocationError.deniedForever =>
+      l10n.benchmarkLocationPermissionDeniedForever,
+  };
+
+  /// Korean message (legacy); UI uses [localizedMessage].
+  String get message => localizedMessage(l10nKo);
 
   @override
   String toString() => message;
@@ -178,7 +191,9 @@ class BenchmarkLocationService {
 
   Future<BenchmarkPosition> currentPosition() async {
     if (!await isServiceEnabled()) {
-      throw const BenchmarkLocationException('기기 위치 서비스가 꺼져 있습니다.');
+      throw const BenchmarkLocationException(
+        BenchmarkLocationError.serviceDisabled,
+      );
     }
 
     var permission = await checkPermission();
@@ -186,11 +201,11 @@ class BenchmarkLocationService {
       permission = await requestPermission();
     }
     if (permission == BenchmarkLocationPermission.denied) {
-      throw const BenchmarkLocationException('위치 권한이 거부되었습니다.');
+      throw const BenchmarkLocationException(BenchmarkLocationError.denied);
     }
     if (permission == BenchmarkLocationPermission.deniedForever) {
       throw const BenchmarkLocationException(
-        '위치 권한이 영구적으로 거부되었습니다. 앱 설정에서 권한을 허용하세요.',
+        BenchmarkLocationError.deniedForever,
       );
     }
 
@@ -215,18 +230,26 @@ class BenchmarkLocationService {
   }
 }
 
-class BenchmarkMapLaunchException implements Exception {
-  final String message;
+enum BenchmarkMapError { noCoordinate, cannotOpenMap }
 
-  const BenchmarkMapLaunchException(this.message);
+class BenchmarkMapLaunchException implements Exception {
+  final BenchmarkMapError code;
+
+  const BenchmarkMapLaunchException(this.code);
+
+  String localizedMessage(AppLocalizations l10n) => switch (code) {
+    BenchmarkMapError.noCoordinate => l10n.benchmarkNoSavedCoordinate,
+    BenchmarkMapError.cannotOpenMap => l10n.benchmarkMapOpenError,
+  };
+
+  /// Korean message (legacy); UI uses [localizedMessage].
+  String get message => localizedMessage(l10nKo);
 
   @override
   String toString() => message;
 }
 
 class BenchmarkMapLauncher {
-  static const failureMessage = '지도 앱을 열 수 없습니다. 좌표를 복사해 사용하세요.';
-
   final BenchmarkUrlLauncher launchUrl;
 
   BenchmarkMapLauncher({BenchmarkUrlLauncher? launchUrl})
@@ -236,7 +259,7 @@ class BenchmarkMapLauncher {
     final lat = benchmark.latitude;
     final lon = benchmark.longitude;
     if (lat == null || lon == null) {
-      throw const BenchmarkMapLaunchException('저장된 좌표가 없습니다.');
+      throw const BenchmarkMapLaunchException(BenchmarkMapError.noCoordinate);
     }
 
     final coordinate = '${lat.toStringAsFixed(6)},${lon.toStringAsFixed(6)}';
@@ -251,7 +274,7 @@ class BenchmarkMapLauncher {
     });
     if (await launchUrl(fallback)) return;
 
-    throw const BenchmarkMapLaunchException(failureMessage);
+    throw const BenchmarkMapLaunchException(BenchmarkMapError.cannotOpenMap);
   }
 
   static Future<bool> launchUrlExternal(Uri uri) {
@@ -269,19 +292,34 @@ class BenchmarkClipboard {
     : writer =
           writer ?? ((value) => Clipboard.setData(ClipboardData(text: value)));
 
-  Future<void> copyCoordinate(BenchMark benchmark) async {
-    final text = benchmark.copyCoordinateText;
+  /// Copies the coordinate as text in [l10n] (Korean when omitted).
+  Future<void> copyCoordinate(
+    BenchMark benchmark, {
+    AppLocalizations? l10n,
+  }) async {
+    final text = benchmark.copyCoordinateTextFor(l10n ?? l10nKo);
     if (text == null) {
-      throw const BenchmarkMapLaunchException('저장된 좌표가 없습니다.');
+      throw const BenchmarkMapLaunchException(BenchmarkMapError.noCoordinate);
     }
     await writer(text);
   }
 }
 
-class BenchmarkProActionException implements Exception {
-  final String message;
+enum BenchmarkProActionError { proRequired, benchmarkNotSaved }
 
-  const BenchmarkProActionException(this.message);
+class BenchmarkProActionException implements Exception {
+  final BenchmarkProActionError code;
+
+  const BenchmarkProActionException(this.code);
+
+  String localizedMessage(AppLocalizations l10n) => switch (code) {
+    BenchmarkProActionError.proRequired => l10n.benchmarkProRequired,
+    BenchmarkProActionError.benchmarkNotSaved =>
+      l10n.benchmarkPhotoNeedsSavedBm,
+  };
+
+  /// Korean message (legacy); UI uses [localizedMessage].
+  String get message => localizedMessage(l10nKo);
 
   @override
   String toString() => message;
@@ -332,7 +370,9 @@ class BenchmarkProActionService {
     await _ensurePro();
     final benchmarkId = benchmark.id;
     if (benchmarkId == null) {
-      throw const BenchmarkProActionException('저장된 BM만 사진을 추가할 수 있습니다.');
+      throw const BenchmarkProActionException(
+        BenchmarkProActionError.benchmarkNotSaved,
+      );
     }
 
     final sourcePath = await imagePicker.pickPhotoPath(source: source);
@@ -376,9 +416,12 @@ class BenchmarkProActionService {
     return updated;
   }
 
-  Future<void> copyCoordinate(BenchMark benchmark) async {
+  Future<void> copyCoordinate(
+    BenchMark benchmark, {
+    AppLocalizations? l10n,
+  }) async {
     await _ensurePro();
-    await clipboard.copyCoordinate(benchmark);
+    await clipboard.copyCoordinate(benchmark, l10n: l10n);
   }
 
   Future<void> openMap(BenchMark benchmark) async {
@@ -388,7 +431,9 @@ class BenchmarkProActionService {
 
   Future<void> _ensurePro() async {
     if (!await proAccess()) {
-      throw const BenchmarkProActionException('레벨 야장 Pro 구매 후 사용할 수 있습니다.');
+      throw const BenchmarkProActionException(
+        BenchmarkProActionError.proRequired,
+      );
     }
   }
 

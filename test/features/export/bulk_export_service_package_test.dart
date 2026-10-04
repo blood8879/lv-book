@@ -11,6 +11,7 @@ import 'package:lv_book/features/fieldbook/domain/fieldbook.dart';
 import 'package:lv_book/features/fieldbook/domain/measurement.dart';
 import 'package:lv_book/features/pro/pro_settings_repository.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:lv_book/l10n/l10n.dart';
 
 void main() {
   test(
@@ -68,6 +69,7 @@ void main() {
         format: BulkExportFormat.csv,
         includeSummary: true,
         includeManifest: true,
+        l10n: l10nKo,
       );
 
       expect(count, 1);

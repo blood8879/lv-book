@@ -1,5 +1,170 @@
 {
   "@@locale": "en",
+  "adsNativeAdLabel": "Ad",
+  "@adsNativeAdLabel": {
+    "description": "Small label above the native ad card."
+  },
+  "adsPolicyBannerSubtitle": "An adaptive banner that fits the screen width is shown at the bottom.",
+  "@adsPolicyBannerSubtitle": {
+    "description": "Fixed ad policy rule; translate faithfully."
+  },
+  "adsPolicyBannerTitle": "Banner ads",
+  "adsPolicyExportSubtitle": "Shown only after sharing completes, at most 3 times a day and at least 10 minutes apart.",
+  "@adsPolicyExportSubtitle": {
+    "description": "Fixed ad policy rule; translate faithfully."
+  },
+  "adsPolicyExportTitle": "Export ads",
+  "adsPolicySection": "Ad policy",
+  "backupErrorBenchmarkCorrupted": "BM data is corrupted.",
+  "backupErrorCorrupted": "The backup data is corrupted.",
+  "backupErrorFieldBookCorrupted": "Level book data is corrupted.",
+  "backupErrorInvalidFormat": "The backup file format is invalid.",
+  "backupErrorMeasurementCorrupted": "Station data is corrupted.",
+  "backupErrorPhotoCorrupted": "Photo backup data is corrupted.",
+  "backupErrorProjectNotFound": "Project not found.",
+  "backupErrorUnsupported": "This backup file isn't supported.",
+  "benchmarkAccuracy": "Accuracy {accuracy} m",
+  "@benchmarkAccuracy": {
+    "description": "GPS accuracy, 1 decimal, formatted by caller.",
+    "placeholders": {
+      "accuracy": {
+        "type": "String"
+      }
+    }
+  },
+  "benchmarkAddDialogTitle": "Add BM",
+  "benchmarkCopyCoordinateButton": "Copy coordinates",
+  "benchmarkCopyCoordinateText": "Lat {latitude}, Lon {longitude}",
+  "@benchmarkCopyCoordinateText": {
+    "description": "Clipboard text; 6 decimals formatted by caller.",
+    "placeholders": {
+      "latitude": {
+        "type": "String"
+      },
+      "longitude": {
+        "type": "String"
+      }
+    }
+  },
+  "benchmarkDeleteConfirm": "Delete \"{name}\" (elevation: {elevation})?",
+  "@benchmarkDeleteConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "elevation": {
+        "type": "String"
+      }
+    }
+  },
+  "benchmarkDeleteDialogTitle": "Delete BM",
+  "benchmarkDescriptionLabel": "Description (optional)",
+  "benchmarkEditDialogTitle": "Edit BM",
+  "benchmarkElevationHint": "e.g. 100.000",
+  "benchmarkElevationInvalidError": "Enter the elevation as a number (m)",
+  "benchmarkElevationLabel": "Elevation (m) *",
+  "benchmarkElevationLine": "Elevation {elevation} m",
+  "@benchmarkElevationLine": {
+    "description": "elevation formatted with 3 decimals by the caller.",
+    "placeholders": {
+      "elevation": {
+        "type": "String"
+      }
+    }
+  },
+  "benchmarkEmptyMessage": "Add a BM/TBM as your elevation reference with the + button,\nthen load it as the start RL when writing a level book.",
+  "benchmarkEmptyTitle": "Add a BM (benchmark)",
+  "benchmarkKindLabel": "Type",
+  "benchmarkKindLine": "Type: {kind}",
+  "@benchmarkKindLine": {
+    "description": "kind is BM or TBM.",
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      }
+    }
+  },
+  "benchmarkLocationHintLabel": "Location hint",
+  "benchmarkLocationLine": "Location: {hint}",
+  "@benchmarkLocationLine": {
+    "placeholders": {
+      "hint": {
+        "type": "String"
+      }
+    }
+  },
+  "benchmarkLocationPermissionDenied": "Location permission was denied.",
+  "benchmarkLocationPermissionDeniedForever": "Location permission was permanently denied. Allow it in the app settings.",
+  "@benchmarkLocationPermissionDeniedForever": {
+    "description": "Location permission notice (design rule: keep exact Korean)."
+  },
+  "benchmarkLocationServiceOff": "Location services are turned off on this device.",
+  "benchmarkMapOpenError": "Couldn't open a map app. Copy the coordinates instead.",
+  "benchmarkNameHint": "e.g. BM.1",
+  "benchmarkNameLabel": "BM name *",
+  "benchmarkNameRequiredError": "Enter a BM name",
+  "benchmarkNoSavedCoordinate": "No saved coordinates.",
+  "benchmarkNoSavedPhoto": "No saved photo.",
+  "benchmarkOpenMapButton": "Open map",
+  "benchmarkPhotoFileMissing": "Photo file not found.",
+  "benchmarkPhotoNeedsSavedBm": "Photos can only be added to a saved BM.",
+  "benchmarkPhotoSaveError": "Couldn't save the photo.",
+  "benchmarkPhotoSaved": "Photo saved",
+  "benchmarkPickPhotoButton": "Choose photo",
+  "benchmarkProLocationPromo": "With Pro you can save TBM/BM photos and coordinates.",
+  "benchmarkProLocationSaved": "Pro location info saved",
+  "benchmarkProLocationTitle": "Pro location record",
+  "benchmarkProRequired": "Available after buying Lv Book Pro.",
+  "@benchmarkProRequired": {
+    "description": "Pro is a one-time purchase."
+  },
+  "benchmarkProtectionLabel": "Protection/check notes",
+  "benchmarkProtectionLine": "Protection: {note}",
+  "@benchmarkProtectionLine": {
+    "placeholders": {
+      "note": {
+        "type": "String"
+      }
+    }
+  },
+  "benchmarkRecheckNoVerifiedDate": "No last-checked date. Re-check required",
+  "@benchmarkRecheckNoVerifiedDate": {
+    "description": "BM re-check warning (design rule: keep exact Korean)."
+  },
+  "benchmarkRecheckOutOfService": "This BM is out of service. It can't be used as the start BM of a new level book.",
+  "@benchmarkRecheckOutOfService": {
+    "description": "BM re-check warning (design rule: keep exact Korean)."
+  },
+  "benchmarkRecheckPossiblyDamaged": "This BM is possibly damaged. Re-check it on site before use.",
+  "@benchmarkRecheckPossiblyDamaged": {
+    "description": "BM re-check warning (design rule: keep exact Korean)."
+  },
+  "benchmarkRecheckStale": "{days, plural, =1{1 day since the last check. Re-check required} other{{days} days since the last check. Re-check required}}",
+  "@benchmarkRecheckStale": {
+    "description": "BM re-check warning (design rule: keep exact Korean).",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "benchmarkRemovePhotoButton": "Remove photo",
+  "benchmarkSaveCurrentCoordinate": "Save current coordinates",
+  "benchmarkSavingCoordinate": "Saving coordinates",
+  "benchmarkStatusLabel": "Status",
+  "benchmarkStatusOutOfService": "Out of service",
+  "@benchmarkStatusOutOfService": {
+    "description": "BM status (enum stopped)."
+  },
+  "benchmarkStatusPossiblyDamaged": "Possibly damaged",
+  "@benchmarkStatusPossiblyDamaged": {
+    "description": "BM status (enum damagedSuspected)."
+  },
+  "benchmarkStatusUsable": "Usable",
+  "@benchmarkStatusUsable": {
+    "description": "BM status (enum available)."
+  },
+  "benchmarkTakePhotoButton": "Take photo",
   "coreAdd": "Add",
   "coreAppName": "Lv Book",
   "@coreAppName": {
@@ -58,6 +223,742 @@
       }
     }
   },
+  "exportBulkDeselectAll": "Clear",
+  "@exportBulkDeselectAll": {
+    "description": "App bar action: deselect all."
+  },
+  "exportBulkError": "Bulk export didn't complete: {error}",
+  "@exportBulkError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "exportBulkFormatBoth": "Both",
+  "@exportBulkFormatBoth": {
+    "description": "Bulk export format segment: PDF and CSV."
+  },
+  "exportBulkManifestSubtitle": "Lists the selected level books, generated files and station counts.",
+  "exportBulkManifestTitle": "Include submission package manifest",
+  "exportBulkNothingToExport": "No selected level book has data to export",
+  "exportBulkProOnlyBody": "Share several level books as PDF/CSV at once.",
+  "exportBulkProOnlyTitle": "Pro feature",
+  "exportBulkProRequired": "Available with Lv Book Pro (one-time purchase).",
+  "@exportBulkProRequired": {
+    "description": "Shown when a non-Pro user tries bulk export."
+  },
+  "exportBulkSelectAll": "All",
+  "@exportBulkSelectAll": {
+    "description": "App bar action: select all."
+  },
+  "exportBulkShareButton": "{count, plural, =1{Share 1 level book} other{Share {count} level books}}",
+  "@exportBulkShareButton": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exportBulkShared": "{count, plural, =1{Shared 1 file} other{Shared {count} files}}",
+  "@exportBulkShared": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exportBulkSummarySubtitle": "Puts each level book's BM, section, misclosure and result in one file.",
+  "exportBulkSummaryTitle": "Include check/submission summary CSV",
+  "exportBulkTitle": "Bulk export",
+  "@exportBulkTitle": {
+    "description": "Bulk export screen title."
+  },
+  "exportCheckDifference": "Difference",
+  "@exportCheckDifference": {
+    "description": "Arithmetic check: ΣBS − ΣFS."
+  },
+  "exportCheckFinalRl": "Final RL",
+  "@exportCheckFinalRl": {
+    "description": "Arithmetic check: final reduced level."
+  },
+  "exportCheckMisclosure": "Misclosure",
+  "@exportCheckMisclosure": {
+    "description": "Arithmetic check: misclosure (4 decimals)."
+  },
+  "exportCheckResult": "Result",
+  "@exportCheckResult": {
+    "description": "Arithmetic check judgement label. Never 'Pass/Fail'."
+  },
+  "exportCheckStartRl": "Start RL",
+  "@exportCheckStartRl": {
+    "description": "Arithmetic check: first reduced level."
+  },
+  "exportCheckTitle": "Arithmetic check",
+  "@exportCheckTitle": {
+    "description": "Title of the arithmetic check box."
+  },
+  "exportCheckValue": "{label} = {value}",
+  "@exportCheckValue": {
+    "description": "An arithmetic-check line in the PDF, e.g. 'ΣBS = 2.700'. Value is preformatted.",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "exportColumnBs": "BS",
+  "@exportColumnBs": {
+    "description": "Measurement table column: backsight."
+  },
+  "exportColumnFs": "FS",
+  "@exportColumnFs": {
+    "description": "Measurement table column: foresight."
+  },
+  "exportColumnHi": "HI",
+  "@exportColumnHi": {
+    "description": "Measurement table column: height of instrument."
+  },
+  "exportColumnNo": "No.",
+  "@exportColumnNo": {
+    "description": "Measurement table column: row number."
+  },
+  "exportColumnRemarks": "Remarks",
+  "@exportColumnRemarks": {
+    "description": "Measurement table column: remarks (TP marker)."
+  },
+  "exportColumnRl": "RL",
+  "@exportColumnRl": {
+    "description": "Measurement table column: reduced level."
+  },
+  "exportColumnStation": "Station",
+  "@exportColumnStation": {
+    "description": "Measurement table column: station name."
+  },
+  "exportCompanyNotSet": "Company name not set",
+  "@exportCompanyNotSet": {
+    "description": "PDF header when Pro branding is on but no company name was entered."
+  },
+  "exportCsvError": "Couldn't create the CSV: {error}",
+  "@exportCsvError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "exportDocTitle": "Differential leveling level book",
+  "@exportDocTitle": {
+    "description": "Title printed at the top of the exported PDF/CSV level book."
+  },
+  "exportDocTitleWithTemplate": "Differential leveling level book · {template}",
+  "@exportDocTitleWithTemplate": {
+    "description": "PDF title with the selected document template name.",
+    "placeholders": {
+      "template": {
+        "type": "String"
+      }
+    }
+  },
+  "exportFieldAuthor": "Prepared by",
+  "@exportFieldAuthor": {
+    "description": "Exported document field: author."
+  },
+  "exportFieldBmElevation": "BM elevation",
+  "@exportFieldBmElevation": {
+    "description": "Exported document field: starting benchmark elevation."
+  },
+  "exportFieldChecker": "Checker",
+  "@exportFieldChecker": {
+    "description": "Exported document field."
+  },
+  "exportFieldCompany": "Company",
+  "@exportFieldCompany": {
+    "description": "Exported document field: company name."
+  },
+  "exportFieldDate": "Date",
+  "@exportFieldDate": {
+    "description": "Exported document field: survey date."
+  },
+  "exportFieldInstrument": "Instrument",
+  "@exportFieldInstrument": {
+    "description": "Exported document field."
+  },
+  "exportFieldJobNumber": "Job no.",
+  "@exportFieldJobNumber": {
+    "description": "Exported document field: job number."
+  },
+  "exportFieldMemo": "Memo",
+  "@exportFieldMemo": {
+    "description": "Exported document field: level book memo."
+  },
+  "exportFieldReviewDate": "Review date",
+  "@exportFieldReviewDate": {
+    "description": "Exported document field."
+  },
+  "exportFieldReviewMemo": "Review memo",
+  "@exportFieldReviewMemo": {
+    "description": "Exported document field."
+  },
+  "exportFieldReviewStatus": "Review status",
+  "@exportFieldReviewStatus": {
+    "description": "Exported document field."
+  },
+  "exportFieldSection": "Section",
+  "@exportFieldSection": {
+    "description": "Exported document field: work section."
+  },
+  "exportFieldStartBm": "Start BM",
+  "@exportFieldStartBm": {
+    "description": "Exported document field: starting benchmark."
+  },
+  "exportFieldSurveyor": "Surveyor",
+  "@exportFieldSurveyor": {
+    "description": "Exported document field."
+  },
+  "exportFieldTitle": "Level book",
+  "@exportFieldTitle": {
+    "description": "Exported document field: level book title."
+  },
+  "exportFieldWeather": "Weather",
+  "@exportFieldWeather": {
+    "description": "Exported document field."
+  },
+  "exportImportDateMissing": "The CSV has no date, so it was set to {date}.",
+  "@exportImportDateMissing": {
+    "description": "CSV import warning.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "exportImportDateUnrecognized": "Couldn't read the date \"{value}\", so it was set to {date}.",
+  "@exportImportDateUnrecognized": {
+    "description": "CSV import warning.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "exportImportDefaultTitle": "Imported level book",
+  "@exportImportDefaultTitle": {
+    "description": "Title for an imported level book when the CSV has none."
+  },
+  "exportImportHeaderNotFound": "Couldn't find the measurement table header.",
+  "@exportImportHeaderNotFound": {
+    "description": "CSV import error."
+  },
+  "exportImportInvalidNumber": "Row {row}: {column} is not a valid number.",
+  "@exportImportInvalidNumber": {
+    "description": "CSV import error; row is the 1-based CSV line.",
+    "placeholders": {
+      "row": {
+        "type": "int"
+      },
+      "column": {
+        "type": "String"
+      }
+    }
+  },
+  "exportImportUtf8Only": "Only UTF-8 CSV is supported. Some characters are garbled, so the file can't be imported. In Excel, save it again as \"CSV UTF-8 (Comma delimited)\".",
+  "@exportImportUtf8Only": {
+    "description": "CSV import error: not UTF-8."
+  },
+  "exportLabelValue": "{label}: {value}",
+  "@exportLabelValue": {
+    "description": "A label/value pair in an exported document.",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "exportManifestFieldBookLine": "- {title}: {count, plural, =1{1 station} other{{count} stations}}, review status {status}",
+  "@exportManifestFieldBookLine": {
+    "description": "Manifest: one level book line.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      },
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "exportManifestFileCount": "Files: {count}",
+  "@exportManifestFileCount": {
+    "description": "Manifest: number of files.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exportManifestIncludedFiles": "Included files",
+  "@exportManifestIncludedFiles": {
+    "description": "Manifest: heading for the file list."
+  },
+  "exportManifestSite": "Site: {name}",
+  "@exportManifestSite": {
+    "description": "Manifest: site name.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "exportManifestSiteNotSet": "Site name not set",
+  "@exportManifestSiteNotSet": {
+    "description": "Manifest: no site name."
+  },
+  "exportManifestTitle": "Lv Book submission package",
+  "@exportManifestTitle": {
+    "description": "First line of the submission package manifest."
+  },
+  "exportPackageNoFieldBooks": "There are no level books to package.",
+  "@exportPackageNoFieldBooks": {
+    "description": "Submission package error."
+  },
+  "exportPackageNoFiles": "There are no files to package.",
+  "@exportPackageNoFiles": {
+    "description": "Submission package error."
+  },
+  "exportPackageZipError": "Couldn't create the submission package ZIP.",
+  "@exportPackageZipError": {
+    "description": "Submission package error."
+  },
+  "exportPdfError": "Couldn't create the PDF: {error}",
+  "@exportPdfError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "exportReviewStatusDraft": "Draft",
+  "@exportReviewStatusDraft": {
+    "description": "Review status in exported documents."
+  },
+  "exportReviewStatusNeedsCheck": "Needs check",
+  "@exportReviewStatusNeedsCheck": {
+    "description": "Review status in exported documents."
+  },
+  "exportReviewStatusReviewed": "Reviewed",
+  "@exportReviewStatusReviewed": {
+    "description": "Review status in exported documents."
+  },
+  "exportScreenTitle": "Export",
+  "@exportScreenTitle": {
+    "description": "Export screen title."
+  },
+  "exportShareCsvTooltip": "Share CSV",
+  "exportSharePdfTooltip": "Share PDF",
+  "exportSignatureApproved": "Approved",
+  "@exportSignatureApproved": {
+    "description": "PDF signature box."
+  },
+  "exportSignatureChecked": "Checked",
+  "@exportSignatureChecked": {
+    "description": "PDF signature box."
+  },
+  "exportSignaturePrepared": "Prepared",
+  "@exportSignaturePrepared": {
+    "description": "PDF signature box."
+  },
+  "exportSummaryFileSuffix": "summary",
+  "@exportSummaryFileSuffix": {
+    "description": "Word appended to the summary CSV file name ('<site>_summary.csv')."
+  },
+  "exportSummaryNoSelection": "Select level books to summarize.",
+  "@exportSummaryNoSelection": {
+    "description": "Summary report error."
+  },
+  "fieldbookAddTenRowsTooltip": "Add 10 rows",
+  "fieldbookArithmeticCheckResult": "Arithmetic check: {result}",
+  "@fieldbookArithmeticCheckResult": {
+    "description": "Validation bar headline; result is a judgement such as 'Within tolerance'.",
+    "placeholders": {
+      "result": {
+        "type": "String"
+      }
+    }
+  },
+  "fieldbookBackupPasteHint": "Or paste the contents of a shared lvbook_backup.json.",
+  "fieldbookBackupRestoredMessage": "Backup restored as a new project.",
+  "fieldbookBmNameHint": "e.g. BM.1",
+  "fieldbookBmNameLabel": "BM name (optional)",
+  "fieldbookBulkExportButton": "Bulk export",
+  "fieldbookCheckEmptyRows": "Empty rows",
+  "fieldbookCheckFirstBs": "First BS",
+  "fieldbookCheckLastFs": "Last FS",
+  "fieldbookCheckStationRows": "Station rows",
+  "fieldbookCheckTolerance": "Tolerance",
+  "fieldbookCheckTpComplete": "TP complete",
+  "fieldbookCheckerLabel": "Checker",
+  "fieldbookChooseBackupFile": "Choose backup file (.json)",
+  "fieldbookChooseCsvFile": "Choose CSV file (.csv)",
+  "fieldbookColumnHi": "HI",
+  "fieldbookColumnNo": "Stn",
+  "fieldbookColumnRl": "RL",
+  "fieldbookContinueButton": "Continue",
+  "fieldbookCopyName": "{name} copy",
+  "@fieldbookCopyName": {
+    "description": "Name given to a duplicated level book or row.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "fieldbookCreateButton": "Create",
+  "fieldbookCsvImportError": "Couldn't import CSV: {error}",
+  "@fieldbookCsvImportError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "fieldbookCsvImported": "CSV imported",
+  "fieldbookCsvImportedWithWarnings": "CSV imported. {warnings}",
+  "@fieldbookCsvImportedWithWarnings": {
+    "placeholders": {
+      "warnings": {
+        "type": "String"
+      }
+    }
+  },
+  "fieldbookCsvPasteHint": "Or paste CSV exported from Lv Book.",
+  "fieldbookDeleteConfirm": "Delete level book \"{title}\"?",
+  "@fieldbookDeleteConfirm": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "fieldbookDeleteRowConfirm": "Delete row {row}?",
+  "@fieldbookDeleteRowConfirm": {
+    "placeholders": {
+      "row": {
+        "type": "int"
+      }
+    }
+  },
+  "fieldbookDeleteRowTitle": "Delete row",
+  "fieldbookDeleteTitle": "Delete level book",
+  "fieldbookDuplicateError": "Couldn't duplicate level book: {error}",
+  "@fieldbookDuplicateError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "fieldbookDuplicateStructure": "Duplicate structure",
+  "fieldbookDuplicatedMessage": "Level book structure duplicated",
+  "fieldbookEditStationTitle": "Edit station",
+  "fieldbookEmptyMessage": "Tap + to create a level book,\nor import existing records from CSV.",
+  "fieldbookEmptyTitle": "Create your first level book",
+  "fieldbookEnterManually": "Enter manually",
+  "fieldbookExportCheckTitle": "Check before export",
+  "fieldbookExportTooltip": "Export",
+  "fieldbookFabLabel": "Level book",
+  "fieldbookImportButton": "Import",
+  "fieldbookImportCsv": "Import CSV",
+  "fieldbookInstrumentLabel": "Instrument",
+  "fieldbookIssueEmptyRows": "Remove rows with no readings.",
+  "fieldbookIssueExceedsTolerance": "Exceeds tolerance — check the readings.",
+  "fieldbookIssueFirstBsMissing": "The first row needs a backsight (BS).",
+  "fieldbookIssueLastFsMissing": "The last row needs a foresight (FS).",
+  "fieldbookIssueNoStationRows": "Add at least one station row.",
+  "fieldbookIssueTpIncomplete": "TP rows need both BS and FS.",
+  "fieldbookJobNumberLabel": "Job no.",
+  "fieldbookNewTitle": "New level book",
+  "fieldbookNoDataToExport": "No data to export",
+  "fieldbookNoSearchResults": "No results",
+  "fieldbookRestoreBackupError": "Couldn't restore backup: {error}",
+  "@fieldbookRestoreBackupError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "fieldbookRestoreBackupJson": "Restore backup JSON",
+  "fieldbookRestoreButton": "Restore",
+  "fieldbookReviewMemoHint": "e.g. Confirmed by supervisor",
+  "fieldbookReviewMemoLabel": "Review notes",
+  "fieldbookReviewPanelTitle": "Review",
+  "fieldbookReviewSaveButton": "Save review",
+  "fieldbookReviewSavedMessage": "Review info saved",
+  "fieldbookReviewStatusLabel": "Review status",
+  "fieldbookReviewTodayButton": "Set review date to today",
+  "fieldbookReviewedOn": "Reviewed {date}",
+  "@fieldbookReviewedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "fieldbookRowActionsTooltip": "Row actions",
+  "fieldbookRowDuplicate": "Duplicate row",
+  "fieldbookRowInsertBelow": "Insert row below",
+  "fieldbookRowSetManualTp": "Set manual TP",
+  "fieldbookRowUnsetManualTp": "Unset manual TP",
+  "fieldbookSaveStatusAutosaved": "Autosaved",
+  "fieldbookSaveStatusError": "Not saved",
+  "fieldbookSaveStatusPending": "Autosave pending",
+  "fieldbookSaveStatusSaved": "Saved",
+  "fieldbookSavedMessage": "Saved",
+  "fieldbookSearchHint": "Title, section, surveyor, date",
+  "fieldbookSearchLabel": "Search level books",
+  "fieldbookSelectBm": "Select BM",
+  "fieldbookShareBackup": "Share project backup",
+  "fieldbookShareBackupError": "Couldn't share backup: {error}",
+  "@fieldbookShareBackupError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "fieldbookSiteDetailsSummary": "Surveyor, instrument, weather…",
+  "fieldbookSiteDetailsTitle": "Site details",
+  "fieldbookStartBmLabel": "Start BM",
+  "fieldbookStartElevationHint": "e.g. 100.000",
+  "fieldbookStartElevationLabel": "Start RL (m) *",
+  "fieldbookStartRlLabel": "Start RL",
+  "fieldbookStationHelper": "Leave blank to show the row number ({row})",
+  "@fieldbookStationHelper": {
+    "placeholders": {
+      "row": {
+        "type": "int"
+      }
+    }
+  },
+  "fieldbookStationHint": "e.g. No.1, BM.1, TP.1",
+  "fieldbookStationLabel": "Station",
+  "fieldbookStatusDraft": "Draft",
+  "fieldbookStatusNeedsCheck": "Needs check",
+  "fieldbookStatusReviewed": "Reviewed",
+  "fieldbookSummaryDiff": "Diff",
+  "fieldbookSummaryFinal": "Final RL",
+  "fieldbookSummaryMisclosure": "Misclosure",
+  "fieldbookSummaryStart": "Start RL",
+  "fieldbookSurveyorLabel": "Surveyor",
+  "fieldbookSurveyorSubtitle": "Surveyor {name}",
+  "@fieldbookSurveyorSubtitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "fieldbookTitleHint": "Level book title",
+  "fieldbookTitleLabel": "Level book title *",
+  "fieldbookToleranceCheckTitle": "Tolerance check required",
+  "fieldbookWeatherLabel": "Weather",
+  "fieldbookWorkSectionLabel": "Section",
+  "proActiveSubtitle": "Create submission documents without ads.",
+  "proActiveTitle": "Pro activated",
+  "proBuyButton": "Buy Lv Book Pro",
+  "@proBuyButton": {
+    "description": "One-time purchase button."
+  },
+  "proFeatureBenchmarkPhotoLocation": "TBM/BM photo & location",
+  "@proFeatureBenchmarkPhotoLocation": {
+    "description": "Short feature pill."
+  },
+  "proFeatureBulkExport": "Bulk export",
+  "@proFeatureBulkExport": {
+    "description": "Short feature pill."
+  },
+  "proFeatureNoAds": "No ads",
+  "@proFeatureNoAds": {
+    "description": "Short feature pill."
+  },
+  "proFeatureSummaryReport": "Summary report",
+  "@proFeatureSummaryReport": {
+    "description": "Short feature pill."
+  },
+  "proFileNameSiteDateTitle": "Site_Date_Level book",
+  "proFileNameSiteSectionDateTitle": "Site_Section_Date_Level book",
+  "proFileNameTitleOnly": "Level book name",
+  "proInspectionWatermarkDefault": "Inspection",
+  "@proInspectionWatermarkDefault": {
+    "description": "Default watermark text of the built-in Inspection preset (new installs only)."
+  },
+  "proPdfAuthorHint": "e.g. Alex Kim",
+  "proPdfAuthorLabel": "Author",
+  "proPdfCompanyHint": "e.g. Acme Surveying Co.",
+  "proPdfCompanyLabel": "Company name",
+  "proPdfExportHistory": "Export history",
+  "@proPdfExportHistory": {
+    "description": "Button and dialog title."
+  },
+  "proPdfExportHistoryClearAll": "Clear all",
+  "proPdfExportHistoryEmpty": "No export history.",
+  "proPdfFileNamePreviewLabel": "File name preview",
+  "proPdfFileNameRuleLabel": "File name rule",
+  "proPdfFooterNoteHint": "e.g. Confirmed by site agent",
+  "proPdfFooterNoteLabel": "Footer note",
+  "proPdfLoadError": "Couldn't load settings: {error}",
+  "@proPdfLoadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "proPdfPresetAdd": "Add preset",
+  "@proPdfPresetAdd": {
+    "description": "Tooltip and dialog title."
+  },
+  "proPdfPresetDeleteTooltip": "Delete preset",
+  "proPdfPresetDeletedMessage": "Preset deleted",
+  "proPdfPresetLabel": "Document preset",
+  "proPdfPresetNameLabel": "Preset name",
+  "proPdfPresetNewName": "New preset",
+  "proPdfPresetRename": "Rename preset",
+  "@proPdfPresetRename": {
+    "description": "Tooltip and dialog title."
+  },
+  "proPdfPreviewSampleSite": "Riverside site",
+  "@proPdfPreviewSampleSite": {
+    "description": "Sample project name in the file name preview."
+  },
+  "proPdfPreviewSampleTitle": "Section A level book",
+  "@proPdfPreviewSampleTitle": {
+    "description": "Sample level book title in the file name preview."
+  },
+  "proPdfSavedMessage": "Pro PDF settings saved",
+  "proPdfSettingsTitle": "Pro PDF settings",
+  "proPdfShowJudgementSubtitle": "Include Within tolerance / Check required in PDF and CSV.",
+  "proPdfShowJudgementTitle": "Show arithmetic check result",
+  "proPdfSignatureDescription": "Register a handwritten signature for the PDF 'Prepared by' box.",
+  "proPdfSignatureDisplayError": "Can't display the signature",
+  "proPdfSignatureEmpty": "No signature registered",
+  "proPdfSignatureLinesSubtitle": "Adds Prepared / Reviewed / Approved boxes at the bottom of the submission PDF.",
+  "proPdfSignatureLinesTitle": "Show sign-off boxes",
+  "proPdfSignatureRedo": "Sign again",
+  "proPdfSignatureRegister": "Add signature",
+  "proPdfSignatureTitle": "Author signature",
+  "proPdfTemplateLabel": "Document template",
+  "proPdfWatermarkHint": "e.g. Inspection",
+  "proPdfWatermarkLabel": "Watermark",
+  "proPitchSubtitle": "Unlock Pro field features with a one-time purchase.",
+  "@proPitchSubtitle": {
+    "description": "Pro is a one-time purchase; never say subscription."
+  },
+  "proPriceOneTimePurchase": "{price} · one-time purchase",
+  "@proPriceOneTimePurchase": {
+    "description": "Store-formatted price (already localized by the store) + one-time purchase.",
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "proSignatureClear": "Clear",
+  "proSignatureDialogHint": "Sign in the box below with your finger or a stylus.",
+  "proSignatureDialogTitle": "Draw signature",
+  "proSignatureEmptyError": "Please draw your signature",
+  "proSignatureSaveError": "Couldn't save the signature",
+  "proTemplateBasic": "Standard level book",
+  "@proTemplateBasic": {
+    "description": "PDF document template / default preset name."
+  },
+  "proTemplateInspection": "Inspection",
+  "@proTemplateInspection": {
+    "description": "PDF document template / default preset name."
+  },
+  "proTemplateSubmission": "Submission",
+  "@proTemplateSubmission": {
+    "description": "PDF document template / default preset name."
+  },
+  "projectBackupLastSharedTitle": "{days, plural, =1{Last backup shared 1 day ago} other{Last backup shared {days} days ago}}",
+  "@projectBackupLastSharedTitle": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "projectBackupLaterButton": "Later",
+  "projectBackupNeverSharedTitle": "You haven't shared a backup yet",
+  "projectBackupReminderMessage": "If you lose your phone or delete the app, your site records are lost. Keep the backup file in email or a cloud drive.",
+  "projectBackupShareButton": "Share backup",
+  "projectBackupShareError": "Couldn't share the backup: {error}",
+  "@projectBackupShareError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "projectBackupSharedMessage": "{count, plural, =1{Shared the backup of 1 project.} other{Shared backups of {count} projects.}}",
+  "@projectBackupSharedMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "projectCardStats": "{books, plural, =1{1 level book} other{{books} level books}}",
+  "@projectCardStats": {
+    "placeholders": {
+      "books": {
+        "type": "int"
+      }
+    }
+  },
+  "projectCardStatsOpen": "{books, plural, =1{1 level book} other{{books} level books}} · {open} check required",
+  "@projectCardStatsOpen": {
+    "placeholders": {
+      "books": {
+        "type": "int"
+      },
+      "open": {
+        "type": "int"
+      }
+    }
+  },
+  "projectCardUpdated": "Updated · {date}",
+  "@projectCardUpdated": {
+    "description": "date is yyyy-MM-dd.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "projectDeleteConfirm": "Delete project \"{name}\"?\nAll of its level books and BMs will also be deleted.",
+  "@projectDeleteConfirm": {
+    "description": "Cascade delete warning (design rule: keep exact Korean).",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "projectDeleteDialogTitle": "Delete project",
+  "projectDescriptionLabel": "Description (optional)",
   "projectDetailTabBenchmarks": "Benchmarks",
   "@projectDetailTabBenchmarks": {
     "description": "Project detail tab for BM/TBM management (Korean BM 관리)."
@@ -65,5 +966,199 @@
   "projectDetailTabLevelBooks": "Level books",
   "@projectDetailTabLevelBooks": {
     "description": "Project detail tab listing level books (Korean 야장)."
-  }
+  },
+  "projectEditDialogTitle": "Edit project",
+  "projectEmptyMessage": "Create a site (project) to record BMs and level books.\nTry the sample project to see automatic calculation and the closure check first.",
+  "projectEmptyNewButton": "Create project",
+  "projectEmptySampleButton": "Try sample project",
+  "projectEmptyTitle": "Add your first site",
+  "projectListQuickMemoTooltip": "Quick memo",
+  "projectListSettingsTooltip": "Settings",
+  "projectNewDialogTitle": "New project",
+  "projectProActiveMessage": "TBM/BM photos & coordinates, ad removal and submission PDFs are available.",
+  "projectProActiveTitle": "Pro active",
+  "projectProGetButton": "Get Pro",
+  "@projectProGetButton": {
+    "description": "Home Pro panel button that opens settings (one-time purchase)."
+  },
+  "projectProPromoMessage": "Unlock TBM/BM photos & coordinates, submission PDFs and ad removal.",
+  "projectRecentWorkSubtitle": "Recent · {project} · {date}",
+  "@projectRecentWorkSubtitle": {
+    "description": "date is yyyy-MM-dd.",
+    "placeholders": {
+      "project": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "projectSampleBenchmarkDescription": "Sample benchmark",
+  "projectSampleBenchmarkLocation": "Curb stone in front of the site office",
+  "projectSampleClosingStation": "{bm} (close)",
+  "@projectSampleClosingStation": {
+    "description": "Station name of the closing shot back on the BM.",
+    "placeholders": {
+      "bm": {
+        "type": "String"
+      }
+    }
+  },
+  "projectSampleCreateError": "Couldn't create the sample project. Please try again.",
+  "projectSampleCreatedMessage": "Sample project created. Open the level book to see the automatic calculation.",
+  "projectSampleDescription": "Sample for trying automatic calculation and the closure check. Delete it if you don't need it.",
+  "projectSampleInstrument": "Automatic level",
+  "projectSampleLevelBookTitle": "Sample level book (BM-1 loop)",
+  "projectSampleMemo": "Sample data. Change a value and HI/RL are recalculated automatically.",
+  "projectSampleName": "Sample site (deletable)",
+  "@projectSampleName": {
+    "description": "Name of the generated sample project (stored as data)."
+  },
+  "projectSampleSection": "Sample section",
+  "projectSampleSurveyor": "J. Smith",
+  "@projectSampleSurveyor": {
+    "description": "Fictional surveyor name for the sample level book."
+  },
+  "projectSampleWeather": "Clear",
+  "projectSiteNameLabel": "Site name *",
+  "@projectSiteNameLabel": {
+    "description": "Required project (site) name field."
+  },
+  "projectSitesHeader": "Sites",
+  "@projectSitesHeader": {
+    "description": "Section header above the project cards."
+  },
+  "projectSummaryLoading": "Organize level books and BMs by site.",
+  "projectSummaryStatsAllReviewed": "{books, plural, =1{1 level book} other{{books} level books}} · All reviewed",
+  "@projectSummaryStatsAllReviewed": {
+    "placeholders": {
+      "books": {
+        "type": "int"
+      }
+    }
+  },
+  "projectSummaryStatsOpen": "{books, plural, =1{1 level book} other{{books} level books}} · {open} check required",
+  "@projectSummaryStatsOpen": {
+    "description": "Home summary when some level books need checking.",
+    "placeholders": {
+      "books": {
+        "type": "int"
+      },
+      "open": {
+        "type": "int"
+      }
+    }
+  },
+  "projectSummaryTitle": "{count, plural, =1{Managing 1 site} other{Managing {count} sites}}",
+  "@projectSummaryTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "purchaseCanceledMessage": "Payment canceled.",
+  "purchaseFailedMessage": "Payment didn't go through.",
+  "purchaseNothingToRestore": "No purchases to restore.",
+  "purchasePendingMessage": "Processing your payment.",
+  "purchaseProActivatedMessage": "Lv Book Pro is now active.",
+  "purchaseProductLoadError": "Couldn't load product info: {error}",
+  "@purchaseProductLoadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "purchaseProductNotFound": "Couldn't find the {productId} product in Play Console.",
+  "@purchaseProductNotFound": {
+    "placeholders": {
+      "productId": {
+        "type": "String"
+      }
+    }
+  },
+  "purchaseProductNotReady": "Pro product info isn't ready yet.",
+  "purchaseRestoreError": "Couldn't restore purchase: {error}",
+  "@purchaseRestoreError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "purchaseStartError": "Couldn't start the purchase: {error}",
+  "@purchaseStartError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "purchaseStartFailed": "Couldn't start the purchase.",
+  "purchaseStoreInitError": "Couldn't initialize store purchases: {error}",
+  "@purchaseStoreInitError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "purchaseStoreUnavailable": "Store purchases are unavailable.",
+  "purchaseStoreUnsupportedPlatform": "Store purchases aren't available on this platform.",
+  "purchaseUpdateError": "Couldn't process the purchase update: {error}",
+  "@purchaseUpdateError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "quickMemoAudioMissing": "Audio file not found.",
+  "quickMemoComposerTitle": "Quick field memo",
+  "quickMemoDeleteConfirm": "Delete this memo?",
+  "quickMemoDeleteRecordingTooltip": "Delete recording",
+  "quickMemoDeleteTitle": "Delete memo",
+  "quickMemoEmptyMessage": "Use the bolt button at the bottom left to leave a text or voice memo from any screen.",
+  "quickMemoEmptyTitle": "No memos yet",
+  "quickMemoMicPermissionRequired": "Microphone permission is required.",
+  "quickMemoRecordHint": "Tap the mic to record a voice memo",
+  "quickMemoRecorded": "Voice recorded · tap the mic to re-record",
+  "quickMemoRecording": "Recording · {time}",
+  "@quickMemoRecording": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "quickMemoSaveError": "Couldn't save: {error}",
+  "@quickMemoSaveError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "quickMemoSavedMessage": "Memo saved.",
+  "quickMemoTextHint": "Type a memo (optional)",
+  "quickMemoTitle": "Quick memo",
+  "settingsAdsRemovedActiveSubtitle": "Your purchase is applied, so no ads are shown.",
+  "settingsAdsRemovedChecking": "Checking ad removal status",
+  "settingsAdsRemovedCheckingSubtitle": "Checking the store and local entitlement.",
+  "settingsAdsRemovedInactiveSubtitle": "Remove all ads with a one-time purchase from the store.",
+  "@settingsAdsRemovedInactiveSubtitle": {
+    "description": "Pro is a one-time purchase; never say subscription."
+  },
+  "settingsAdsRemovedLoadError": "Couldn't load ad removal status",
+  "settingsDocumentSection": "Documents",
+  "settingsPdfSettingsSubtitle": "Set company name, template, watermark and signature.",
+  "settingsPdfSettingsTitle": "Submission PDF settings",
+  "settingsPurchaseStatusSection": "Purchase status",
+  "settingsRemoveAdsTitle": "Remove ads",
+  "settingsRestorePurchasePendingSubtitle": "Checking your purchase history with the store.",
+  "settingsRestorePurchaseSubtitle": "Restore the Pro purchase you already made.",
+  "settingsRestorePurchaseTitle": "Restore purchase",
+  "settingsTitle": "Settings"
 }

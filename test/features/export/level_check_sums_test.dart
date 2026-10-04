@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:lv_book/features/export/csv_exporter.dart';
 import 'package:lv_book/features/fieldbook/domain/fieldbook.dart';
 import 'package:lv_book/features/fieldbook/domain/measurement.dart';
+import 'package:lv_book/l10n/l10n.dart';
 
 void main() {
   // BM(100) → 중간점 A → TP1 → 중간점 B → 종점
@@ -68,6 +69,7 @@ void main() {
       measurements: measurements,
       bmName: 'BM.1',
       startElevation: 100,
+      l10n: l10nKo,
     );
 
     expect(csv, contains('ΣBS,2.700,ΣFS,2.300'));

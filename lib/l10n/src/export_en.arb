@@ -1,3 +1,367 @@
 {
-  "@@locale": "en"
+  "@@locale": "en",
+  "exportDocTitle": "Differential leveling level book",
+  "@exportDocTitle": {
+    "description": "Title printed at the top of the exported PDF/CSV level book."
+  },
+  "exportDocTitleWithTemplate": "Differential leveling level book · {template}",
+  "@exportDocTitleWithTemplate": {
+    "description": "PDF title with the selected document template name.",
+    "placeholders": {
+      "template": {
+        "type": "String"
+      }
+    }
+  },
+  "exportLabelValue": "{label}: {value}",
+  "@exportLabelValue": {
+    "description": "A label/value pair in an exported document.",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "exportCheckValue": "{label} = {value}",
+  "@exportCheckValue": {
+    "description": "An arithmetic-check line in the PDF, e.g. 'ΣBS = 2.700'. Value is preformatted.",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "exportFieldCompany": "Company",
+  "@exportFieldCompany": {
+    "description": "Exported document field: company name."
+  },
+  "exportCompanyNotSet": "Company name not set",
+  "@exportCompanyNotSet": {
+    "description": "PDF header when Pro branding is on but no company name was entered."
+  },
+  "exportFieldAuthor": "Prepared by",
+  "@exportFieldAuthor": {
+    "description": "Exported document field: author."
+  },
+  "exportFieldTitle": "Level book",
+  "@exportFieldTitle": {
+    "description": "Exported document field: level book title."
+  },
+  "exportFieldDate": "Date",
+  "@exportFieldDate": {
+    "description": "Exported document field: survey date."
+  },
+  "exportFieldStartBm": "Start BM",
+  "@exportFieldStartBm": {
+    "description": "Exported document field: starting benchmark."
+  },
+  "exportFieldBmElevation": "BM elevation",
+  "@exportFieldBmElevation": {
+    "description": "Exported document field: starting benchmark elevation."
+  },
+  "exportFieldMemo": "Memo",
+  "@exportFieldMemo": {
+    "description": "Exported document field: level book memo."
+  },
+  "exportFieldSurveyor": "Surveyor",
+  "@exportFieldSurveyor": {
+    "description": "Exported document field."
+  },
+  "exportFieldChecker": "Checker",
+  "@exportFieldChecker": {
+    "description": "Exported document field."
+  },
+  "exportFieldInstrument": "Instrument",
+  "@exportFieldInstrument": {
+    "description": "Exported document field."
+  },
+  "exportFieldWeather": "Weather",
+  "@exportFieldWeather": {
+    "description": "Exported document field."
+  },
+  "exportFieldSection": "Section",
+  "@exportFieldSection": {
+    "description": "Exported document field: work section."
+  },
+  "exportFieldJobNumber": "Job no.",
+  "@exportFieldJobNumber": {
+    "description": "Exported document field: job number."
+  },
+  "exportFieldReviewStatus": "Review status",
+  "@exportFieldReviewStatus": {
+    "description": "Exported document field."
+  },
+  "exportFieldReviewMemo": "Review memo",
+  "@exportFieldReviewMemo": {
+    "description": "Exported document field."
+  },
+  "exportFieldReviewDate": "Review date",
+  "@exportFieldReviewDate": {
+    "description": "Exported document field."
+  },
+  "exportReviewStatusDraft": "Draft",
+  "@exportReviewStatusDraft": {
+    "description": "Review status in exported documents."
+  },
+  "exportReviewStatusReviewed": "Reviewed",
+  "@exportReviewStatusReviewed": {
+    "description": "Review status in exported documents."
+  },
+  "exportReviewStatusNeedsCheck": "Needs check",
+  "@exportReviewStatusNeedsCheck": {
+    "description": "Review status in exported documents."
+  },
+  "exportColumnNo": "No.",
+  "@exportColumnNo": {
+    "description": "Measurement table column: row number."
+  },
+  "exportColumnStation": "Station",
+  "@exportColumnStation": {
+    "description": "Measurement table column: station name."
+  },
+  "exportColumnBs": "BS",
+  "@exportColumnBs": {
+    "description": "Measurement table column: backsight."
+  },
+  "exportColumnFs": "FS",
+  "@exportColumnFs": {
+    "description": "Measurement table column: foresight."
+  },
+  "exportColumnHi": "HI",
+  "@exportColumnHi": {
+    "description": "Measurement table column: height of instrument."
+  },
+  "exportColumnRl": "RL",
+  "@exportColumnRl": {
+    "description": "Measurement table column: reduced level."
+  },
+  "exportColumnRemarks": "Remarks",
+  "@exportColumnRemarks": {
+    "description": "Measurement table column: remarks (TP marker)."
+  },
+  "exportCheckTitle": "Arithmetic check",
+  "@exportCheckTitle": {
+    "description": "Title of the arithmetic check box."
+  },
+  "exportCheckDifference": "Difference",
+  "@exportCheckDifference": {
+    "description": "Arithmetic check: ΣBS − ΣFS."
+  },
+  "exportCheckStartRl": "Start RL",
+  "@exportCheckStartRl": {
+    "description": "Arithmetic check: first reduced level."
+  },
+  "exportCheckFinalRl": "Final RL",
+  "@exportCheckFinalRl": {
+    "description": "Arithmetic check: final reduced level."
+  },
+  "exportCheckMisclosure": "Misclosure",
+  "@exportCheckMisclosure": {
+    "description": "Arithmetic check: misclosure (4 decimals)."
+  },
+  "exportCheckResult": "Result",
+  "@exportCheckResult": {
+    "description": "Arithmetic check judgement label. Never 'Pass/Fail'."
+  },
+  "exportSignaturePrepared": "Prepared",
+  "@exportSignaturePrepared": {
+    "description": "PDF signature box."
+  },
+  "exportSignatureChecked": "Checked",
+  "@exportSignatureChecked": {
+    "description": "PDF signature box."
+  },
+  "exportSignatureApproved": "Approved",
+  "@exportSignatureApproved": {
+    "description": "PDF signature box."
+  },
+  "exportManifestTitle": "Lv Book submission package",
+  "@exportManifestTitle": {
+    "description": "First line of the submission package manifest."
+  },
+  "exportManifestSite": "Site: {name}",
+  "@exportManifestSite": {
+    "description": "Manifest: site name.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "exportManifestSiteNotSet": "Site name not set",
+  "@exportManifestSiteNotSet": {
+    "description": "Manifest: no site name."
+  },
+  "exportManifestFileCount": "Files: {count}",
+  "@exportManifestFileCount": {
+    "description": "Manifest: number of files.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exportManifestFieldBookLine": "- {title}: {count, plural, =1{1 station} other{{count} stations}}, review status {status}",
+  "@exportManifestFieldBookLine": {
+    "description": "Manifest: one level book line.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      },
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "exportManifestIncludedFiles": "Included files",
+  "@exportManifestIncludedFiles": {
+    "description": "Manifest: heading for the file list."
+  },
+  "exportPackageNoFiles": "There are no files to package.",
+  "@exportPackageNoFiles": {
+    "description": "Submission package error."
+  },
+  "exportPackageZipError": "Couldn't create the submission package ZIP.",
+  "@exportPackageZipError": {
+    "description": "Submission package error."
+  },
+  "exportPackageNoFieldBooks": "There are no level books to package.",
+  "@exportPackageNoFieldBooks": {
+    "description": "Submission package error."
+  },
+  "exportSummaryNoSelection": "Select level books to summarize.",
+  "@exportSummaryNoSelection": {
+    "description": "Summary report error."
+  },
+  "exportSummaryFileSuffix": "summary",
+  "@exportSummaryFileSuffix": {
+    "description": "Word appended to the summary CSV file name ('<site>_summary.csv')."
+  },
+  "exportScreenTitle": "Export",
+  "@exportScreenTitle": {
+    "description": "Export screen title."
+  },
+  "exportSharePdfTooltip": "Share PDF",
+  "exportShareCsvTooltip": "Share CSV",
+  "exportPdfError": "Couldn't create the PDF: {error}",
+  "@exportPdfError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "exportCsvError": "Couldn't create the CSV: {error}",
+  "@exportCsvError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "exportBulkTitle": "Bulk export",
+  "@exportBulkTitle": {
+    "description": "Bulk export screen title."
+  },
+  "exportBulkDeselectAll": "Clear",
+  "@exportBulkDeselectAll": {
+    "description": "App bar action: deselect all."
+  },
+  "exportBulkSelectAll": "All",
+  "@exportBulkSelectAll": {
+    "description": "App bar action: select all."
+  },
+  "exportBulkShareButton": "{count, plural, =1{Share 1 level book} other{Share {count} level books}}",
+  "@exportBulkShareButton": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exportBulkProOnlyTitle": "Pro feature",
+  "exportBulkProOnlyBody": "Share several level books as PDF/CSV at once.",
+  "exportBulkFormatBoth": "Both",
+  "@exportBulkFormatBoth": {
+    "description": "Bulk export format segment: PDF and CSV."
+  },
+  "exportBulkManifestTitle": "Include submission package manifest",
+  "exportBulkManifestSubtitle": "Lists the selected level books, generated files and station counts.",
+  "exportBulkSummaryTitle": "Include check/submission summary CSV",
+  "exportBulkSummarySubtitle": "Puts each level book's BM, section, misclosure and result in one file.",
+  "exportBulkNothingToExport": "No selected level book has data to export",
+  "exportBulkShared": "{count, plural, =1{Shared 1 file} other{Shared {count} files}}",
+  "@exportBulkShared": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exportBulkError": "Bulk export didn't complete: {error}",
+  "@exportBulkError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "exportBulkProRequired": "Available with Lv Book Pro (one-time purchase).",
+  "@exportBulkProRequired": {
+    "description": "Shown when a non-Pro user tries bulk export."
+  },
+  "exportImportUtf8Only": "Only UTF-8 CSV is supported. Some characters are garbled, so the file can't be imported. In Excel, save it again as \"CSV UTF-8 (Comma delimited)\".",
+  "@exportImportUtf8Only": {
+    "description": "CSV import error: not UTF-8."
+  },
+  "exportImportDefaultTitle": "Imported level book",
+  "@exportImportDefaultTitle": {
+    "description": "Title for an imported level book when the CSV has none."
+  },
+  "exportImportDateUnrecognized": "Couldn't read the date \"{value}\", so it was set to {date}.",
+  "@exportImportDateUnrecognized": {
+    "description": "CSV import warning.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "exportImportDateMissing": "The CSV has no date, so it was set to {date}.",
+  "@exportImportDateMissing": {
+    "description": "CSV import warning.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "exportImportHeaderNotFound": "Couldn't find the measurement table header.",
+  "@exportImportHeaderNotFound": {
+    "description": "CSV import error."
+  },
+  "exportImportInvalidNumber": "Row {row}: {column} is not a valid number.",
+  "@exportImportInvalidNumber": {
+    "description": "CSV import error; row is the 1-based CSV line.",
+    "placeholders": {
+      "row": {
+        "type": "int"
+      },
+      "column": {
+        "type": "String"
+      }
+    }
+  }
 }

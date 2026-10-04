@@ -1,12 +1,26 @@
 import 'package:archive/archive.dart';
 
+import '../../l10n/l10n.dart';
 import '../fieldbook/domain/fieldbook.dart';
 import '../fieldbook/domain/measurement.dart';
+import 'export_labels.dart';
+
+enum ProjectSubmissionPackageError { noFiles, zipFailed, noFieldBooks }
 
 class ProjectSubmissionPackageException implements Exception {
-  final String message;
+  final ProjectSubmissionPackageError code;
 
-  const ProjectSubmissionPackageException(this.message);
+  const ProjectSubmissionPackageException(this.code);
+
+  String localizedMessage(AppLocalizations l10n) => switch (code) {
+    ProjectSubmissionPackageError.noFiles => l10n.exportPackageNoFiles,
+    ProjectSubmissionPackageError.zipFailed => l10n.exportPackageZipError,
+    ProjectSubmissionPackageError.noFieldBooks =>
+      l10n.exportPackageNoFieldBooks,
+  };
+
+  /// Legacy Korean message; prefer [localizedMessage].
+  String get message => localizedMessage(l10nKo);
 
   @override
   String toString() => message;
@@ -31,7 +45,9 @@ class ProjectSubmissionPackage {
     List<ProjectSubmissionPackageFile> files,
   ) {
     if (files.isEmpty) {
-      throw const ProjectSubmissionPackageException('패키지로 만들 파일이 없습니다.');
+      throw const ProjectSubmissionPackageException(
+        ProjectSubmissionPackageError.noFiles,
+      );
     }
 
     final archive = Archive();
@@ -43,7 +59,9 @@ class ProjectSubmissionPackage {
 
     final bytes = ZipEncoder().encode(archive);
     if (bytes.isEmpty) {
-      throw const ProjectSubmissionPackageException('제출 패키지 ZIP 생성에 실패했습니다.');
+      throw const ProjectSubmissionPackageException(
+        ProjectSubmissionPackageError.zipFailed,
+      );
     }
     return bytes;
   }
@@ -53,38 +71,53 @@ class ProjectSubmissionPackage {
     required List<FieldBook> fieldBooks,
     required Map<int, List<Measurement>> measurementsByFieldBookId,
     required List<String> fileNames,
+    required AppLocalizations l10n,
   }) {
     if (fieldBooks.isEmpty) {
-      throw const ProjectSubmissionPackageException('패키지로 만들 야장이 없습니다.');
+      throw const ProjectSubmissionPackageException(
+        ProjectSubmissionPackageError.noFieldBooks,
+      );
     }
 
     final buffer = StringBuffer()
-      ..writeln('레벨 야장 제출 패키지')
+      ..writeln(l10n.exportManifestTitle)
       ..writeln(
-        '현장: ${projectName.trim().isEmpty ? '현장명 미입력' : projectName.trim()}',
+        l10n.exportManifestSite(
+          projectName.trim().isEmpty
+              ? l10n.exportManifestSiteNotSet
+              : projectName.trim(),
+        ),
       )
-      ..writeln('파일 수: ${fileNames.length}')
+      ..writeln(l10n.exportManifestFileCount(fileNames.length))
       ..writeln();
 
     for (final fieldBook in fieldBooks) {
       final count = measurementsByFieldBookId[fieldBook.id]?.length ?? 0;
       buffer.writeln(
-        '- ${fieldBook.title}: 측점 $count개, 검토 상태 ${fieldBook.reviewStatus.label}',
+        l10n.exportManifestFieldBookLine(
+          fieldBook.title,
+          count,
+          exportReviewStatusLabel(l10n, fieldBook.reviewStatus),
+        ),
       );
       final reviewMemo = fieldBook.reviewMemo?.trim();
       if (reviewMemo != null && reviewMemo.isNotEmpty) {
-        buffer.writeln('  검토 메모: $reviewMemo');
+        buffer.writeln(
+          '  ${l10n.exportLabelValue(l10n.exportFieldReviewMemo, reviewMemo)}',
+        );
       }
       final reviewedAt = fieldBook.reviewedAt;
       if (reviewedAt != null) {
-        buffer.writeln('  검토일: ${_formatDate(reviewedAt)}');
+        buffer.writeln(
+          '  ${l10n.exportLabelValue(l10n.exportFieldReviewDate, _formatDate(reviewedAt))}',
+        );
       }
     }
 
     if (fileNames.isNotEmpty) {
       buffer
         ..writeln()
-        ..writeln('포함 파일');
+        ..writeln(l10n.exportManifestIncludedFiles);
       for (final fileName in fileNames) {
         buffer.writeln('- $fileName');
       }

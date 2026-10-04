@@ -1,34 +1,105 @@
 import 'measurement.dart';
 import '../../export/export_judgement.dart';
 
+/// Export checklist entries. UI text comes from l10n
+/// (`fieldbook_l10n.dart`); [MeasurementValidationItem.label] is the legacy
+/// Korean text.
+enum MeasurementCheck {
+  stationRows,
+  firstBs,
+  lastFs,
+  tpComplete,
+  emptyRows,
+  tolerance,
+}
+
+/// Problems found by [MeasurementValidation]. UI text comes from l10n
+/// (`fieldbook_l10n.dart`); [MeasurementValidationResult.messages] is the
+/// legacy Korean text.
+enum MeasurementIssue {
+  noStationRows,
+  firstBsMissing,
+  lastFsMissing,
+  tpIncomplete,
+  emptyRows,
+  exceedsTolerance,
+}
+
+const _koCheckLabels = {
+  MeasurementCheck.stationRows: '측점 행',
+  MeasurementCheck.firstBs: '첫 BS',
+  MeasurementCheck.lastFs: '마지막 FS',
+  MeasurementCheck.tpComplete: 'TP 완성',
+  MeasurementCheck.emptyRows: '빈 행',
+  MeasurementCheck.tolerance: '허용오차',
+};
+
+const _koPassedMessages = {
+  MeasurementCheck.stationRows: '측점 행이 있습니다.',
+  MeasurementCheck.firstBs: '첫 행에 BS가 있습니다.',
+  MeasurementCheck.lastFs: '마지막 관측값이 정리되었습니다.',
+  MeasurementCheck.tpComplete: 'TP 행이 완성되었습니다.',
+  MeasurementCheck.emptyRows: '측정값 없는 행이 없습니다.',
+  MeasurementCheck.tolerance: '허용오차 이내입니다.',
+};
+
+const _koFailedMessages = {
+  MeasurementCheck.stationRows: '측점 행이 필요합니다.',
+  MeasurementCheck.firstBs: '첫 행에는 후시(BS)가 필요합니다.',
+  MeasurementCheck.lastFs: '마지막 행에는 전시(FS)가 필요합니다.',
+  MeasurementCheck.tpComplete: 'TP 행에는 BS와 FS가 모두 필요합니다.',
+  MeasurementCheck.emptyRows: '측정값이 없는 행을 정리하세요.',
+  MeasurementCheck.tolerance: '허용오차를 초과했습니다.',
+};
+
+const _koIssueMessages = {
+  MeasurementIssue.noStationRows: '측점 행이 필요합니다.',
+  MeasurementIssue.firstBsMissing: '첫 행에는 후시(BS)가 필요합니다.',
+  MeasurementIssue.lastFsMissing: '마지막 행에는 전시(FS)가 필요합니다.',
+  MeasurementIssue.tpIncomplete: 'TP 행에는 후시(BS)와 전시(FS)가 모두 필요합니다.',
+  MeasurementIssue.emptyRows: '측정값이 없는 행을 정리하세요.',
+  MeasurementIssue.exceedsTolerance: '허용오차를 초과했습니다.',
+};
+
 class MeasurementValidationItem {
-  final String label;
+  final MeasurementCheck check;
   final bool passed;
-  final String message;
   final bool blocksExport;
 
   const MeasurementValidationItem({
-    required this.label,
+    required this.check,
     required this.passed,
-    required this.message,
     this.blocksExport = false,
   });
+
+  /// Korean label (legacy; UI uses `check.localizedLabel(l10n)`).
+  String get label => _koCheckLabels[check]!;
+
+  /// Korean message (legacy).
+  String get message =>
+      passed ? _koPassedMessages[check]! : _koFailedMessages[check]!;
 }
 
 class MeasurementValidationResult {
   final bool canExport;
-  final String judgementLabel;
-  final List<String> messages;
+  final List<MeasurementIssue> issues;
   final double closureError;
   final List<MeasurementValidationItem> checklist;
 
   const MeasurementValidationResult({
     required this.canExport,
-    required this.judgementLabel,
-    required this.messages,
+    required this.issues,
     required this.closureError,
     this.checklist = const [],
   });
+
+  /// Korean judgement (legacy; UI uses `localizedJudgement(l10n)`).
+  String get judgementLabel => canExport ? '적합' : '확인 필요';
+
+  /// Korean messages (legacy; UI maps [issues] with l10n).
+  List<String> get messages => [
+    for (final issue in issues) _koIssueMessages[issue]!,
+  ];
 
   bool get hasBlockingFailures =>
       checklist.any((item) => item.blocksExport && !item.passed);
@@ -58,24 +129,23 @@ class MeasurementValidation {
     required double startElevation,
     double tolerance = 0.001,
   }) {
-    final messages = <String>[];
+    final issues = <MeasurementIssue>[];
     final rows = trimTrailingUnmeasured(
       measurements.where((row) => row.stationName.trim().isNotEmpty).toList(),
     );
 
     if (rows.isEmpty) {
-      const item = MeasurementValidationItem(
-        label: '측점 행',
-        passed: false,
-        message: '측점 행이 필요합니다.',
-        blocksExport: true,
-      );
       return const MeasurementValidationResult(
         canExport: false,
-        judgementLabel: '확인 필요',
-        messages: ['측점 행이 필요합니다.'],
+        issues: [MeasurementIssue.noStationRows],
         closureError: 0,
-        checklist: [item],
+        checklist: [
+          MeasurementValidationItem(
+            check: MeasurementCheck.stationRows,
+            passed: false,
+            blocksExport: true,
+          ),
+        ],
       );
     }
 
@@ -88,61 +158,55 @@ class MeasurementValidation {
       (row) => row.bs != null || row.fs != null || row.gh != null,
     );
 
-    if (!hasFirstBs) messages.add('첫 행에는 후시(BS)가 필요합니다.');
-    if (!hasLastFs) messages.add('마지막 행에는 전시(FS)가 필요합니다.');
-    if (!tpComplete) messages.add('TP 행에는 후시(BS)와 전시(FS)가 모두 필요합니다.');
-    if (!hasNoIncompleteRows) messages.add('측정값이 없는 행을 정리하세요.');
+    if (!hasFirstBs) issues.add(MeasurementIssue.firstBsMissing);
+    if (!hasLastFs) issues.add(MeasurementIssue.lastFsMissing);
+    if (!tpComplete) issues.add(MeasurementIssue.tpIncomplete);
+    if (!hasNoIncompleteRows) issues.add(MeasurementIssue.emptyRows);
 
     final closureError = LevelClosure.error(
       rows,
       startElevation: startElevation,
     );
-    final isSuitable =
-        messages.isEmpty &&
-        ExportJudgement.isSuitable(closureError, tolerance: tolerance);
+    final withinTolerance = ExportJudgement.isSuitable(
+      closureError,
+      tolerance: tolerance,
+    );
+    final isSuitable = issues.isEmpty && withinTolerance;
 
-    if (!isSuitable && messages.isEmpty) {
-      messages.add('허용오차를 초과했습니다.');
+    if (!isSuitable && issues.isEmpty) {
+      issues.add(MeasurementIssue.exceedsTolerance);
     }
 
     final checklist = [
       MeasurementValidationItem(
-        label: '첫 BS',
+        check: MeasurementCheck.firstBs,
         passed: hasFirstBs,
-        message: hasFirstBs ? '첫 행에 BS가 있습니다.' : '첫 행에는 후시(BS)가 필요합니다.',
         blocksExport: true,
       ),
       MeasurementValidationItem(
-        label: '마지막 FS',
+        check: MeasurementCheck.lastFs,
         passed: hasLastFs,
-        message: hasLastFs ? '마지막 관측값이 정리되었습니다.' : '마지막 행에는 전시(FS)가 필요합니다.',
         blocksExport: true,
       ),
       MeasurementValidationItem(
-        label: 'TP 완성',
+        check: MeasurementCheck.tpComplete,
         passed: tpComplete,
-        message: tpComplete ? 'TP 행이 완성되었습니다.' : 'TP 행에는 BS와 FS가 모두 필요합니다.',
         blocksExport: true,
       ),
       MeasurementValidationItem(
-        label: '빈 행',
+        check: MeasurementCheck.emptyRows,
         passed: hasNoIncompleteRows,
-        message: hasNoIncompleteRows ? '측정값 없는 행이 없습니다.' : '측정값이 없는 행을 정리하세요.',
         blocksExport: true,
       ),
       MeasurementValidationItem(
-        label: '허용오차',
-        passed: ExportJudgement.isSuitable(closureError, tolerance: tolerance),
-        message: ExportJudgement.isSuitable(closureError, tolerance: tolerance)
-            ? '허용오차 이내입니다.'
-            : '허용오차를 초과했습니다.',
+        check: MeasurementCheck.tolerance,
+        passed: withinTolerance,
       ),
     ];
 
     return MeasurementValidationResult(
       canExport: isSuitable,
-      judgementLabel: isSuitable ? '적합' : '확인 필요',
-      messages: messages,
+      issues: issues,
       closureError: closureError,
       checklist: checklist,
     );

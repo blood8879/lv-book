@@ -24,6 +24,7 @@ import '../../import/csv_importer.dart';
 import '../../project/data/project_providers.dart';
 import 'fieldbook_edit_screen.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../l10n/l10n.dart';
 
 class FieldBookListScreen extends ConsumerWidget {
   final int projectId;
@@ -40,7 +41,8 @@ class FieldBookListScreen extends ConsumerWidget {
           padding: EdgeInsets.only(top: 8),
           child: ListSkeleton(),
         ),
-        error: (e, _) => Center(child: Text('오류: $e')),
+        error: (e, _) =>
+            Center(child: Text(context.l10n.coreErrorWithDetail('$e'))),
         data: (fieldBooks) => _FieldBookListContent(
           projectId: projectId,
           fieldBooks: fieldBooks,
@@ -52,12 +54,13 @@ class FieldBookListScreen extends ConsumerWidget {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showActionSheet(context, ref),
         icon: const Icon(Icons.add),
-        label: const Text('야장'),
+        label: Text(context.l10n.fieldbookFabLabel),
       ),
     );
   }
 
   void _showActionSheet(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     showModalBottomSheet<void>(
       context: context,
       builder: (sheetContext) => SafeArea(
@@ -66,7 +69,7 @@ class FieldBookListScreen extends ConsumerWidget {
           children: [
             ListTile(
               leading: const Icon(Icons.note_add_outlined),
-              title: const Text('새 야장'),
+              title: Text(l10n.fieldbookNewTitle),
               onTap: () {
                 Navigator.pop(sheetContext);
                 _showCreateDialog(context, ref);
@@ -74,7 +77,7 @@ class FieldBookListScreen extends ConsumerWidget {
             ),
             ListTile(
               leading: const Icon(Icons.upload_file_outlined),
-              title: const Text('CSV 가져오기'),
+              title: Text(l10n.fieldbookImportCsv),
               onTap: () {
                 Navigator.pop(sheetContext);
                 _showCsvImportDialog(context, ref);
@@ -82,7 +85,7 @@ class FieldBookListScreen extends ConsumerWidget {
             ),
             ListTile(
               leading: const Icon(Icons.backup_outlined),
-              title: const Text('프로젝트 백업 공유'),
+              title: Text(l10n.fieldbookShareBackup),
               onTap: () {
                 Navigator.pop(sheetContext);
                 _shareProjectBackup(context, ref);
@@ -90,7 +93,7 @@ class FieldBookListScreen extends ConsumerWidget {
             ),
             ListTile(
               leading: const Icon(Icons.restore_page_outlined),
-              title: const Text('백업 JSON 복원'),
+              title: Text(l10n.fieldbookRestoreBackupJson),
               onTap: () {
                 Navigator.pop(sheetContext);
                 _showBackupRestoreDialog(context, ref);
@@ -103,6 +106,7 @@ class FieldBookListScreen extends ConsumerWidget {
   }
 
   Future<void> _shareProjectBackup(BuildContext context, WidgetRef ref) async {
+    final l10n = context.l10n;
     try {
       final service = ref.read(projectBackupServiceProvider);
       final data = await service.collectProject(projectId);
@@ -116,7 +120,12 @@ class FieldBookListScreen extends ConsumerWidget {
         source: source,
       );
     } catch (error) {
-      if (context.mounted) AppSnackbar.error(context, '백업 공유 실패: $error');
+      if (context.mounted) {
+        AppSnackbar.error(
+          context,
+          l10n.fieldbookShareBackupError(_backupErrorDetail(l10n, error)),
+        );
+      }
     }
   }
 
@@ -125,11 +134,12 @@ class FieldBookListScreen extends ConsumerWidget {
     WidgetRef ref,
   ) async {
     final controller = TextEditingController();
+    final l10n = context.l10n;
     try {
       final source = await showDialog<String>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('백업 JSON 복원'),
+          title: Text(l10n.fieldbookRestoreBackupJson),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -143,20 +153,20 @@ class FieldBookListScreen extends ConsumerWidget {
                     if (content != null) controller.text = content;
                   } on TextFileEncodingException catch (error) {
                     if (context.mounted) {
-                      AppSnackbar.error(context, error.message);
+                      AppSnackbar.error(context, error.localizedMessage(l10n));
                     }
                   }
                 },
                 icon: const Icon(Icons.folder_open_outlined, size: 18),
-                label: const Text('백업 파일 선택 (.json)'),
+                label: Text(l10n.fieldbookChooseBackupFile),
               ),
               const SizedBox(height: 10),
               TextField(
                 controller: controller,
                 minLines: 6,
                 maxLines: 10,
-                decoration: const InputDecoration(
-                  hintText: '또는 공유받은 lvbook_backup.json 내용을 붙여넣으세요.',
+                decoration: InputDecoration(
+                  hintText: l10n.fieldbookBackupPasteHint,
                 ),
               ),
             ],
@@ -164,11 +174,11 @@ class FieldBookListScreen extends ConsumerWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('취소'),
+              child: Text(l10n.coreCancel),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(context, controller.text),
-              child: const Text('복원'),
+              child: Text(l10n.fieldbookRestoreButton),
             ),
           ],
         ),
@@ -179,16 +189,20 @@ class FieldBookListScreen extends ConsumerWidget {
       ref.invalidate(fieldBookListProvider(projectId));
       ref.invalidate(projectListProvider);
       if (context.mounted) {
-        AppSnackbar.success(context, '백업을 새 프로젝트로 복원했습니다.');
+        AppSnackbar.success(context, l10n.fieldbookBackupRestoredMessage);
       }
     } catch (error) {
       if (context.mounted) {
-        AppSnackbar.error(context, '백업 복원 실패: $error');
+        AppSnackbar.error(
+          context,
+          l10n.fieldbookRestoreBackupError(_backupErrorDetail(l10n, error)),
+        );
       }
     }
   }
 
   void _showCreateDialog(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final titleController = TextEditingController();
     final elevationController = TextEditingController();
     final bmNameController = TextEditingController();
@@ -238,16 +252,16 @@ class FieldBookListScreen extends ConsumerWidget {
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      '새 야장',
+                      l10n.fieldbookNewTitle,
                       style: Theme.of(sheetContext).textTheme.titleLarge,
                     ),
                   ),
                   const SizedBox(height: 16),
                   TextField(
                     controller: titleController,
-                    decoration: const InputDecoration(
-                      labelText: '야장 제목 *',
-                      hintText: '야장 제목',
+                    decoration: InputDecoration(
+                      labelText: l10n.fieldbookTitleLabel,
+                      hintText: l10n.fieldbookTitleHint,
                     ),
                     autofocus: true,
                   ),
@@ -255,9 +269,15 @@ class FieldBookListScreen extends ConsumerWidget {
                   // Toggle between BM selection and custom input
                   if (benchmarks.isNotEmpty)
                     SegmentedButton<bool>(
-                      segments: const [
-                        ButtonSegment(value: false, label: Text('BM 선택')),
-                        ButtonSegment(value: true, label: Text('직접 입력')),
+                      segments: [
+                        ButtonSegment(
+                          value: false,
+                          label: Text(l10n.fieldbookSelectBm),
+                        ),
+                        ButtonSegment(
+                          value: true,
+                          label: Text(l10n.fieldbookEnterManually),
+                        ),
                       ],
                       selected: {useCustomBm},
                       showSelectedIcon: false,
@@ -271,7 +291,9 @@ class FieldBookListScreen extends ConsumerWidget {
                       children: [
                         DropdownButtonFormField<BenchMark>(
                           initialValue: selectedBm,
-                          decoration: const InputDecoration(labelText: '시작 BM'),
+                          decoration: InputDecoration(
+                            labelText: l10n.fieldbookStartBmLabel,
+                          ),
                           items: benchmarks.map((bm) {
                             return DropdownMenuItem(
                               value: bm,
@@ -296,6 +318,7 @@ class FieldBookListScreen extends ConsumerWidget {
                               BenchMarkRecheck.warningFor(
                                 selectedBm!,
                                 now: DateTime.now(),
+                                l10n: l10n,
                               )!,
                               style: TextStyle(
                                 color: colors.err,
@@ -309,17 +332,17 @@ class FieldBookListScreen extends ConsumerWidget {
                   else ...[
                     TextField(
                       controller: bmNameController,
-                      decoration: const InputDecoration(
-                        labelText: 'BM 이름 (선택)',
-                        hintText: '예: BM.1',
+                      decoration: InputDecoration(
+                        labelText: l10n.fieldbookBmNameLabel,
+                        hintText: l10n.fieldbookBmNameHint,
                       ),
                     ),
                     const SizedBox(height: 12),
                     TextField(
                       controller: elevationController,
-                      decoration: const InputDecoration(
-                        labelText: '시작 표고 (m) *',
-                        hintText: '예: 100.000',
+                      decoration: InputDecoration(
+                        labelText: l10n.fieldbookStartElevationLabel,
+                        hintText: l10n.fieldbookStartElevationHint,
                       ),
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
@@ -329,35 +352,47 @@ class FieldBookListScreen extends ConsumerWidget {
                   const SizedBox(height: 4),
                   ExpansionTile(
                     tilePadding: EdgeInsets.zero,
-                    title: const Text('현장 메타데이터'),
+                    title: Text(l10n.fieldbookSiteDetailsTitle),
                     trailing: Text(
-                      '측량자·장비·날씨 등 6항목',
+                      l10n.fieldbookSiteDetailsSummary,
                       style: TextStyle(fontSize: 12.5, color: colors.subtext),
                     ),
                     children: [
                       TextField(
                         controller: surveyorController,
-                        decoration: const InputDecoration(labelText: '측량자'),
+                        decoration: InputDecoration(
+                          labelText: l10n.fieldbookSurveyorLabel,
+                        ),
                       ),
                       TextField(
                         controller: checkerController,
-                        decoration: const InputDecoration(labelText: '검측자'),
+                        decoration: InputDecoration(
+                          labelText: l10n.fieldbookCheckerLabel,
+                        ),
                       ),
                       TextField(
                         controller: instrumentController,
-                        decoration: const InputDecoration(labelText: '장비'),
+                        decoration: InputDecoration(
+                          labelText: l10n.fieldbookInstrumentLabel,
+                        ),
                       ),
                       TextField(
                         controller: weatherController,
-                        decoration: const InputDecoration(labelText: '날씨'),
+                        decoration: InputDecoration(
+                          labelText: l10n.fieldbookWeatherLabel,
+                        ),
                       ),
                       TextField(
                         controller: workSectionController,
-                        decoration: const InputDecoration(labelText: '작업구간'),
+                        decoration: InputDecoration(
+                          labelText: l10n.fieldbookWorkSectionLabel,
+                        ),
                       ),
                       TextField(
                         controller: jobNumberController,
-                        decoration: const InputDecoration(labelText: '공사번호'),
+                        decoration: InputDecoration(
+                          labelText: l10n.fieldbookJobNumberLabel,
+                        ),
                       ),
                     ],
                   ),
@@ -367,7 +402,7 @@ class FieldBookListScreen extends ConsumerWidget {
                       Expanded(
                         child: OutlinedButton(
                           onPressed: () => Navigator.pop(sheetContext),
-                          child: const Text('취소'),
+                          child: Text(l10n.coreCancel),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -423,7 +458,7 @@ class FieldBookListScreen extends ConsumerWidget {
                               ),
                             );
                           },
-                          child: const Text('생성'),
+                          child: Text(l10n.fieldbookCreateButton),
                         ),
                       ),
                     ],
@@ -464,10 +499,13 @@ class FieldBookListScreen extends ConsumerWidget {
   ) async {
     if (_duplicating) return;
     _duplicating = true;
+    final l10n = context.l10n;
     try {
       await _duplicateFieldBookUnguarded(context, ref, source);
     } catch (error) {
-      if (context.mounted) AppSnackbar.error(context, '야장 복제 실패: $error');
+      if (context.mounted) {
+        AppSnackbar.error(context, l10n.fieldbookDuplicateError('$error'));
+      }
     } finally {
       _duplicating = false;
     }
@@ -478,6 +516,7 @@ class FieldBookListScreen extends ConsumerWidget {
     WidgetRef ref,
     FieldBook source,
   ) async {
+    final l10n = context.l10n;
     final measurements = await ref
         .read(measurementRepositoryProvider)
         .getByFieldBookId(source.id!);
@@ -485,6 +524,7 @@ class FieldBookListScreen extends ConsumerWidget {
       source: source,
       measurements: measurements,
       newDate: DateTime.now(),
+      copyName: l10n.fieldbookCopyName,
     );
     await _insertFieldBookWithMeasurements(
       duplicate.fieldBook,
@@ -492,19 +532,19 @@ class FieldBookListScreen extends ConsumerWidget {
     );
     ref.invalidate(fieldBookListProvider(projectId));
     if (!context.mounted) return;
-    AppSnackbar.success(context, '야장 구조를 복제했습니다');
+    AppSnackbar.success(context, l10n.fieldbookDuplicatedMessage);
   }
 
   void _confirmDelete(BuildContext context, WidgetRef ref, FieldBook fb) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('야장 삭제'),
-        content: Text('"${fb.title}" 야장을 삭제하시겠습니까?'),
+        title: Text(context.l10n.fieldbookDeleteTitle),
+        content: Text(context.l10n.fieldbookDeleteConfirm(fb.title)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('취소'),
+            child: Text(context.l10n.coreCancel),
           ),
           FilledButton(
             onPressed: () {
@@ -517,7 +557,7 @@ class FieldBookListScreen extends ConsumerWidget {
               backgroundColor: context.appColors.err,
               foregroundColor: Colors.white,
             ),
-            child: const Text('삭제'),
+            child: Text(context.l10n.coreDelete),
           ),
         ],
       ),
@@ -527,11 +567,12 @@ class FieldBookListScreen extends ConsumerWidget {
   void _showCsvImportDialog(BuildContext context, WidgetRef ref) {
     final csvController = TextEditingController();
     var importing = false;
+    final l10n = context.l10n;
     showDialog<void>(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          title: const Text('CSV 가져오기'),
+          title: Text(l10n.fieldbookImportCsv),
           content: SizedBox(
             width: double.maxFinite,
             child: Column(
@@ -549,20 +590,23 @@ class FieldBookListScreen extends ConsumerWidget {
                             if (content != null) csvController.text = content;
                           } on TextFileEncodingException catch (error) {
                             if (context.mounted) {
-                              AppSnackbar.error(context, error.message);
+                              AppSnackbar.error(
+                                context,
+                                error.localizedMessage(l10n),
+                              );
                             }
                           }
                         },
                   icon: const Icon(Icons.folder_open_outlined, size: 18),
-                  label: const Text('CSV 파일 선택 (.csv)'),
+                  label: Text(l10n.fieldbookChooseCsvFile),
                 ),
                 const SizedBox(height: 10),
                 TextField(
                   controller: csvController,
                   maxLines: 10,
-                  decoration: const InputDecoration(
-                    hintText: '또는 Lv Book에서 내보낸 CSV 내용을 붙여넣으세요.',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    hintText: l10n.fieldbookCsvPasteHint,
+                    border: const OutlineInputBorder(),
                   ),
                 ),
               ],
@@ -571,7 +615,7 @@ class FieldBookListScreen extends ConsumerWidget {
           actions: [
             TextButton(
               onPressed: importing ? null : () => Navigator.pop(context),
-              child: const Text('취소'),
+              child: Text(l10n.coreCancel),
             ),
             FilledButton(
               onPressed: importing
@@ -581,6 +625,7 @@ class FieldBookListScreen extends ConsumerWidget {
                         csvController.text,
                         projectId: projectId,
                         fallbackDate: DateTime.now(),
+                        l10n: l10n,
                       );
                       if (result.fieldBook == null) {
                         AppSnackbar.error(context, result.errors.join('\n'));
@@ -596,28 +641,37 @@ class FieldBookListScreen extends ConsumerWidget {
                       } catch (error) {
                         if (context.mounted) {
                           setDialogState(() => importing = false);
-                          AppSnackbar.error(context, 'CSV 가져오기 실패: $error');
+                          AppSnackbar.error(
+                            context,
+                            l10n.fieldbookCsvImportError('$error'),
+                          );
                         }
                         return;
                       }
                       if (!context.mounted) return;
                       if (result.warnings.isEmpty) {
-                        AppSnackbar.success(context, 'CSV를 가져왔습니다');
+                        AppSnackbar.success(context, l10n.fieldbookCsvImported);
                       } else {
                         AppSnackbar.error(
                           context,
-                          'CSV를 가져왔습니다. ${result.warnings.join('\n')}',
+                          l10n.fieldbookCsvImportedWithWarnings(
+                            result.warnings.join('\n'),
+                          ),
                         );
                       }
                       Navigator.pop(context);
                     },
-              child: const Text('가져오기'),
+              child: Text(l10n.fieldbookImportButton),
             ),
           ],
         ),
       ),
     );
   }
+
+  /// Backup errors carry a code; anything else is shown as-is.
+  static String _backupErrorDetail(AppLocalizations l10n, Object error) =>
+      error is ProjectBackupException ? error.localizedMessage(l10n) : '$error';
 
   String? _blankToNull(String value) {
     final trimmed = value.trim();
@@ -651,8 +705,8 @@ class _FieldBookListContentState extends State<_FieldBookListContent> {
       final colors = context.appColors;
       return EmptyState(
         icon: Icons.menu_book_outlined,
-        title: '첫 야장을 만들어 보세요',
-        message: '+ 버튼으로 새 야장을 만들거나\nCSV 가져오기로 기존 기록을 불러올 수 있습니다.',
+        title: context.l10n.fieldbookEmptyTitle,
+        message: context.l10n.fieldbookEmptyMessage,
         accent: colors.orange,
         accentSoft: colors.orangeSoft,
       );
@@ -665,10 +719,10 @@ class _FieldBookListContentState extends State<_FieldBookListContent> {
         Padding(
           padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
           child: TextField(
-            decoration: const InputDecoration(
-              prefixIcon: Icon(Icons.search),
-              labelText: '야장 검색',
-              hintText: '제목, 작업구간, 측량자, 날짜',
+            decoration: InputDecoration(
+              prefixIcon: const Icon(Icons.search),
+              labelText: context.l10n.fieldbookSearchLabel,
+              hintText: context.l10n.fieldbookSearchHint,
             ),
             onChanged: (value) => setState(() => _query = value),
           ),
@@ -690,13 +744,13 @@ class _FieldBookListContentState extends State<_FieldBookListContent> {
                 );
               },
               icon: const Icon(Icons.folder_copy_outlined),
-              label: const Text('일괄 내보내기'),
+              label: Text(context.l10n.fieldbookBulkExportButton),
             ),
           ),
         ),
         Expanded(
           child: filtered.isEmpty
-              ? const Center(child: Text('검색 결과가 없습니다'))
+              ? Center(child: Text(context.l10n.fieldbookNoSearchResults))
               : _buildList(filtered),
         ),
       ],
@@ -750,7 +804,7 @@ class _FieldBookListContentState extends State<_FieldBookListContent> {
               if (fb.workSection?.trim().isNotEmpty == true)
                 fb.workSection!.trim(),
               if (fb.surveyor?.trim().isNotEmpty == true)
-                '측량자 ${fb.surveyor!.trim()}',
+                context.l10n.fieldbookSurveyorSubtitle(fb.surveyor!.trim()),
             ].join(' · '),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -765,8 +819,14 @@ class _FieldBookListContentState extends State<_FieldBookListContent> {
             }
           },
           itemBuilder: (context) => [
-            const PopupMenuItem(value: 'duplicate', child: Text('구조 복제')),
-            const PopupMenuItem(value: 'delete', child: Text('삭제')),
+            PopupMenuItem(
+              value: 'duplicate',
+              child: Text(context.l10n.fieldbookDuplicateStructure),
+            ),
+            PopupMenuItem(
+              value: 'delete',
+              child: Text(context.l10n.coreDelete),
+            ),
           ],
         ),
         onTap: () {

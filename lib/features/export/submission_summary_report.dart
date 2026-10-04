@@ -1,11 +1,22 @@
+import '../../l10n/l10n.dart';
 import '../fieldbook/domain/fieldbook.dart';
 import '../fieldbook/domain/measurement.dart';
 import '../fieldbook/domain/measurement_validation.dart';
+import 'export_labels.dart';
+
+enum SubmissionSummaryError { noSelection }
 
 class SubmissionSummaryException implements Exception {
-  final String message;
+  final SubmissionSummaryError code;
 
-  const SubmissionSummaryException(this.message);
+  const SubmissionSummaryException(this.code);
+
+  String localizedMessage(AppLocalizations l10n) => switch (code) {
+    SubmissionSummaryError.noSelection => l10n.exportSummaryNoSelection,
+  };
+
+  /// Legacy Korean message; prefer [localizedMessage].
+  String get message => localizedMessage(l10nKo);
 
   @override
   String toString() => message;
@@ -53,19 +64,38 @@ class SubmissionSummaryRow {
 
 class SubmissionSummaryReport {
   static List<SubmissionSummaryRow> buildRows(
-    List<FieldBookSummaryInput> inputs,
-  ) {
+    List<FieldBookSummaryInput> inputs, {
+    required AppLocalizations l10n,
+  }) {
     if (inputs.isEmpty) {
-      throw const SubmissionSummaryException('요약할 야장을 선택하세요.');
+      throw const SubmissionSummaryException(
+        SubmissionSummaryError.noSelection,
+      );
     }
 
-    return [for (final input in inputs) _buildRow(input)];
+    return [for (final input in inputs) _buildRow(input, l10n)];
   }
 
-  static String generateCsv(List<FieldBookSummaryInput> inputs) {
-    final rows = buildRows(inputs);
+  static String generateCsv(
+    List<FieldBookSummaryInput> inputs, {
+    required AppLocalizations l10n,
+  }) {
+    final rows = buildRows(inputs, l10n: l10n);
     final buffer = StringBuffer()
-      ..writeln('야장명,날짜,시작 BM,작업구간,측량자,검토 상태,검토 메모,검토일,오차,검산 판정');
+      ..writeln(
+        [
+          l10n.exportFieldTitle,
+          l10n.exportFieldDate,
+          l10n.exportFieldStartBm,
+          l10n.exportFieldSection,
+          l10n.exportFieldSurveyor,
+          l10n.exportFieldReviewStatus,
+          l10n.exportFieldReviewMemo,
+          l10n.exportFieldReviewDate,
+          l10n.exportCheckMisclosure,
+          l10n.exportCheckResult,
+        ].map(_csvCell).join(','),
+      );
     for (final row in rows) {
       buffer.writeln(
         [
@@ -85,7 +115,10 @@ class SubmissionSummaryReport {
     return buffer.toString();
   }
 
-  static SubmissionSummaryRow _buildRow(FieldBookSummaryInput input) {
+  static SubmissionSummaryRow _buildRow(
+    FieldBookSummaryInput input,
+    AppLocalizations l10n,
+  ) {
     final validation = MeasurementValidation.validate(
       measurements: input.measurements,
       startElevation: input.startElevation,
@@ -96,11 +129,13 @@ class SubmissionSummaryReport {
       bmName: input.bmName,
       workSection: input.fieldBook.workSection?.trim() ?? '',
       surveyor: input.fieldBook.surveyor?.trim() ?? '',
-      reviewStatus: input.fieldBook.reviewStatus.label,
+      reviewStatus: exportReviewStatusLabel(l10n, input.fieldBook.reviewStatus),
       reviewMemo: input.fieldBook.reviewMemo?.trim() ?? '',
       reviewedAt: input.fieldBook.reviewedAt,
       closureError: validation.closureError,
-      judgement: validation.judgementLabel,
+      judgement: validation.canExport
+          ? l10n.coreJudgementWithinTolerance
+          : l10n.coreJudgementCheckRequired,
     );
   }
 

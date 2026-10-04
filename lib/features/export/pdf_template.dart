@@ -4,10 +4,12 @@ import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import '../../l10n/l10n.dart';
 import '../fieldbook/domain/fieldbook.dart';
 import '../fieldbook/domain/measurement.dart';
 import '../pro/pro_pdf_settings.dart';
 import 'export_judgement.dart';
+import 'export_labels.dart';
 import 'package:intl/intl.dart';
 
 class PdfExporter {
@@ -17,6 +19,7 @@ class PdfExporter {
     required String bmName,
     required double startElevation,
     ProPdfSettings? proSettings,
+    required AppLocalizations l10n,
   }) async {
     final ttf = await _loadKoreanFont();
 
@@ -26,8 +29,14 @@ class PdfExporter {
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.all(24),
-        header: (context) =>
-            _buildHeader(fieldBook, bmName, startElevation, ttf, proSettings),
+        header: (context) => _buildHeader(
+          fieldBook,
+          bmName,
+          startElevation,
+          ttf,
+          proSettings,
+          l10n,
+        ),
         footer: (context) => _buildFooter(context, ttf, proSettings),
         build: (context) => [
           if (proSettings?.watermarkText.trim().isNotEmpty == true)
@@ -43,12 +52,12 @@ class PdfExporter {
               ),
             ),
           pw.SizedBox(height: 12),
-          _buildTable(measurements, ttf),
+          _buildTable(measurements, ttf, l10n),
           pw.SizedBox(height: 16),
-          _buildSummary(measurements, startElevation, ttf, proSettings),
+          _buildSummary(measurements, startElevation, ttf, proSettings, l10n),
           if (proSettings?.includeSignatureLines == true) ...[
             pw.SizedBox(height: 20),
-            _buildSignatureLines(ttf, proSettings),
+            _buildSignatureLines(ttf, proSettings, l10n),
           ],
         ],
       ),
@@ -74,6 +83,7 @@ class PdfExporter {
     double startElevation,
     pw.Font ttf,
     ProPdfSettings? proSettings,
+    AppLocalizations l10n,
   ) {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -84,7 +94,7 @@ class PdfExporter {
             children: [
               pw.Text(
                 proSettings!.companyName.trim().isEmpty
-                    ? '회사명 미입력'
+                    ? l10n.exportCompanyNotSet
                     : proSettings.companyName.trim(),
                 style: pw.TextStyle(
                   font: ttf,
@@ -94,7 +104,10 @@ class PdfExporter {
               ),
               if (proSettings.authorName.trim().isNotEmpty)
                 pw.Text(
-                  '작성자: ${proSettings.authorName.trim()}',
+                  l10n.exportLabelValue(
+                    l10n.exportFieldAuthor,
+                    proSettings.authorName.trim(),
+                  ),
                   style: pw.TextStyle(font: ttf, fontSize: 10),
                 ),
             ],
@@ -104,8 +117,10 @@ class PdfExporter {
         pw.Center(
           child: pw.Text(
             proSettings == null
-                ? '직접수준측량 야장'
-                : '직접수준측량 야장 · ${proSettings.documentTemplate.title}',
+                ? l10n.exportDocTitle
+                : l10n.exportDocTitleWithTemplate(
+                    proSettings.documentTemplate.label(l10n),
+                  ),
             style: pw.TextStyle(
               font: ttf,
               fontSize: 21,
@@ -119,11 +134,14 @@ class PdfExporter {
           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
           children: [
             pw.Text(
-              '야장명: ${fieldBook.title}',
+              l10n.exportLabelValue(l10n.exportFieldTitle, fieldBook.title),
               style: pw.TextStyle(font: ttf, fontSize: 12),
             ),
             pw.Text(
-              '날짜: ${DateFormat('yyyy-MM-dd').format(fieldBook.date)}',
+              l10n.exportLabelValue(
+                l10n.exportFieldDate,
+                DateFormat('yyyy-MM-dd').format(fieldBook.date),
+              ),
               style: pw.TextStyle(font: ttf, fontSize: 12),
             ),
           ],
@@ -133,21 +151,24 @@ class PdfExporter {
           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
           children: [
             pw.Text(
-              '시작 BM: $bmName',
+              l10n.exportLabelValue(l10n.exportFieldStartBm, bmName),
               style: pw.TextStyle(font: ttf, fontSize: 12),
             ),
             pw.Text(
-              'BM 표고: ${startElevation.toStringAsFixed(3)} m',
+              l10n.exportLabelValue(
+                l10n.exportFieldBmElevation,
+                '${startElevation.toStringAsFixed(3)} m',
+              ),
               style: pw.TextStyle(font: ttf, fontSize: 12),
             ),
           ],
         ),
-        ..._metadataRows(fieldBook, ttf),
+        ..._metadataRows(fieldBook, ttf, l10n),
         if (fieldBook.memo != null && fieldBook.memo!.isNotEmpty)
           pw.Padding(
             padding: const pw.EdgeInsets.only(top: 4),
             child: pw.Text(
-              '메모: ${fieldBook.memo}',
+              l10n.exportLabelValue(l10n.exportFieldMemo, fieldBook.memo!),
               style: pw.TextStyle(font: ttf, fontSize: 10),
             ),
           ),
@@ -157,8 +178,12 @@ class PdfExporter {
     );
   }
 
-  static List<pw.Widget> _metadataRows(FieldBook fieldBook, pw.Font ttf) {
-    final items = metadataLabelsForTest(fieldBook);
+  static List<pw.Widget> _metadataRows(
+    FieldBook fieldBook,
+    pw.Font ttf,
+    AppLocalizations l10n,
+  ) {
+    final items = metadataLabelsForTest(fieldBook, l10n: l10n);
     if (items.isEmpty) return const [];
     return [
       pw.SizedBox(height: 4),
@@ -173,29 +198,44 @@ class PdfExporter {
     ];
   }
 
-  static List<String> metadataLabelsForTest(FieldBook fieldBook) {
+  static List<String> metadataLabelsForTest(
+    FieldBook fieldBook, {
+    required AppLocalizations l10n,
+  }) {
+    String item(String label, String value) =>
+        l10n.exportLabelValue(label, value);
     return [
       if (fieldBook.surveyor?.trim().isNotEmpty == true)
-        '측량자: ${fieldBook.surveyor!.trim()}',
+        item(l10n.exportFieldSurveyor, fieldBook.surveyor!.trim()),
       if (fieldBook.checker?.trim().isNotEmpty == true)
-        '검측자: ${fieldBook.checker!.trim()}',
+        item(l10n.exportFieldChecker, fieldBook.checker!.trim()),
       if (fieldBook.instrument?.trim().isNotEmpty == true)
-        '장비: ${fieldBook.instrument!.trim()}',
+        item(l10n.exportFieldInstrument, fieldBook.instrument!.trim()),
       if (fieldBook.weather?.trim().isNotEmpty == true)
-        '날씨: ${fieldBook.weather!.trim()}',
+        item(l10n.exportFieldWeather, fieldBook.weather!.trim()),
       if (fieldBook.workSection?.trim().isNotEmpty == true)
-        '작업구간: ${fieldBook.workSection!.trim()}',
+        item(l10n.exportFieldSection, fieldBook.workSection!.trim()),
       if (fieldBook.jobNumber?.trim().isNotEmpty == true)
-        '공사번호: ${fieldBook.jobNumber!.trim()}',
-      '검토 상태: ${fieldBook.reviewStatus.label}',
+        item(l10n.exportFieldJobNumber, fieldBook.jobNumber!.trim()),
+      item(
+        l10n.exportFieldReviewStatus,
+        exportReviewStatusLabel(l10n, fieldBook.reviewStatus),
+      ),
       if (fieldBook.reviewedAt != null)
-        '검토일: ${DateFormat('yyyy-MM-dd').format(fieldBook.reviewedAt!)}',
+        item(
+          l10n.exportFieldReviewDate,
+          DateFormat('yyyy-MM-dd').format(fieldBook.reviewedAt!),
+        ),
       if (fieldBook.reviewMemo?.trim().isNotEmpty == true)
-        '검토 메모: ${fieldBook.reviewMemo!.trim()}',
+        item(l10n.exportFieldReviewMemo, fieldBook.reviewMemo!.trim()),
     ];
   }
 
-  static pw.Widget _buildTable(List<Measurement> measurements, pw.Font ttf) {
+  static pw.Widget _buildTable(
+    List<Measurement> measurements,
+    pw.Font ttf,
+    AppLocalizations l10n,
+  ) {
     final style = pw.TextStyle(font: ttf, fontSize: 10);
     final headerStyle = pw.TextStyle(
       font: ttf,
@@ -213,7 +253,7 @@ class PdfExporter {
       cellPadding: const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 4),
       border: pw.TableBorder.all(color: PdfColors.grey500, width: 0.7),
       headerDecoration: const pw.BoxDecoration(color: PdfColors.grey200),
-      headers: ['No.', '측점명', '후시(BS)', '전시(FS)', '기계고(IH)', '지반고(GH)', '비고'],
+      headers: exportTableHeaders(l10n),
       data: measurements.asMap().entries.map((entry) {
         final i = entry.key;
         final m = entry.value;
@@ -235,6 +275,7 @@ class PdfExporter {
     double startElevation,
     pw.Font ttf,
     ProPdfSettings? proSettings,
+    AppLocalizations l10n,
   ) {
     final sums = LevelCheckSums.from(
       measurements,
@@ -263,7 +304,7 @@ class PdfExporter {
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
           pw.Text(
-            '검산',
+            l10n.exportCheckTitle,
             style: pw.TextStyle(
               font: ttf,
               fontSize: 12,
@@ -274,10 +315,19 @@ class PdfExporter {
           pw.Row(
             mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
             children: [
-              pw.Text('ΣBS = ${sumBs.toStringAsFixed(3)}', style: style),
-              pw.Text('ΣFS = ${sumFs.toStringAsFixed(3)}', style: style),
               pw.Text(
-                'ΣBS - ΣFS = ${(sumBs - sumFs).toStringAsFixed(3)}',
+                l10n.exportCheckValue('ΣBS', sumBs.toStringAsFixed(3)),
+                style: style,
+              ),
+              pw.Text(
+                l10n.exportCheckValue('ΣFS', sumFs.toStringAsFixed(3)),
+                style: style,
+              ),
+              pw.Text(
+                l10n.exportCheckValue(
+                  l10n.exportCheckDifference,
+                  (sumBs - sumFs).toStringAsFixed(3),
+                ),
                 style: style,
               ),
             ],
@@ -286,10 +336,25 @@ class PdfExporter {
           pw.Row(
             mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
             children: [
-              pw.Text('시작 GH = ${firstGh.toStringAsFixed(3)}', style: style),
-              pw.Text('최종 GH = ${lastGh.toStringAsFixed(3)}', style: style),
               pw.Text(
-                '오차 = ${error.toStringAsFixed(4)}',
+                l10n.exportCheckValue(
+                  l10n.exportCheckStartRl,
+                  firstGh.toStringAsFixed(3),
+                ),
+                style: style,
+              ),
+              pw.Text(
+                l10n.exportCheckValue(
+                  l10n.exportCheckFinalRl,
+                  lastGh.toStringAsFixed(3),
+                ),
+                style: style,
+              ),
+              pw.Text(
+                l10n.exportCheckValue(
+                  l10n.exportCheckMisclosure,
+                  error.toStringAsFixed(4),
+                ),
                 style: pw.TextStyle(
                   font: ttf,
                   fontSize: 10,
@@ -315,7 +380,10 @@ class PdfExporter {
                 borderRadius: pw.BorderRadius.circular(4),
               ),
               child: pw.Text(
-                '검산 판정: ${isOk ? '적합' : '확인 필요'}',
+                l10n.exportLabelValue(
+                  l10n.exportCheckResult,
+                  ExportJudgement.label(error, l10n: l10n),
+                ),
                 style: pw.TextStyle(
                   font: ttf,
                   fontSize: 10,
@@ -333,6 +401,7 @@ class PdfExporter {
   static pw.Widget _buildSignatureLines(
     pw.Font ttf,
     ProPdfSettings? proSettings,
+    AppLocalizations l10n,
   ) {
     pw.MemoryImage? signatureImage;
     final signature = proSettings?.signaturePng.trim() ?? '';
@@ -389,11 +458,11 @@ class PdfExporter {
 
     return pw.Row(
       children: [
-        cell('작성', image: signatureImage),
+        cell(l10n.exportSignaturePrepared, image: signatureImage),
         pw.SizedBox(width: 8),
-        cell('검토'),
+        cell(l10n.exportSignatureChecked),
         pw.SizedBox(width: 8),
-        cell('승인'),
+        cell(l10n.exportSignatureApproved),
       ],
     );
   }

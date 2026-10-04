@@ -1,5 +1,6 @@
 import 'fieldbook.dart';
 import 'measurement.dart';
+import 'measurement_row_actions.dart';
 
 class DuplicatedFieldBook {
   final FieldBook fieldBook;
@@ -16,10 +17,11 @@ class FieldBookTemplates {
     required FieldBook source,
     required List<Measurement> measurements,
     required DateTime newDate,
+    String Function(String name) copyName = koreanCopyName,
   }) {
     final fieldBook = FieldBook(
       projectId: source.projectId,
-      title: '${source.title} 복사',
+      title: copyName(source.title),
       date: newDate,
       startBmId: source.startBmId,
       startElevation: source.startElevation,

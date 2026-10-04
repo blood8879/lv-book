@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lv_book/features/export/csv_exporter.dart';
 import 'package:lv_book/features/fieldbook/domain/fieldbook.dart';
+import 'package:lv_book/l10n/l10n.dart';
 
 void main() {
   test('metadata saves and reloads with field book', () {
@@ -36,6 +37,7 @@ void main() {
       measurements: const [],
       bmName: 'BM.1',
       startElevation: 100,
+      l10n: l10nKo,
     );
 
     expect(csv, isNot(contains('측량자')));

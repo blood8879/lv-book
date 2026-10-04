@@ -3,6 +3,7 @@ import 'package:archive/archive.dart';
 import 'package:lv_book/features/export/project_submission_package.dart';
 import 'package:lv_book/features/fieldbook/domain/fieldbook.dart';
 import 'package:lv_book/features/fieldbook/domain/measurement.dart';
+import 'package:lv_book/l10n/l10n.dart';
 
 void main() {
   test('Pro user generates project submission package manifest', () {
@@ -27,6 +28,7 @@ void main() {
         ],
       },
       fileNames: const ['야장 A.pdf', '야장 A.csv'],
+      l10n: l10nKo,
     );
 
     expect(manifest, contains('현장 A'));
@@ -41,6 +43,7 @@ void main() {
         fieldBooks: const [],
         measurementsByFieldBookId: const {},
         fileNames: const [],
+        l10n: l10nKo,
       ),
       throwsA(isA<ProjectSubmissionPackageException>()),
     );

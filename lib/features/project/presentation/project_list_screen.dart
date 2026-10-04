@@ -18,6 +18,7 @@ import '../../backup/project_backup_providers.dart';
 import '../../settings/settings_screen.dart';
 import '../../quickmemo/presentation/quick_memo_list_screen.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../l10n/l10n.dart';
 
 class ProjectListScreen extends ConsumerWidget {
   const ProjectListScreen({super.key});
@@ -25,14 +26,15 @@ class ProjectListScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final projectsAsync = ref.watch(projectListProvider);
+    final l10n = context.l10n;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('레벨 야장'),
+        title: Text(l10n.coreAppName),
         actions: [
           IconButton(
             icon: const Icon(Icons.bolt),
-            tooltip: '빠른 메모',
+            tooltip: l10n.projectListQuickMemoTooltip,
             onPressed: () {
               Navigator.push(
                 context,
@@ -42,7 +44,7 @@ class ProjectListScreen extends ConsumerWidget {
           ),
           IconButton(
             icon: const Icon(Icons.settings),
-            tooltip: '설정',
+            tooltip: l10n.projectListSettingsTooltip,
             onPressed: () {
               Navigator.push(
                 context,
@@ -61,7 +63,8 @@ class ProjectListScreen extends ConsumerWidget {
                 padding: EdgeInsets.only(top: 6),
                 child: ListSkeleton(),
               ),
-              error: (e, _) => Center(child: Text('오류: $e')),
+              error: (e, _) =>
+                  Center(child: Text(l10n.coreErrorWithDetail('$e'))),
               data: (projects) => _ProjectOverview(projects: projects),
             ),
           ),
@@ -78,32 +81,35 @@ class ProjectListScreen extends ConsumerWidget {
 
 /// Same flow as the FAB; also used by the empty-state primary action.
 void _showAddProjectDialog(BuildContext context, WidgetRef ref) {
+  final l10n = context.l10n;
   final nameController = TextEditingController();
   final descController = TextEditingController();
 
   showDialog(
     context: context,
     builder: (context) => AlertDialog(
-      title: const Text('새 프로젝트'),
+      title: Text(l10n.projectNewDialogTitle),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           TextField(
             controller: nameController,
-            decoration: const InputDecoration(labelText: '현장명 *'),
+            decoration: InputDecoration(labelText: l10n.projectSiteNameLabel),
             autofocus: true,
           ),
           const SizedBox(height: 12),
           TextField(
             controller: descController,
-            decoration: const InputDecoration(labelText: '설명 (선택)'),
+            decoration: InputDecoration(
+              labelText: l10n.projectDescriptionLabel,
+            ),
           ),
         ],
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('취소'),
+          child: Text(l10n.coreCancel),
         ),
         FilledButton(
           onPressed: () {
@@ -120,7 +126,7 @@ void _showAddProjectDialog(BuildContext context, WidgetRef ref) {
               Navigator.pop(context);
             }
           },
-          child: const Text('추가'),
+          child: Text(l10n.coreAdd),
         ),
       ],
     ),
@@ -133,6 +139,7 @@ class _ProEntryPanel extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = context.appColors;
+    final l10n = context.l10n;
     final adsRemovedAsync = ref.watch(adsRemovedProvider);
     final adsRemoved = adsRemovedAsync.valueOrNull == true;
 
@@ -165,7 +172,9 @@ class _ProEntryPanel extends ConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      adsRemoved ? 'Pro 활성화됨' : '레벨 야장 Pro',
+                      adsRemoved
+                          ? l10n.projectProActiveTitle
+                          : l10n.coreAppProName,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w700,
                         color: Colors.white,
@@ -174,8 +183,8 @@ class _ProEntryPanel extends ConsumerWidget {
                     const SizedBox(height: 2),
                     Text(
                       adsRemoved
-                          ? 'TBM/BM 사진 좌표, 광고 제거, 제출용 PDF를 사용할 수 있습니다.'
-                          : 'TBM/BM 사진 좌표, 제출용 PDF, 광고 제거를 잠금 해제하세요.',
+                          ? l10n.projectProActiveMessage
+                          : l10n.projectProPromoMessage,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Colors.white.withValues(alpha: 0.72),
                         height: 1.3,
@@ -201,7 +210,7 @@ class _ProEntryPanel extends ConsumerWidget {
                             ),
                           );
                         },
-                  child: const Text('Pro 신청'),
+                  child: Text(l10n.projectProGetButton),
                 ),
               ],
             ],
@@ -235,7 +244,7 @@ class _ProjectOverview extends StatelessWidget {
       Padding(
         padding: const EdgeInsets.fromLTRB(6, 10, 6, 4),
         child: Text(
-          '현장',
+          context.l10n.projectSitesHeader,
           style: TextStyle(
             fontFamily: 'Pretendard',
             fontSize: 13,
@@ -308,7 +317,10 @@ class _RecentFieldBookTile extends ConsumerWidget {
             overflow: TextOverflow.ellipsis,
           ),
           subtitle: Text(
-            '최근 작업 · ${project.name} · ${DateFormat('yyyy-MM-dd').format(recent.date)}',
+            context.l10n.projectRecentWorkSubtitle(
+              project.name,
+              DateFormat('yyyy-MM-dd').format(recent.date),
+            ),
           ),
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
@@ -339,7 +351,10 @@ class _BackupReminderBanner extends ConsumerWidget {
 
     final colors = context.appColors;
     final days = reminder.daysSinceLastShare;
-    final title = days == null ? '아직 백업을 공유한 적이 없어요' : '마지막 백업 공유가 $days일 전이에요';
+    final l10n = context.l10n;
+    final title = days == null
+        ? l10n.projectBackupNeverSharedTitle
+        : l10n.projectBackupLastSharedTitle(days);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -368,7 +383,7 @@ class _BackupReminderBanner extends ConsumerWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            '기기 분실·앱 삭제 시 현장 기록이 사라집니다. 백업 파일을 메일이나 드라이브에 보관하세요.',
+            l10n.projectBackupReminderMessage,
             style: Theme.of(
               context,
             ).textTheme.bodySmall?.copyWith(color: colors.subtext, height: 1.3),
@@ -388,7 +403,7 @@ class _BackupReminderBanner extends ConsumerWidget {
                         .setReminderSnoozedAt(DateTime.now());
                     ref.invalidate(backupReminderProvider);
                   },
-                  child: const Text('나중에'),
+                  child: Text(l10n.projectBackupLaterButton),
                 ),
               ),
               const SizedBox(width: 10),
@@ -406,17 +421,20 @@ class _BackupReminderBanner extends ConsumerWidget {
                       if (count > 0 && context.mounted) {
                         AppSnackbar.success(
                           context,
-                          '프로젝트 $count개의 백업을 공유했습니다.',
+                          l10n.projectBackupSharedMessage(count),
                         );
                       }
                     } catch (error) {
                       if (context.mounted) {
-                        AppSnackbar.error(context, '백업 공유 실패: $error');
+                        AppSnackbar.error(
+                          context,
+                          l10n.projectBackupShareError('$error'),
+                        );
                       }
                     }
                   },
                   icon: const Icon(Icons.ios_share, size: 18),
-                  label: const Text('백업 공유'),
+                  label: Text(l10n.projectBackupShareButton),
                 ),
               ),
             ],
@@ -436,6 +454,7 @@ class _ProjectSummary extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final stats = ref.watch(dashboardStatsProvider).valueOrNull;
     final colors = context.appColors;
+    final l10n = context.l10n;
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(16),
@@ -461,15 +480,21 @@ class _ProjectSummary extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '현장 $projectCount개 관리 중',
+                  l10n.projectSummaryTitle(projectCount),
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const SizedBox(height: 2),
                 Text(
                   stats == null
-                      ? '야장과 BM을 현장 단위로 정리합니다.'
-                      : '야장 ${stats.totalFieldBooks}권'
-                            '${stats.totalOpen > 0 ? ' · 확인 필요 ${stats.totalOpen}건' : ' · 모두 검토 완료'}',
+                      ? l10n.projectSummaryLoading
+                      : stats.totalOpen > 0
+                      ? l10n.projectSummaryStatsOpen(
+                          stats.totalFieldBooks,
+                          stats.totalOpen,
+                        )
+                      : l10n.projectSummaryStatsAllReviewed(
+                          stats.totalFieldBooks,
+                        ),
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
@@ -498,12 +523,13 @@ class _EmptyProjectStateState extends ConsumerState<_EmptyProjectState> {
     // Captured up front: refreshing the list replaces this empty state.
     final container = ProviderScope.containerOf(context, listen: false);
     final navigator = Navigator.of(context);
+    final l10n = context.l10n;
     try {
       final project = await ref
           .read(sampleProjectServiceProvider)
-          .createSampleProject();
+          .createSampleProject(l10n: l10n);
       if (!mounted) return;
-      AppSnackbar.success(context, '예제 프로젝트를 만들었습니다. 야장을 열어 자동 계산을 확인해 보세요.');
+      AppSnackbar.success(context, l10n.projectSampleCreatedMessage);
       container.invalidate(projectListProvider);
       container.invalidate(dashboardStatsProvider);
       navigator
@@ -516,27 +542,26 @@ class _EmptyProjectStateState extends ConsumerState<_EmptyProjectState> {
     } catch (_) {
       if (!mounted) return;
       setState(() => _creatingSample = false);
-      AppSnackbar.error(context, '예제 프로젝트를 만들지 못했습니다. 다시 시도해 주세요.');
+      AppSnackbar.error(context, l10n.projectSampleCreateError);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return EmptyState(
       icon: Icons.construction,
-      title: '첫 현장을 추가하세요',
-      message:
-          '현장(프로젝트)을 만들고 BM과 야장을 기록합니다.\n'
-          '예제 프로젝트로 자동 계산과 폐합 확인을 먼저 둘러볼 수 있습니다.',
+      title: l10n.projectEmptyTitle,
+      message: l10n.projectEmptyMessage,
       primaryAction: EmptyStateAction(
-        label: '새 프로젝트 만들기',
+        label: l10n.projectEmptyNewButton,
         icon: Icons.add,
         onPressed: _creatingSample
             ? null
             : () => _showAddProjectDialog(context, ref),
       ),
       secondaryAction: EmptyStateAction(
-        label: '예제 프로젝트로 둘러보기',
+        label: l10n.projectEmptySampleButton,
         icon: Icons.menu_book_outlined,
         busy: _creatingSample,
         onPressed: _openSampleProject,
@@ -553,6 +578,7 @@ class _ProjectCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = context.appColors;
+    final l10n = context.l10n;
     final description = project.description?.trim();
     final stats = ref
         .watch(dashboardStatsProvider)
@@ -582,12 +608,15 @@ class _ProjectCard extends ConsumerWidget {
               if (description != null && description.isNotEmpty)
                 Text(description, maxLines: 1, overflow: TextOverflow.ellipsis),
               Text(
-                '최근 업데이트 · ${DateFormat('yyyy-MM-dd').format(project.updatedAt)}',
+                l10n.projectCardUpdated(
+                  DateFormat('yyyy-MM-dd').format(project.updatedAt),
+                ),
               ),
               if (stats != null && stats.total > 0)
                 Text(
-                  '야장 ${stats.total}권'
-                  '${stats.openCount > 0 ? ' · 확인 필요 ${stats.openCount}건' : ''}',
+                  stats.openCount > 0
+                      ? l10n.projectCardStatsOpen(stats.total, stats.openCount)
+                      : l10n.projectCardStats(stats.total),
                 ),
             ],
           ),
@@ -601,8 +630,8 @@ class _ProjectCard extends ConsumerWidget {
             }
           },
           itemBuilder: (context) => [
-            const PopupMenuItem(value: 'edit', child: Text('수정')),
-            const PopupMenuItem(value: 'delete', child: Text('삭제')),
+            PopupMenuItem(value: 'edit', child: Text(l10n.coreEdit)),
+            PopupMenuItem(value: 'delete', child: Text(l10n.coreDelete)),
           ],
         ),
         onTap: () {
@@ -618,6 +647,7 @@ class _ProjectCard extends ConsumerWidget {
   }
 
   void _showEditDialog(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final nameController = TextEditingController(text: project.name);
     final descController = TextEditingController(
       text: project.description ?? '',
@@ -626,25 +656,27 @@ class _ProjectCard extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('프로젝트 수정'),
+        title: Text(l10n.projectEditDialogTitle),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: nameController,
-              decoration: const InputDecoration(labelText: '현장명 *'),
+              decoration: InputDecoration(labelText: l10n.projectSiteNameLabel),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: descController,
-              decoration: const InputDecoration(labelText: '설명 (선택)'),
+              decoration: InputDecoration(
+                labelText: l10n.projectDescriptionLabel,
+              ),
             ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('취소'),
+            child: Text(l10n.coreCancel),
           ),
           FilledButton(
             onPressed: () {
@@ -663,7 +695,7 @@ class _ProjectCard extends ConsumerWidget {
                 Navigator.pop(context);
               }
             },
-            child: const Text('저장'),
+            child: Text(l10n.coreSave),
           ),
         ],
       ),
@@ -671,17 +703,16 @@ class _ProjectCard extends ConsumerWidget {
   }
 
   void _showDeleteDialog(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('프로젝트 삭제'),
-        content: Text(
-          '"${project.name}" 프로젝트를 삭제하시겠습니까?\n관련된 모든 야장과 BM도 삭제됩니다.',
-        ),
+        title: Text(l10n.projectDeleteDialogTitle),
+        content: Text(l10n.projectDeleteConfirm(project.name)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('취소'),
+            child: Text(l10n.coreCancel),
           ),
           FilledButton(
             onPressed: () {
@@ -691,7 +722,7 @@ class _ProjectCard extends ConsumerWidget {
             style: FilledButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.error,
             ),
-            child: const Text('삭제'),
+            child: Text(l10n.coreDelete),
           ),
         ],
       ),

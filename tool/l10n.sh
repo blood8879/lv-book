@@ -8,8 +8,15 @@ cd "$(dirname "$0")/.."
 
 if [[ "${1:-}" == "--check" ]]; then
   dart run tool/merge_arb.dart --check
+  # Regenerate into the tree and compare with what was there before (not with
+  # git HEAD, so uncommitted-but-fresh output passes), then restore.
+  snap="$(mktemp -d)"
+  trap 'rm -rf "$snap"' EXIT
+  cp -R lib/l10n/gen "$snap/gen"
   flutter gen-l10n
-  if ! git diff --quiet -- lib/l10n/gen; then
+  dart format lib/l10n/gen >/dev/null
+  if ! diff -rq "$snap/gen" lib/l10n/gen >/dev/null; then
+    rm -rf lib/l10n/gen && cp -R "$snap/gen" lib/l10n/gen
     echo "lib/l10n/gen is stale. Run tool/l10n.sh and commit the result." >&2
     exit 1
   fi

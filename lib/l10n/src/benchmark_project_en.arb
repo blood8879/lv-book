@@ -7,5 +7,305 @@
   "projectDetailTabBenchmarks": "Benchmarks",
   "@projectDetailTabBenchmarks": {
     "description": "Project detail tab for BM/TBM management (Korean BM 관리)."
+  },
+  "projectListQuickMemoTooltip": "Quick memo",
+  "projectListSettingsTooltip": "Settings",
+  "projectNewDialogTitle": "New project",
+  "projectSiteNameLabel": "Site name *",
+  "@projectSiteNameLabel": {
+    "description": "Required project (site) name field."
+  },
+  "projectDescriptionLabel": "Description (optional)",
+  "projectEditDialogTitle": "Edit project",
+  "projectDeleteDialogTitle": "Delete project",
+  "projectDeleteConfirm": "Delete project \"{name}\"?\nAll of its level books and BMs will also be deleted.",
+  "@projectDeleteConfirm": {
+    "description": "Cascade delete warning (design rule: keep exact Korean).",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "projectProActiveTitle": "Pro active",
+  "projectProActiveMessage": "TBM/BM photos & coordinates, ad removal and submission PDFs are available.",
+  "projectProPromoMessage": "Unlock TBM/BM photos & coordinates, submission PDFs and ad removal.",
+  "projectProGetButton": "Get Pro",
+  "@projectProGetButton": {
+    "description": "Home Pro panel button that opens settings (one-time purchase)."
+  },
+  "projectSitesHeader": "Sites",
+  "@projectSitesHeader": {
+    "description": "Section header above the project cards."
+  },
+  "projectRecentWorkSubtitle": "Recent · {project} · {date}",
+  "@projectRecentWorkSubtitle": {
+    "description": "date is yyyy-MM-dd.",
+    "placeholders": {
+      "project": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "projectBackupNeverSharedTitle": "You haven't shared a backup yet",
+  "projectBackupLastSharedTitle": "{days, plural, =1{Last backup shared 1 day ago} other{Last backup shared {days} days ago}}",
+  "@projectBackupLastSharedTitle": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "projectBackupReminderMessage": "If you lose your phone or delete the app, your site records are lost. Keep the backup file in email or a cloud drive.",
+  "projectBackupLaterButton": "Later",
+  "projectBackupShareButton": "Share backup",
+  "projectBackupSharedMessage": "{count, plural, =1{Shared the backup of 1 project.} other{Shared backups of {count} projects.}}",
+  "@projectBackupSharedMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "projectBackupShareError": "Couldn't share the backup: {error}",
+  "@projectBackupShareError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "projectSummaryTitle": "{count, plural, =1{Managing 1 site} other{Managing {count} sites}}",
+  "@projectSummaryTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "projectSummaryLoading": "Organize level books and BMs by site.",
+  "projectSummaryStatsOpen": "{books, plural, =1{1 level book} other{{books} level books}} · {open} check required",
+  "@projectSummaryStatsOpen": {
+    "description": "Home summary when some level books need checking.",
+    "placeholders": {
+      "books": {
+        "type": "int"
+      },
+      "open": {
+        "type": "int"
+      }
+    }
+  },
+  "projectSummaryStatsAllReviewed": "{books, plural, =1{1 level book} other{{books} level books}} · All reviewed",
+  "@projectSummaryStatsAllReviewed": {
+    "placeholders": {
+      "books": {
+        "type": "int"
+      }
+    }
+  },
+  "projectCardUpdated": "Updated · {date}",
+  "@projectCardUpdated": {
+    "description": "date is yyyy-MM-dd.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "projectCardStats": "{books, plural, =1{1 level book} other{{books} level books}}",
+  "@projectCardStats": {
+    "placeholders": {
+      "books": {
+        "type": "int"
+      }
+    }
+  },
+  "projectCardStatsOpen": "{books, plural, =1{1 level book} other{{books} level books}} · {open} check required",
+  "@projectCardStatsOpen": {
+    "placeholders": {
+      "books": {
+        "type": "int"
+      },
+      "open": {
+        "type": "int"
+      }
+    }
+  },
+  "projectEmptyTitle": "Add your first site",
+  "projectEmptyMessage": "Create a site (project) to record BMs and level books.\nTry the sample project to see automatic calculation and the closure check first.",
+  "projectEmptyNewButton": "Create project",
+  "projectEmptySampleButton": "Try sample project",
+  "projectSampleCreatedMessage": "Sample project created. Open the level book to see the automatic calculation.",
+  "projectSampleCreateError": "Couldn't create the sample project. Please try again.",
+  "projectSampleName": "Sample site (deletable)",
+  "@projectSampleName": {
+    "description": "Name of the generated sample project (stored as data)."
+  },
+  "projectSampleDescription": "Sample for trying automatic calculation and the closure check. Delete it if you don't need it.",
+  "projectSampleBenchmarkDescription": "Sample benchmark",
+  "projectSampleBenchmarkLocation": "Curb stone in front of the site office",
+  "projectSampleLevelBookTitle": "Sample level book (BM-1 loop)",
+  "projectSampleMemo": "Sample data. Change a value and HI/RL are recalculated automatically.",
+  "projectSampleSurveyor": "J. Smith",
+  "@projectSampleSurveyor": {
+    "description": "Fictional surveyor name for the sample level book."
+  },
+  "projectSampleInstrument": "Automatic level",
+  "projectSampleWeather": "Clear",
+  "projectSampleSection": "Sample section",
+  "projectSampleClosingStation": "{bm} (close)",
+  "@projectSampleClosingStation": {
+    "description": "Station name of the closing shot back on the BM.",
+    "placeholders": {
+      "bm": {
+        "type": "String"
+      }
+    }
+  },
+  "benchmarkStatusUsable": "Usable",
+  "@benchmarkStatusUsable": {
+    "description": "BM status (enum available)."
+  },
+  "benchmarkStatusPossiblyDamaged": "Possibly damaged",
+  "@benchmarkStatusPossiblyDamaged": {
+    "description": "BM status (enum damagedSuspected)."
+  },
+  "benchmarkStatusOutOfService": "Out of service",
+  "@benchmarkStatusOutOfService": {
+    "description": "BM status (enum stopped)."
+  },
+  "benchmarkEmptyTitle": "Add a BM (benchmark)",
+  "benchmarkEmptyMessage": "Add a BM/TBM as your elevation reference with the + button,\nthen load it as the start RL when writing a level book.",
+  "benchmarkElevationLine": "Elevation {elevation} m",
+  "@benchmarkElevationLine": {
+    "description": "elevation formatted with 3 decimals by the caller.",
+    "placeholders": {
+      "elevation": {
+        "type": "String"
+      }
+    }
+  },
+  "benchmarkKindLine": "Type: {kind}",
+  "@benchmarkKindLine": {
+    "description": "kind is BM or TBM.",
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      }
+    }
+  },
+  "benchmarkLocationLine": "Location: {hint}",
+  "@benchmarkLocationLine": {
+    "placeholders": {
+      "hint": {
+        "type": "String"
+      }
+    }
+  },
+  "benchmarkProtectionLine": "Protection: {note}",
+  "@benchmarkProtectionLine": {
+    "placeholders": {
+      "note": {
+        "type": "String"
+      }
+    }
+  },
+  "benchmarkAddDialogTitle": "Add BM",
+  "benchmarkEditDialogTitle": "Edit BM",
+  "benchmarkNameLabel": "BM name *",
+  "benchmarkNameHint": "e.g. BM.1",
+  "benchmarkElevationLabel": "Elevation (m) *",
+  "benchmarkElevationHint": "e.g. 100.000",
+  "benchmarkDescriptionLabel": "Description (optional)",
+  "benchmarkLocationHintLabel": "Location hint",
+  "benchmarkProtectionLabel": "Protection/check notes",
+  "benchmarkStatusLabel": "Status",
+  "benchmarkKindLabel": "Type",
+  "benchmarkNameRequiredError": "Enter a BM name",
+  "benchmarkElevationInvalidError": "Enter the elevation as a number (m)",
+  "benchmarkDeleteDialogTitle": "Delete BM",
+  "benchmarkDeleteConfirm": "Delete \"{name}\" (elevation: {elevation})?",
+  "@benchmarkDeleteConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "elevation": {
+        "type": "String"
+      }
+    }
+  },
+  "benchmarkProLocationTitle": "Pro location record",
+  "benchmarkProLocationSaved": "Pro location info saved",
+  "benchmarkProLocationPromo": "With Pro you can save TBM/BM photos and coordinates.",
+  "benchmarkAccuracy": "Accuracy {accuracy} m",
+  "@benchmarkAccuracy": {
+    "description": "GPS accuracy, 1 decimal, formatted by caller.",
+    "placeholders": {
+      "accuracy": {
+        "type": "String"
+      }
+    }
+  },
+  "benchmarkNoSavedCoordinate": "No saved coordinates.",
+  "benchmarkSavingCoordinate": "Saving coordinates",
+  "benchmarkSaveCurrentCoordinate": "Save current coordinates",
+  "benchmarkCopyCoordinateButton": "Copy coordinates",
+  "benchmarkOpenMapButton": "Open map",
+  "benchmarkPhotoSaved": "Photo saved",
+  "benchmarkNoSavedPhoto": "No saved photo.",
+  "benchmarkPhotoFileMissing": "Photo file not found.",
+  "benchmarkTakePhotoButton": "Take photo",
+  "benchmarkPickPhotoButton": "Choose photo",
+  "benchmarkRemovePhotoButton": "Remove photo",
+  "benchmarkPhotoNeedsSavedBm": "Photos can only be added to a saved BM.",
+  "benchmarkPhotoSaveError": "Couldn't save the photo.",
+  "benchmarkLocationServiceOff": "Location services are turned off on this device.",
+  "benchmarkLocationPermissionDenied": "Location permission was denied.",
+  "benchmarkLocationPermissionDeniedForever": "Location permission was permanently denied. Allow it in the app settings.",
+  "@benchmarkLocationPermissionDeniedForever": {
+    "description": "Location permission notice (design rule: keep exact Korean)."
+  },
+  "benchmarkMapOpenError": "Couldn't open a map app. Copy the coordinates instead.",
+  "benchmarkProRequired": "Available after buying Lv Book Pro.",
+  "@benchmarkProRequired": {
+    "description": "Pro is a one-time purchase."
+  },
+  "benchmarkCopyCoordinateText": "Lat {latitude}, Lon {longitude}",
+  "@benchmarkCopyCoordinateText": {
+    "description": "Clipboard text; 6 decimals formatted by caller.",
+    "placeholders": {
+      "latitude": {
+        "type": "String"
+      },
+      "longitude": {
+        "type": "String"
+      }
+    }
+  },
+  "benchmarkRecheckOutOfService": "This BM is out of service. It can't be used as the start BM of a new level book.",
+  "@benchmarkRecheckOutOfService": {
+    "description": "BM re-check warning (design rule: keep exact Korean)."
+  },
+  "benchmarkRecheckPossiblyDamaged": "This BM is possibly damaged. Re-check it on site before use.",
+  "@benchmarkRecheckPossiblyDamaged": {
+    "description": "BM re-check warning (design rule: keep exact Korean)."
+  },
+  "benchmarkRecheckNoVerifiedDate": "No last-checked date. Re-check required",
+  "@benchmarkRecheckNoVerifiedDate": {
+    "description": "BM re-check warning (design rule: keep exact Korean)."
+  },
+  "benchmarkRecheckStale": "{days, plural, =1{1 day since the last check. Re-check required} other{{days} days since the last check. Re-check required}}",
+  "@benchmarkRecheckStale": {
+    "description": "BM re-check warning (design rule: keep exact Korean).",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
   }
 }

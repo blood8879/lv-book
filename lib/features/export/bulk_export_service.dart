@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../l10n/l10n.dart';
 import '../ads/ad_settings_repository.dart';
 import '../benchmark/data/benchmark_repository.dart';
 import '../fieldbook/data/measurement_repository.dart';
@@ -21,7 +22,9 @@ enum BulkExportFormat { pdf, csv, both }
 typedef BulkExportShare = Future<void> Function(List<XFile> files);
 
 class BulkExportService {
-  static const proRequiredMessage = '레벨 야장 Pro 구매 후 사용할 수 있습니다.';
+  /// Legacy Korean message; the service throws the app-language
+  /// `exportBulkProRequired` text.
+  static final proRequiredMessage = l10nKo.exportBulkProRequired;
 
   final AdSettingsRepository adSettingsRepository;
   final ProSettingsRepository proSettingsRepository;
@@ -49,9 +52,10 @@ class BulkExportService {
     String projectName = '',
     bool includeManifest = false,
     bool includeSummary = false,
+    required AppLocalizations l10n,
   }) async {
     if (!await isProEnabled) {
-      throw StateError(proRequiredMessage);
+      throw StateError(l10n.exportBulkProRequired);
     }
 
     final settings = await proSettingsRepository.getPdfSettings();
@@ -83,6 +87,7 @@ class BulkExportService {
           bmName: bmName,
           startElevation: startElevation,
           proSettings: settings,
+          l10n: l10n,
         );
         await file.writeAsBytes(bytes);
         files.add(XFile(file.path));
@@ -102,6 +107,7 @@ class BulkExportService {
           bmName: bmName,
           startElevation: startElevation,
           proSettings: settings,
+          l10n: l10n,
         );
         await file.writeAsString(CsvExporter.withBom(csv));
         files.add(XFile(file.path));
@@ -127,13 +133,13 @@ class BulkExportService {
       }
       if (summaryInputs.isNotEmpty) {
         final summaryName = _uniqueFileName(
-          '${_safeFileName(projectName)}_요약.csv',
+          '${_safeFileName(projectName)}_${l10n.exportSummaryFileSuffix}.csv',
           files.map((file) => file.name),
         );
         final file = File('${dir.path}/$summaryName');
         await file.writeAsString(
           CsvExporter.withBom(
-            SubmissionSummaryReport.generateCsv(summaryInputs),
+            SubmissionSummaryReport.generateCsv(summaryInputs, l10n: l10n),
           ),
         );
         files.add(XFile(file.path));
@@ -151,6 +157,7 @@ class BulkExportService {
         fieldBooks: fieldBooks,
         measurementsByFieldBookId: measurementsByFieldBookId,
         fileNames: files.map((file) => file.name).toList(),
+        l10n: l10n,
       );
       final manifestName = _uniqueFileName(
         '${_safeFileName(projectName)}_manifest.txt',

@@ -1,3 +1,164 @@
 {
-  "@@locale": "en"
+  "@@locale": "en",
+  "fieldbookCopyName": "{name} copy",
+  "@fieldbookCopyName": {
+    "description": "Name given to a duplicated level book or row.",
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "fieldbookStatusDraft": "Draft",
+  "fieldbookStatusReviewed": "Reviewed",
+  "fieldbookStatusNeedsCheck": "Needs check",
+  "fieldbookCheckStationRows": "Station rows",
+  "fieldbookCheckFirstBs": "First BS",
+  "fieldbookCheckLastFs": "Last FS",
+  "fieldbookCheckTpComplete": "TP complete",
+  "fieldbookCheckEmptyRows": "Empty rows",
+  "fieldbookCheckTolerance": "Tolerance",
+  "fieldbookIssueNoStationRows": "Add at least one station row.",
+  "fieldbookIssueFirstBsMissing": "The first row needs a backsight (BS).",
+  "fieldbookIssueLastFsMissing": "The last row needs a foresight (FS).",
+  "fieldbookIssueTpIncomplete": "TP rows need both BS and FS.",
+  "fieldbookIssueEmptyRows": "Remove rows with no readings.",
+  "fieldbookIssueExceedsTolerance": "Exceeds tolerance — check the readings.",
+  "fieldbookArithmeticCheckResult": "Arithmetic check: {result}",
+  "@fieldbookArithmeticCheckResult": {
+    "description": "Validation bar headline; result is a judgement such as 'Within tolerance'.",
+    "placeholders": { "result": { "type": "String" } }
+  },
+  "fieldbookSaveStatusSaved": "Saved",
+  "fieldbookSaveStatusPending": "Autosave pending",
+  "fieldbookSaveStatusAutosaved": "Autosaved",
+  "fieldbookSaveStatusError": "Not saved",
+  "fieldbookSavedMessage": "Saved",
+  "fieldbookReviewSavedMessage": "Review info saved",
+  "fieldbookDeleteRowTitle": "Delete row",
+  "fieldbookDeleteRowConfirm": "Delete row {row}?",
+  "@fieldbookDeleteRowConfirm": {
+    "placeholders": { "row": { "type": "int" } }
+  },
+  "fieldbookEditStationTitle": "Edit station",
+  "fieldbookStationLabel": "Station",
+  "fieldbookStationHint": "e.g. No.1, BM.1, TP.1",
+  "fieldbookStationHelper": "Leave blank to show the row number ({row})",
+  "@fieldbookStationHelper": {
+    "placeholders": { "row": { "type": "int" } }
+  },
+  "fieldbookAddTenRowsTooltip": "Add 10 rows",
+  "fieldbookExportTooltip": "Export",
+  "fieldbookStartRlLabel": "Start RL",
+  "fieldbookReviewPanelTitle": "Review",
+  "fieldbookReviewedOn": "Reviewed {date}",
+  "@fieldbookReviewedOn": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "fieldbookReviewStatusLabel": "Review status",
+  "fieldbookReviewMemoLabel": "Review notes",
+  "fieldbookReviewMemoHint": "e.g. Confirmed by supervisor",
+  "fieldbookReviewTodayButton": "Set review date to today",
+  "fieldbookReviewSaveButton": "Save review",
+  "fieldbookColumnNo": "Stn",
+  "fieldbookColumnHi": "HI",
+  "fieldbookColumnRl": "RL",
+  "fieldbookRowActionsTooltip": "Row actions",
+  "fieldbookRowInsertBelow": "Insert row below",
+  "fieldbookRowDuplicate": "Duplicate row",
+  "fieldbookRowUnsetManualTp": "Unset manual TP",
+  "fieldbookRowSetManualTp": "Set manual TP",
+  "fieldbookSummaryDiff": "Diff",
+  "fieldbookSummaryStart": "Start RL",
+  "fieldbookSummaryFinal": "Final RL",
+  "fieldbookSummaryMisclosure": "Misclosure",
+  "fieldbookExportCheckTitle": "Check before export",
+  "fieldbookToleranceCheckTitle": "Tolerance check required",
+  "fieldbookContinueButton": "Continue",
+  "fieldbookNoDataToExport": "No data to export",
+  "fieldbookFabLabel": "Level book",
+  "fieldbookNewTitle": "New level book",
+  "fieldbookImportCsv": "Import CSV",
+  "fieldbookShareBackup": "Share project backup",
+  "fieldbookRestoreBackupJson": "Restore backup JSON",
+  "fieldbookShareBackupError": "Couldn't share backup: {error}",
+  "@fieldbookShareBackupError": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "fieldbookChooseBackupFile": "Choose backup file (.json)",
+  "fieldbookBackupPasteHint": "Or paste the contents of a shared lvbook_backup.json.",
+  "fieldbookRestoreButton": "Restore",
+  "fieldbookBackupRestoredMessage": "Backup restored as a new project.",
+  "fieldbookRestoreBackupError": "Couldn't restore backup: {error}",
+  "@fieldbookRestoreBackupError": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "fieldbookTitleLabel": "Level book title *",
+  "fieldbookTitleHint": "Level book title",
+  "fieldbookSelectBm": "Select BM",
+  "fieldbookEnterManually": "Enter manually",
+  "fieldbookStartBmLabel": "Start BM",
+  "fieldbookBmNameLabel": "BM name (optional)",
+  "fieldbookBmNameHint": "e.g. BM.1",
+  "fieldbookStartElevationLabel": "Start RL (m) *",
+  "fieldbookStartElevationHint": "e.g. 100.000",
+  "fieldbookSiteDetailsTitle": "Site details",
+  "fieldbookSiteDetailsSummary": "Surveyor, instrument, weather…",
+  "fieldbookSurveyorLabel": "Surveyor",
+  "fieldbookCheckerLabel": "Checker",
+  "fieldbookInstrumentLabel": "Instrument",
+  "fieldbookWeatherLabel": "Weather",
+  "fieldbookWorkSectionLabel": "Section",
+  "fieldbookJobNumberLabel": "Job no.",
+  "fieldbookCreateButton": "Create",
+  "fieldbookDuplicateError": "Couldn't duplicate level book: {error}",
+  "@fieldbookDuplicateError": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "fieldbookDuplicatedMessage": "Level book structure duplicated",
+  "fieldbookDeleteTitle": "Delete level book",
+  "fieldbookDeleteConfirm": "Delete level book \"{title}\"?",
+  "@fieldbookDeleteConfirm": {
+    "placeholders": { "title": { "type": "String" } }
+  },
+  "fieldbookChooseCsvFile": "Choose CSV file (.csv)",
+  "fieldbookCsvPasteHint": "Or paste CSV exported from Lv Book.",
+  "fieldbookCsvImportError": "Couldn't import CSV: {error}",
+  "@fieldbookCsvImportError": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "fieldbookCsvImported": "CSV imported",
+  "fieldbookCsvImportedWithWarnings": "CSV imported. {warnings}",
+  "@fieldbookCsvImportedWithWarnings": {
+    "placeholders": { "warnings": { "type": "String" } }
+  },
+  "fieldbookImportButton": "Import",
+  "fieldbookEmptyTitle": "Create your first level book",
+  "fieldbookEmptyMessage": "Tap + to create a level book,\nor import existing records from CSV.",
+  "fieldbookSearchLabel": "Search level books",
+  "fieldbookSearchHint": "Title, section, surveyor, date",
+  "fieldbookBulkExportButton": "Bulk export",
+  "fieldbookNoSearchResults": "No results",
+  "fieldbookSurveyorSubtitle": "Surveyor {name}",
+  "@fieldbookSurveyorSubtitle": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "fieldbookDuplicateStructure": "Duplicate structure",
+  "quickMemoTitle": "Quick memo",
+  "quickMemoComposerTitle": "Quick field memo",
+  "quickMemoTextHint": "Type a memo (optional)",
+  "quickMemoMicPermissionRequired": "Microphone permission is required.",
+  "quickMemoSavedMessage": "Memo saved.",
+  "quickMemoSaveError": "Couldn't save: {error}",
+  "@quickMemoSaveError": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "quickMemoRecording": "Recording · {time}",
+  "@quickMemoRecording": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "quickMemoRecorded": "Voice recorded · tap the mic to re-record",
+  "quickMemoRecordHint": "Tap the mic to record a voice memo",
+  "quickMemoDeleteRecordingTooltip": "Delete recording",
+  "quickMemoEmptyTitle": "No memos yet",
+  "quickMemoEmptyMessage": "Use the bolt button at the bottom left to leave a text or voice memo from any screen.",
+  "quickMemoDeleteTitle": "Delete memo",
+  "quickMemoDeleteConfirm": "Delete this memo?",
+  "quickMemoAudioMissing": "Audio file not found."
 }

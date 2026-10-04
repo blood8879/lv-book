@@ -6,6 +6,7 @@ import 'package:lv_book/features/fieldbook/domain/fieldbook.dart';
 import 'package:lv_book/features/fieldbook/domain/measurement.dart';
 import 'package:lv_book/features/fieldbook/domain/measurement_validation.dart';
 import 'package:lv_book/features/pro/pro_pdf_settings.dart';
+import 'package:lv_book/l10n/l10n.dart';
 
 void main() {
   test(
@@ -43,6 +44,7 @@ void main() {
         bmName: 'BM.1',
         startElevation: 100,
         proSettings: const ProPdfSettings(includeCheckJudgement: true),
+        l10n: l10nKo,
       );
       final summary = SubmissionSummaryReport.buildRows([
         FieldBookSummaryInput(
@@ -51,7 +53,7 @@ void main() {
           startElevation: 100,
           measurements: measurements,
         ),
-      ]).single;
+      ], l10n: l10nKo).single;
 
       expect(ExportJudgement.isSuitable(0.001), isTrue);
       expect(validation.judgementLabel, '적합');

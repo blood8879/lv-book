@@ -1,5 +1,8 @@
 import 'measurement.dart';
 
+/// Default (Korean) name for a copy. UI passes `l10n.fieldbookCopyName`.
+String koreanCopyName(String name) => '$name 복사';
+
 class MeasurementRowActions {
   static List<Measurement> insertBelow(
     List<Measurement> rows, {
@@ -23,6 +26,7 @@ class MeasurementRowActions {
     List<Measurement> rows, {
     required int index,
     required int fieldBookId,
+    String Function(String name) copyName = koreanCopyName,
   }) {
     final next = List<Measurement>.from(rows);
     final source = next[index];
@@ -31,7 +35,7 @@ class MeasurementRowActions {
       Measurement(
         fieldBookId: fieldBookId,
         orderIndex: index + 1,
-        stationName: '${source.stationName} 복사',
+        stationName: copyName(source.stationName),
         type: source.type,
         bs: source.bs,
         fs: source.fs,

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:signature/signature.dart';
 
 import '../../core/widgets/app_snackbar.dart';
+import '../../l10n/l10n.dart';
 
 /// A dialog that lets the user draw a handwritten signature and returns it as
 /// a base64-encoded PNG string. Returns null when cancelled.
@@ -43,14 +44,15 @@ class _SignaturePadDialogState extends State<SignaturePadDialog> {
 
   Future<void> _saveSignature() async {
     final navigator = Navigator.of(context);
+    final l10n = context.l10n;
     if (_controller.isEmpty) {
-      AppSnackbar.error(context, '서명을 입력해 주세요');
+      AppSnackbar.error(context, l10n.proSignatureEmptyError);
       return;
     }
     final bytes = await _controller.toPngBytes();
     if (!mounted) return;
     if (bytes == null) {
-      AppSnackbar.error(context, '서명을 저장하지 못했습니다');
+      AppSnackbar.error(context, l10n.proSignatureSaveError);
       return;
     }
     navigator.pop(base64Encode(bytes));
@@ -58,16 +60,17 @@ class _SignaturePadDialogState extends State<SignaturePadDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return AlertDialog(
-      title: const Text('서명 입력'),
+      title: Text(l10n.proSignatureDialogTitle),
       content: SizedBox(
         width: double.maxFinite,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              '아래 영역에 손가락 또는 펜으로 서명하세요.',
-              style: TextStyle(fontSize: 13),
+            Text(
+              l10n.proSignatureDialogHint,
+              style: const TextStyle(fontSize: 13),
             ),
             const SizedBox(height: 12),
             Container(
@@ -88,13 +91,13 @@ class _SignaturePadDialogState extends State<SignaturePadDialog> {
       actions: [
         TextButton(
           onPressed: () => _controller.clear(),
-          child: const Text('다시 쓰기'),
+          child: Text(l10n.proSignatureClear),
         ),
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('취소'),
+          child: Text(l10n.coreCancel),
         ),
-        FilledButton(onPressed: _saveSignature, child: const Text('저장')),
+        FilledButton(onPressed: _saveSignature, child: Text(l10n.coreSave)),
       ],
     );
   }

@@ -13,6 +13,8 @@ import '../../benchmark/data/benchmark_repository.dart';
 import '../../export/export_screen.dart';
 import '../../quickmemo/presentation/quick_memo_fab.dart';
 import '../../../core/utils/calculation.dart';
+import '../../../l10n/l10n.dart';
+import 'fieldbook_l10n.dart';
 
 /// Display text for a BS/FS reading: 3 decimals (e.g. 1.94 → '1.940'), but
 /// never rounds away entered precision (1.2345 stays '1.2345').
@@ -27,6 +29,8 @@ String formatReadingText(double value) {
 const int _flexNo = 14;
 const int _flexValue = 19;
 const int _flexAction = 10;
+
+enum _SaveStatus { saved, pending, autosaved, error }
 
 class _RowData {
   String stationName;
@@ -79,7 +83,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
   double _startElevation = 0;
   bool _loaded = false;
   bool _dirty = false;
-  String _saveStatus = '저장됨';
+  _SaveStatus _saveStatus = _SaveStatus.saved;
   Timer? _autosaveTimer;
 
   /// Captured in didChangeDependencies so saves that finish (or start) after
@@ -306,7 +310,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
     _dirty = true;
     _editGeneration++;
     _autosaveTimer?.cancel();
-    setState(() => _saveStatus = '자동저장 대기');
+    setState(() => _saveStatus = _SaveStatus.pending);
     _autosaveTimer = Timer(const Duration(milliseconds: 900), () {
       _saveToDb(silent: true).catchError((Object _) {});
     });
@@ -362,7 +366,9 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
         if (!mounted) return;
         setState(() {
           _dirty = _savedGeneration != _editGeneration;
-          if (!_dirty) _saveStatus = silent ? '자동저장됨' : '저장됨';
+          if (!_dirty) {
+            _saveStatus = silent ? _SaveStatus.autosaved : _SaveStatus.saved;
+          }
         });
       },
       onError: (Object error, StackTrace stackTrace) {
@@ -370,7 +376,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
         if (_queuedGeneration == generation) {
           _queuedGeneration = _savedGeneration;
         }
-        if (mounted) setState(() => _saveStatus = '저장 실패');
+        if (mounted) setState(() => _saveStatus = _SaveStatus.error);
         Error.throwWithStackTrace(error, stackTrace);
       },
     );
@@ -382,8 +388,8 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
         .updateFieldBook(_fieldBookWithReviewMetadata());
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('검토 정보를 저장했습니다'),
+      SnackBar(
+        content: Text(context.l10n.fieldbookReviewSavedMessage),
         duration: Duration(seconds: 1),
       ),
     );
@@ -417,12 +423,12 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-          title: const Text('행 삭제'),
-          content: Text('${index + 1}번 행을 삭제하시겠습니까?'),
+          title: Text(ctx.l10n.fieldbookDeleteRowTitle),
+          content: Text(ctx.l10n.fieldbookDeleteRowConfirm(index + 1)),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('취소'),
+              child: Text(ctx.l10n.coreCancel),
             ),
             FilledButton(
               onPressed: () {
@@ -441,7 +447,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
               style: FilledButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.error,
               ),
-              child: const Text('삭제'),
+              child: Text(ctx.l10n.coreDelete),
             ),
           ],
         ),
@@ -473,7 +479,9 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
       _rows.insert(
         index + 1,
         _RowData(
-          stationName: row.stationName.isEmpty ? '' : '${row.stationName} 복사',
+          stationName: row.stationName.isEmpty
+              ? ''
+              : context.l10n.fieldbookCopyName(row.stationName),
           bsText: row.bsText,
           fsText: row.fsText,
           ih: row.ih,
@@ -501,13 +509,13 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('측점명 수정'),
+        title: Text(ctx.l10n.fieldbookEditStationTitle),
         content: TextField(
           controller: controller,
           decoration: InputDecoration(
-            labelText: '측점명',
-            hintText: '예: No.1, BM.1, TP.1',
-            helperText: '비우면 행 번호(${index + 1})로 표시됩니다',
+            labelText: ctx.l10n.fieldbookStationLabel,
+            hintText: ctx.l10n.fieldbookStationHint,
+            helperText: ctx.l10n.fieldbookStationHelper(index + 1),
           ),
           autofocus: true,
           onSubmitted: (_) {
@@ -519,7 +527,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('취소'),
+            child: Text(ctx.l10n.coreCancel),
           ),
           FilledButton(
             onPressed: () {
@@ -527,7 +535,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
               _scheduleAutosave();
               Navigator.pop(ctx);
             },
-            child: const Text('확인'),
+            child: Text(ctx.l10n.coreConfirm),
           ),
         ],
       ),
@@ -561,6 +569,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     // The app-wide quick-memo FAB would cover the validation chips and the
     // closure summary pinned to the bottom; it is offered from the app bar.
     return HideQuickMemoFab(
@@ -575,12 +584,12 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
             actions: [
               IconButton(
                 icon: const Icon(Icons.bolt),
-                tooltip: '빠른 메모',
+                tooltip: l10n.quickMemoTitle,
                 onPressed: () => showQuickMemoComposer(context),
               ),
               IconButton(
                 icon: const Icon(Icons.add),
-                tooltip: '10행 추가',
+                tooltip: l10n.fieldbookAddTenRowsTooltip,
                 onPressed: () {
                   setState(() {
                     for (int i = 0; i < 10; i++) {
@@ -592,14 +601,14 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
               ),
               IconButton(
                 icon: const Icon(Icons.save),
-                tooltip: '저장',
+                tooltip: l10n.coreSave,
                 onPressed: () async {
                   final messenger = ScaffoldMessenger.of(context);
                   await _saveToDb();
                   if (mounted) {
                     messenger.showSnackBar(
-                      const SnackBar(
-                        content: Text('저장 완료'),
+                      SnackBar(
+                        content: Text(l10n.fieldbookSavedMessage),
                         duration: Duration(seconds: 1),
                       ),
                     );
@@ -608,7 +617,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
               ),
               IconButton(
                 icon: const Icon(Icons.ios_share),
-                tooltip: '내보내기',
+                tooltip: l10n.fieldbookExportTooltip,
                 onPressed: _export,
               ),
             ],
@@ -640,7 +649,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
       child: Row(
         children: [
           Text(
-            '시작 표고',
+            context.l10n.fieldbookStartRlLabel,
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
@@ -704,6 +713,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
   Widget _buildReviewPanel() {
     final reviewedAt = _reviewedAt;
     final colors = context.appColors;
+    final l10n = context.l10n;
     return Material(
       color: colors.panel,
       shape: Border(bottom: BorderSide(color: colors.line)),
@@ -711,11 +721,15 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
         controlAffinity: ListTileControlAffinity.leading,
         tilePadding: const EdgeInsets.fromLTRB(8, 0, 16, 0),
         childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-        title: Text('검토 정보', style: Theme.of(context).textTheme.titleSmall),
+        title: Text(
+          l10n.fieldbookReviewPanelTitle,
+          style: Theme.of(context).textTheme.titleSmall,
+        ),
         trailing: Text(
           [
-            _reviewStatus.label,
-            if (reviewedAt != null) '검토일 ${_formatDate(reviewedAt)}',
+            _reviewStatus.localizedLabel(l10n),
+            if (reviewedAt != null)
+              l10n.fieldbookReviewedOn(_formatDate(reviewedAt)),
           ].join(' · '),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
@@ -724,10 +738,15 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
         children: [
           DropdownButtonFormField<FieldBookReviewStatus>(
             initialValue: _reviewStatus,
-            decoration: const InputDecoration(labelText: '검토 상태'),
+            decoration: InputDecoration(
+              labelText: l10n.fieldbookReviewStatusLabel,
+            ),
             items: [
               for (final status in FieldBookReviewStatus.values)
-                DropdownMenuItem(value: status, child: Text(status.label)),
+                DropdownMenuItem(
+                  value: status,
+                  child: Text(status.localizedLabel(l10n)),
+                ),
             ],
             onChanged: (value) {
               if (value == null) return;
@@ -737,9 +756,9 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
           const SizedBox(height: 8),
           TextField(
             controller: _reviewMemoController,
-            decoration: const InputDecoration(
-              labelText: '검토 메모',
-              hintText: '예: 감리 확인 완료',
+            decoration: InputDecoration(
+              labelText: l10n.fieldbookReviewMemoLabel,
+              hintText: l10n.fieldbookReviewMemoHint,
             ),
             minLines: 1,
             maxLines: 3,
@@ -758,8 +777,8 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
                   icon: const Icon(Icons.today_outlined),
                   label: Text(
                     reviewedAt == null
-                        ? '오늘 검토일 적용'
-                        : '검토일 ${_formatDate(reviewedAt)}',
+                        ? l10n.fieldbookReviewTodayButton
+                        : l10n.fieldbookReviewedOn(_formatDate(reviewedAt)),
                   ),
                 ),
               ),
@@ -767,7 +786,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
               FilledButton.icon(
                 onPressed: _saveReviewMetadata,
                 icon: const Icon(Icons.save_outlined),
-                label: const Text('검토 정보 저장'),
+                label: Text(l10n.fieldbookReviewSaveButton),
               ),
             ],
           ),
@@ -778,6 +797,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
 
   Widget _buildTableHeader() {
     final colors = context.appColors;
+    final l10n = context.l10n;
     return Container(
       decoration: BoxDecoration(
         color: colors.soft,
@@ -785,11 +805,11 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
       ),
       child: Row(
         children: [
-          _headerCell('NO', flex: _flexNo),
+          _headerCell(l10n.fieldbookColumnNo, flex: _flexNo),
           _headerCell('BS', flex: _flexValue),
           _headerCell('FS', flex: _flexValue),
-          _headerCell('IH', flex: _flexValue),
-          _headerCell('GH', flex: _flexValue),
+          _headerCell(l10n.fieldbookColumnHi, flex: _flexValue),
+          _headerCell(l10n.fieldbookColumnRl, flex: _flexValue),
           _headerCell('', flex: _flexAction), // TP/비고
         ],
       ),
@@ -828,6 +848,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
   Widget _buildDataRow(int index) {
     final row = _rows[index];
     final colors = context.appColors;
+    final l10n = context.l10n;
 
     // TP rows tint the NO/BS/FS/action cells orange; IH/GH keep their
     // per-column tint so the two columns stay color-identifiable in the field.
@@ -933,7 +954,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
                   icon: row.isTP
                       ? Icon(Icons.flag, size: 18, color: colors.orange)
                       : Icon(Icons.more_vert, size: 18, color: colors.subtext),
-                  tooltip: '행 작업',
+                  tooltip: l10n.fieldbookRowActionsTooltip,
                   onSelected: (value) {
                     if (value == 'insert') _insertRowBelow(index);
                     if (value == 'duplicate') _duplicateRow(index);
@@ -941,19 +962,26 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
                     if (value == 'delete') _deleteRow(index);
                   },
                   itemBuilder: (context) => [
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 'insert',
-                      child: Text('아래 행 삽입'),
+                      child: Text(l10n.fieldbookRowInsertBelow),
                     ),
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 'duplicate',
-                      child: Text('행 복제'),
+                      child: Text(l10n.fieldbookRowDuplicate),
                     ),
                     PopupMenuItem(
                       value: 'tp',
-                      child: Text(row.manualTp ? '수동 TP 해제' : '수동 TP 지정'),
+                      child: Text(
+                        row.manualTp
+                            ? l10n.fieldbookRowUnsetManualTp
+                            : l10n.fieldbookRowSetManualTp,
+                      ),
                     ),
-                    const PopupMenuItem(value: 'delete', child: Text('삭제')),
+                    PopupMenuItem(
+                      value: 'delete',
+                      child: Text(l10n.coreDelete),
+                    ),
                   ],
                 ),
               ),
@@ -1024,6 +1052,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
       startElevation: _startElevation,
     );
     final colors = context.appColors;
+    final l10n = context.l10n;
     final errorColor = (firstGh != null && error.abs() < 0.001)
         ? colors.green
         : colors.err;
@@ -1038,16 +1067,22 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
             children: [
               _summaryItem('ΣBS', sumBs.toStringAsFixed(3)),
               _summaryItem('ΣFS', sumFs.toStringAsFixed(3)),
-              _summaryItem('차', diff.toStringAsFixed(3)),
+              _summaryItem(l10n.fieldbookSummaryDiff, diff.toStringAsFixed(3)),
             ],
           ),
           const SizedBox(height: 10),
           Row(
             children: [
-              _summaryItem('시작', firstGh?.toStringAsFixed(3) ?? '-'),
-              _summaryItem('최종', lastGh?.toStringAsFixed(3) ?? '-'),
               _summaryItem(
-                '오차',
+                l10n.fieldbookSummaryStart,
+                firstGh?.toStringAsFixed(3) ?? '-',
+              ),
+              _summaryItem(
+                l10n.fieldbookSummaryFinal,
+                lastGh?.toStringAsFixed(3) ?? '-',
+              ),
+              _summaryItem(
+                l10n.fieldbookSummaryMisclosure,
                 error.toStringAsFixed(4),
                 valueColor: errorColor,
               ),
@@ -1065,6 +1100,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
     );
     final isOk = validation.canExport;
     final colors = context.appColors;
+    final l10n = context.l10n;
     final accent = isOk ? colors.green : colors.err;
     return Container(
       width: double.infinity,
@@ -1084,8 +1120,10 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
               Expanded(
                 child: Text(
                   isOk
-                      ? '검산 ${validation.judgementLabel}'
-                      : validation.messages.first,
+                      ? l10n.fieldbookArithmeticCheckResult(
+                          validation.localizedJudgement(l10n),
+                        )
+                      : validation.issues.first.localizedMessage(l10n),
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 13,
@@ -1096,7 +1134,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
               ),
               const SizedBox(width: 8),
               Text(
-                _saveStatus,
+                _saveStatusText(l10n),
                 style: TextStyle(fontSize: 12, color: colors.subtext),
               ),
               if (_dirty) ...[
@@ -1116,7 +1154,8 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
             children: [
               for (final item in validation.checklist)
                 SemanticPill(
-                  label: '${item.passed ? '✓' : '!'} ${item.label}',
+                  label:
+                      '${item.passed ? '✓' : '!'} ${item.check.localizedLabel(l10n)}',
                   variant: item.passed
                       ? SemanticPillVariant.green
                       : SemanticPillVariant.err,
@@ -1135,12 +1174,12 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
       await showDialog<void>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('내보내기 전 확인'),
-          content: Text(validation.messages.join('\n')),
+          title: Text(context.l10n.fieldbookExportCheckTitle),
+          content: Text(validation.localizedMessages(context.l10n).join('\n')),
           actions: [
             FilledButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('확인'),
+              child: Text(context.l10n.coreConfirm),
             ),
           ],
         ),
@@ -1152,16 +1191,16 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
       final proceed = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('허용오차 확인 필요'),
-          content: Text(validation.messages.join('\n')),
+          title: Text(context.l10n.fieldbookToleranceCheckTitle),
+          content: Text(validation.localizedMessages(context.l10n).join('\n')),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('취소'),
+              child: Text(context.l10n.coreCancel),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('계속'),
+              child: Text(context.l10n.fieldbookContinueButton),
             ),
           ],
         ),
@@ -1217,9 +1256,9 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
 
     if (measurements.isEmpty) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('내보낼 데이터가 없습니다')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(context.l10n.fieldbookNoDataToExport)),
+        );
       }
       return;
     }
@@ -1245,6 +1284,13 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
       );
     }
   }
+
+  String _saveStatusText(AppLocalizations l10n) => switch (_saveStatus) {
+    _SaveStatus.saved => l10n.fieldbookSaveStatusSaved,
+    _SaveStatus.pending => l10n.fieldbookSaveStatusPending,
+    _SaveStatus.autosaved => l10n.fieldbookSaveStatusAutosaved,
+    _SaveStatus.error => l10n.fieldbookSaveStatusError,
+  };
 
   String _formatDate(DateTime value) {
     final month = value.month.toString().padLeft(2, '0');

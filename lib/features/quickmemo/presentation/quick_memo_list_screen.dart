@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/skeleton.dart';
+import '../../../l10n/l10n.dart';
 import '../data/quick_memo_audio_paths.dart';
 import '../data/quick_memo_providers.dart';
 import '../domain/quick_memo.dart';
@@ -21,19 +22,20 @@ class QuickMemoListScreen extends ConsumerWidget {
     final memosAsync = ref.watch(quickMemoListProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('빠른 메모')),
+      appBar: AppBar(title: Text(context.l10n.quickMemoTitle)),
       body: memosAsync.when(
         loading: () => const Padding(
           padding: EdgeInsets.only(top: 6),
           child: ListSkeleton(),
         ),
-        error: (e, _) => Center(child: Text('오류: $e')),
+        error: (e, _) =>
+            Center(child: Text(context.l10n.coreErrorWithDetail('$e'))),
         data: (memos) {
           if (memos.isEmpty) {
-            return const EmptyState(
+            return EmptyState(
               icon: Icons.bolt,
-              title: '저장된 메모가 없어요',
-              message: '화면 왼쪽 아래 번개 버튼으로 어디서든 텍스트·음성 메모를 남겨보세요.',
+              title: context.l10n.quickMemoEmptyTitle,
+              message: context.l10n.quickMemoEmptyMessage,
               accent: AppTheme.surveyOrange,
             );
           }
@@ -114,17 +116,17 @@ class _QuickMemoCard extends ConsumerWidget {
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('메모 삭제'),
-        content: const Text('이 메모를 삭제하시겠습니까?'),
+        title: Text(context.l10n.quickMemoDeleteTitle),
+        content: Text(context.l10n.quickMemoDeleteConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('취소'),
+            child: Text(context.l10n.coreCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             style: FilledButton.styleFrom(backgroundColor: colors.err),
-            child: const Text('삭제'),
+            child: Text(context.l10n.coreDelete),
           ),
         ],
       ),
@@ -230,7 +232,7 @@ class _AudioPlayerTileState extends State<_AudioPlayerTile> {
           Icon(Icons.mic_off, size: 18, color: colors.subtext),
           const SizedBox(width: 8),
           Text(
-            '음성 파일을 찾을 수 없습니다.',
+            context.l10n.quickMemoAudioMissing,
             style: Theme.of(
               context,
             ).textTheme.bodyMedium?.copyWith(color: colors.subtext),

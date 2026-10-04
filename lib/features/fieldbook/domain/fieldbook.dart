@@ -1,6 +1,8 @@
 enum FieldBookReviewStatus { draft, reviewed, needsCheck }
 
 extension FieldBookReviewStatusLabel on FieldBookReviewStatus {
+  /// Korean label (legacy). UI and exports use `localizedLabel(l10n)` from
+  /// `presentation/fieldbook_l10n.dart`. The persisted value is [name].
   String get label {
     switch (this) {
       case FieldBookReviewStatus.draft:

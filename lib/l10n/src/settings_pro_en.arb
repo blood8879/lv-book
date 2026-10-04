@@ -1,3 +1,217 @@
 {
-  "@@locale": "en"
+  "@@locale": "en",
+  "settingsTitle": "Settings",
+  "settingsPurchaseStatusSection": "Purchase status",
+  "settingsAdsRemovedChecking": "Checking ad removal status",
+  "settingsAdsRemovedCheckingSubtitle": "Checking the store and local entitlement.",
+  "settingsAdsRemovedLoadError": "Couldn't load ad removal status",
+  "settingsRemoveAdsTitle": "Remove ads",
+  "settingsAdsRemovedActiveSubtitle": "Your purchase is applied, so no ads are shown.",
+  "settingsAdsRemovedInactiveSubtitle": "Remove all ads with a one-time purchase from the store.",
+  "@settingsAdsRemovedInactiveSubtitle": {
+    "description": "Pro is a one-time purchase; never say subscription."
+  },
+  "settingsRestorePurchaseTitle": "Restore purchase",
+  "settingsRestorePurchasePendingSubtitle": "Checking your purchase history with the store.",
+  "settingsRestorePurchaseSubtitle": "Restore the Pro purchase you already made.",
+  "settingsDocumentSection": "Documents",
+  "settingsPdfSettingsTitle": "Submission PDF settings",
+  "settingsPdfSettingsSubtitle": "Set company name, template, watermark and signature.",
+  "adsPolicySection": "Ad policy",
+  "adsPolicyBannerTitle": "Banner ads",
+  "adsPolicyBannerSubtitle": "An adaptive banner that fits the screen width is shown at the bottom.",
+  "@adsPolicyBannerSubtitle": {
+    "description": "Fixed ad policy rule; translate faithfully."
+  },
+  "adsPolicyExportTitle": "Export ads",
+  "adsPolicyExportSubtitle": "Shown only after sharing completes, at most 3 times a day and at least 10 minutes apart.",
+  "@adsPolicyExportSubtitle": {
+    "description": "Fixed ad policy rule; translate faithfully."
+  },
+  "adsNativeAdLabel": "Ad",
+  "@adsNativeAdLabel": {
+    "description": "Small label above the native ad card."
+  },
+  "proActiveTitle": "Pro activated",
+  "proActiveSubtitle": "Create submission documents without ads.",
+  "proPitchSubtitle": "Unlock Pro field features with a one-time purchase.",
+  "@proPitchSubtitle": {
+    "description": "Pro is a one-time purchase; never say subscription."
+  },
+  "proPriceOneTimePurchase": "{price} · one-time purchase",
+  "@proPriceOneTimePurchase": {
+    "description": "Store-formatted price (already localized by the store) + one-time purchase.",
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "proFeatureNoAds": "No ads",
+  "@proFeatureNoAds": {
+    "description": "Short feature pill."
+  },
+  "proFeatureBenchmarkPhotoLocation": "TBM/BM photo & location",
+  "@proFeatureBenchmarkPhotoLocation": {
+    "description": "Short feature pill."
+  },
+  "proFeatureBulkExport": "Bulk export",
+  "@proFeatureBulkExport": {
+    "description": "Short feature pill."
+  },
+  "proFeatureSummaryReport": "Summary report",
+  "@proFeatureSummaryReport": {
+    "description": "Short feature pill."
+  },
+  "proBuyButton": "Buy Lv Book Pro",
+  "@proBuyButton": {
+    "description": "One-time purchase button."
+  },
+  "proTemplateBasic": "Standard level book",
+  "@proTemplateBasic": {
+    "description": "PDF document template / default preset name."
+  },
+  "proTemplateSubmission": "Submission",
+  "@proTemplateSubmission": {
+    "description": "PDF document template / default preset name."
+  },
+  "proTemplateInspection": "Inspection",
+  "@proTemplateInspection": {
+    "description": "PDF document template / default preset name."
+  },
+  "proInspectionWatermarkDefault": "Inspection",
+  "@proInspectionWatermarkDefault": {
+    "description": "Default watermark text of the built-in Inspection preset (new installs only)."
+  },
+  "proFileNameTitleOnly": "Level book name",
+  "proFileNameSiteDateTitle": "Site_Date_Level book",
+  "proFileNameSiteSectionDateTitle": "Site_Section_Date_Level book",
+  "proPdfSettingsTitle": "Pro PDF settings",
+  "proPdfLoadError": "Couldn't load settings: {error}",
+  "@proPdfLoadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "proPdfPresetLabel": "Document preset",
+  "proPdfPresetAdd": "Add preset",
+  "@proPdfPresetAdd": {
+    "description": "Tooltip and dialog title."
+  },
+  "proPdfPresetRename": "Rename preset",
+  "@proPdfPresetRename": {
+    "description": "Tooltip and dialog title."
+  },
+  "proPdfPresetDeleteTooltip": "Delete preset",
+  "proPdfPresetNewName": "New preset",
+  "proPdfPresetNameLabel": "Preset name",
+  "proPdfPresetDeletedMessage": "Preset deleted",
+  "proPdfCompanyLabel": "Company name",
+  "proPdfCompanyHint": "e.g. Acme Surveying Co.",
+  "proPdfAuthorLabel": "Author",
+  "proPdfAuthorHint": "e.g. Alex Kim",
+  "proPdfTemplateLabel": "Document template",
+  "proPdfFileNameRuleLabel": "File name rule",
+  "proPdfWatermarkLabel": "Watermark",
+  "proPdfWatermarkHint": "e.g. Inspection",
+  "proPdfFooterNoteLabel": "Footer note",
+  "proPdfFooterNoteHint": "e.g. Confirmed by site agent",
+  "proPdfShowJudgementTitle": "Show arithmetic check result",
+  "proPdfShowJudgementSubtitle": "Include Within tolerance / Check required in PDF and CSV.",
+  "proPdfSignatureLinesTitle": "Show sign-off boxes",
+  "proPdfSignatureLinesSubtitle": "Adds Prepared / Reviewed / Approved boxes at the bottom of the submission PDF.",
+  "proPdfExportHistory": "Export history",
+  "@proPdfExportHistory": {
+    "description": "Button and dialog title."
+  },
+  "proPdfExportHistoryEmpty": "No export history.",
+  "proPdfExportHistoryClearAll": "Clear all",
+  "proPdfSignatureTitle": "Author signature",
+  "proPdfSignatureDescription": "Register a handwritten signature for the PDF 'Prepared by' box.",
+  "proPdfSignatureDisplayError": "Can't display the signature",
+  "proPdfSignatureEmpty": "No signature registered",
+  "proPdfSignatureRedo": "Sign again",
+  "proPdfSignatureRegister": "Add signature",
+  "proPdfSavedMessage": "Pro PDF settings saved",
+  "proPdfFileNamePreviewLabel": "File name preview",
+  "proPdfPreviewSampleSite": "Riverside site",
+  "@proPdfPreviewSampleSite": {
+    "description": "Sample project name in the file name preview."
+  },
+  "proPdfPreviewSampleTitle": "Section A level book",
+  "@proPdfPreviewSampleTitle": {
+    "description": "Sample level book title in the file name preview."
+  },
+  "proSignatureDialogTitle": "Draw signature",
+  "proSignatureDialogHint": "Sign in the box below with your finger or a stylus.",
+  "proSignatureEmptyError": "Please draw your signature",
+  "proSignatureSaveError": "Couldn't save the signature",
+  "proSignatureClear": "Clear",
+  "purchaseStoreUnsupportedPlatform": "Store purchases aren't available on this platform.",
+  "purchaseUpdateError": "Couldn't process the purchase update: {error}",
+  "@purchaseUpdateError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "purchaseStoreUnavailable": "Store purchases are unavailable.",
+  "purchaseProductLoadError": "Couldn't load product info: {error}",
+  "@purchaseProductLoadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "purchaseProductNotFound": "Couldn't find the {productId} product in Play Console.",
+  "@purchaseProductNotFound": {
+    "placeholders": {
+      "productId": {
+        "type": "String"
+      }
+    }
+  },
+  "purchaseStoreInitError": "Couldn't initialize store purchases: {error}",
+  "@purchaseStoreInitError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "purchaseProductNotReady": "Pro product info isn't ready yet.",
+  "purchaseStartError": "Couldn't start the purchase: {error}",
+  "@purchaseStartError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "purchaseStartFailed": "Couldn't start the purchase.",
+  "purchaseRestoreError": "Couldn't restore purchase: {error}",
+  "@purchaseRestoreError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "purchaseNothingToRestore": "No purchases to restore.",
+  "purchasePendingMessage": "Processing your payment.",
+  "purchaseProActivatedMessage": "Lv Book Pro is now active.",
+  "purchaseFailedMessage": "Payment didn't go through.",
+  "purchaseCanceledMessage": "Payment canceled.",
+  "backupErrorInvalidFormat": "The backup file format is invalid.",
+  "backupErrorUnsupported": "This backup file isn't supported.",
+  "backupErrorCorrupted": "The backup data is corrupted.",
+  "backupErrorBenchmarkCorrupted": "BM data is corrupted.",
+  "backupErrorFieldBookCorrupted": "Level book data is corrupted.",
+  "backupErrorMeasurementCorrupted": "Station data is corrupted.",
+  "backupErrorPhotoCorrupted": "Photo backup data is corrupted.",
+  "backupErrorProjectNotFound": "Project not found."
 }

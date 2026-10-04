@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:sqflite/sqflite.dart';
 
 import '../../core/database/database_helper.dart';
+import '../../l10n/l10n.dart';
 import 'pro_pdf_settings.dart';
 
 class ProSettingsRepository {
@@ -18,8 +19,15 @@ class ProSettingsRepository {
 
   final ProSettingsStore _store;
 
-  ProSettingsRepository({ProSettingsStore? store})
-    : _store = store ?? DatabaseProSettingsStore();
+  /// Language for default preset names written on first launch (and the
+  /// fallback name of an unnamed preset). Saved values are never rewritten.
+  final AppLocalizations Function() _l10n;
+
+  ProSettingsRepository({
+    ProSettingsStore? store,
+    AppLocalizations Function()? l10n,
+  }) : _store = store ?? DatabaseProSettingsStore(),
+       _l10n = l10n ?? l10nForPlatform;
 
   Future<ProPdfSettings> getPdfSettings() async {
     return (await getDocumentPresets()).active.settings;
@@ -30,11 +38,13 @@ class ProSettingsRepository {
     if (stored != null) {
       return ProDocumentPresets.fromJson(
         jsonDecode(stored) as Map<String, dynamic>,
+        l10n: _l10n(),
       );
     }
 
     final migrated = ProDocumentPresets.defaults(
       migratedSettings: await _getFlatPdfSettings(),
+      l10n: _l10n(),
     );
     await saveDocumentPresets(migrated);
     return migrated;
@@ -56,7 +66,7 @@ class ProSettingsRepository {
 
   Future<void> addPreset(String name, ProPdfSettings settings) async {
     final presets = await getDocumentPresets();
-    await saveDocumentPresets(presets.addPreset(name, settings));
+    await saveDocumentPresets(presets.addPreset(name, settings, l10n: _l10n()));
   }
 
   Future<void> renamePreset(String presetId, String name) async {

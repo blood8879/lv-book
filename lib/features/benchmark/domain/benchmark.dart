@@ -1,3 +1,5 @@
+import '../../../l10n/l10n.dart';
+
 enum BenchMarkStatus { available, damagedSuspected, stopped }
 
 enum BenchMarkKind { bm, tbm }
@@ -14,16 +16,15 @@ extension BenchMarkKindLabel on BenchMarkKind {
 }
 
 extension BenchMarkStatusLabel on BenchMarkStatus {
-  String get label {
-    switch (this) {
-      case BenchMarkStatus.available:
-        return '사용 가능';
-      case BenchMarkStatus.damagedSuspected:
-        return '훼손 의심';
-      case BenchMarkStatus.stopped:
-        return '사용 중지';
-    }
-  }
+  /// Korean label (legacy). UI should use [localizedLabel].
+  String get label => localizedLabel(l10nKo);
+
+  /// Display label; the stored value stays [name].
+  String localizedLabel(AppLocalizations l10n) => switch (this) {
+    BenchMarkStatus.available => l10n.benchmarkStatusUsable,
+    BenchMarkStatus.damagedSuspected => l10n.benchmarkStatusPossiblyDamaged,
+    BenchMarkStatus.stopped => l10n.benchmarkStatusOutOfService,
+  };
 }
 
 class BenchMark {
@@ -72,11 +73,17 @@ class BenchMark {
     return '${lat.toStringAsFixed(6)}, ${lon.toStringAsFixed(6)}';
   }
 
-  String? get copyCoordinateText {
+  /// Korean clipboard text (legacy). Prefer [copyCoordinateTextFor].
+  String? get copyCoordinateText => copyCoordinateTextFor(l10nKo);
+
+  String? copyCoordinateTextFor(AppLocalizations l10n) {
     final lat = latitude;
     final lon = longitude;
     if (lat == null || lon == null) return null;
-    return '위도 ${lat.toStringAsFixed(6)}, 경도 ${lon.toStringAsFixed(6)}';
+    return l10n.benchmarkCopyCoordinateText(
+      lat.toStringAsFixed(6),
+      lon.toStringAsFixed(6),
+    );
   }
 
   String get mapQueryLabel => name;

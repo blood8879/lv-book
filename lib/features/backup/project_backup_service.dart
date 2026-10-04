@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../../core/database/database_helper.dart';
+import '../../l10n/l10n.dart';
 import '../benchmark/data/benchmark_repository.dart';
 import '../benchmark/domain/benchmark.dart';
 import '../fieldbook/data/fieldbook_repository.dart';
@@ -15,10 +16,50 @@ import '../fieldbook/domain/measurement.dart';
 import '../project/data/project_repository.dart';
 import '../project/domain/project.dart';
 
-class ProjectBackupException implements Exception {
-  final String message;
+/// Why a backup could not be read or written. Rendered in the app language
+/// via [ProjectBackupException.localizedMessage].
+enum ProjectBackupError {
+  invalidFormat,
+  unsupported,
+  corrupted,
+  benchmarkCorrupted,
+  fieldBookCorrupted,
+  measurementCorrupted,
+  photoCorrupted,
+  projectNotFound,
+}
 
-  const ProjectBackupException(this.message);
+class ProjectBackupException implements Exception {
+  final ProjectBackupError? error;
+  final String? _rawMessage;
+
+  /// Exception with a fixed (untranslated) message, e.g. from tests.
+  const ProjectBackupException(String message)
+    : _rawMessage = message,
+      error = null;
+
+  const ProjectBackupException.of(ProjectBackupError this.error)
+    : _rawMessage = null;
+
+  String localizedMessage(AppLocalizations l10n) {
+    return switch (error) {
+      null => _rawMessage ?? '',
+      ProjectBackupError.invalidFormat => l10n.backupErrorInvalidFormat,
+      ProjectBackupError.unsupported => l10n.backupErrorUnsupported,
+      ProjectBackupError.corrupted => l10n.backupErrorCorrupted,
+      ProjectBackupError.benchmarkCorrupted =>
+        l10n.backupErrorBenchmarkCorrupted,
+      ProjectBackupError.fieldBookCorrupted =>
+        l10n.backupErrorFieldBookCorrupted,
+      ProjectBackupError.measurementCorrupted =>
+        l10n.backupErrorMeasurementCorrupted,
+      ProjectBackupError.photoCorrupted => l10n.backupErrorPhotoCorrupted,
+      ProjectBackupError.projectNotFound => l10n.backupErrorProjectNotFound,
+    };
+  }
+
+  /// Legacy Korean message; prefer [localizedMessage].
+  String get message => localizedMessage(l10nKo);
 
   @override
   String toString() => message;
@@ -143,7 +184,7 @@ class ProjectBackupFilePhotoAssetStore implements ProjectBackupPhotoAssetStore {
   }) async {
     final root = await getApplicationDocumentsDirectory();
     if (!_isSafeAssetPath(asset.relativePath)) {
-      throw const ProjectBackupException('사진 백업 데이터가 손상되었습니다.');
+      throw const ProjectBackupException.of(ProjectBackupError.photoCorrupted);
     }
     final relativeDir = p.join('benchmark_photos', 'project_$projectId');
     final targetDir = Directory(p.join(root.path, relativeDir));
@@ -299,10 +340,10 @@ class ProjectBackupService {
   static ProjectBackupData decode(String source) {
     final decoded = jsonDecode(source);
     if (decoded is! Map<String, dynamic>) {
-      throw const ProjectBackupException('백업 파일 형식이 올바르지 않습니다.');
+      throw const ProjectBackupException.of(ProjectBackupError.invalidFormat);
     }
     if (decoded['kind'] != kind || decoded['version'] != version) {
-      throw const ProjectBackupException('지원하지 않는 백업 파일입니다.');
+      throw const ProjectBackupException.of(ProjectBackupError.unsupported);
     }
 
     final project = decoded['project'];
@@ -314,30 +355,38 @@ class ProjectBackupService {
         benchmarks is! List ||
         fieldBooks is! List ||
         measurements is! List) {
-      throw const ProjectBackupException('백업 데이터가 손상되었습니다.');
+      throw const ProjectBackupException.of(ProjectBackupError.corrupted);
     }
 
     return ProjectBackupData(
       project: Project.fromMap(project),
       benchmarks: [
         for (final item in benchmarks)
-          BenchMark.fromMap(_asStringKeyMap(item, 'BM 데이터가 손상되었습니다.')),
+          BenchMark.fromMap(
+            _asStringKeyMap(item, ProjectBackupError.benchmarkCorrupted),
+          ),
       ],
       fieldBooks: [
         for (final item in fieldBooks)
-          FieldBook.fromMap(_asStringKeyMap(item, '야장 데이터가 손상되었습니다.')),
+          FieldBook.fromMap(
+            _asStringKeyMap(item, ProjectBackupError.fieldBookCorrupted),
+          ),
       ],
       measurements: [
         for (final item in measurements)
-          Measurement.fromMap(_asStringKeyMap(item, '측점 데이터가 손상되었습니다.')),
+          Measurement.fromMap(
+            _asStringKeyMap(item, ProjectBackupError.measurementCorrupted),
+          ),
       ],
       benchmarkPhotoAssets: [
         if (benchmarkPhotoAssets != null) ...[
           if (benchmarkPhotoAssets is! List)
-            throw const ProjectBackupException('사진 백업 데이터가 손상되었습니다.'),
+            throw const ProjectBackupException.of(
+              ProjectBackupError.photoCorrupted,
+            ),
           for (final item in benchmarkPhotoAssets)
             ProjectBackupPhotoAsset.fromMap(
-              _asStringKeyMap(item, '사진 백업 데이터가 손상되었습니다.'),
+              _asStringKeyMap(item, ProjectBackupError.photoCorrupted),
             ),
         ],
       ],
@@ -347,7 +396,7 @@ class ProjectBackupService {
   Future<ProjectBackupData> collectProject(int projectId) async {
     final project = await _store.getProject(projectId);
     if (project == null) {
-      throw const ProjectBackupException('프로젝트를 찾을 수 없습니다.');
+      throw const ProjectBackupException.of(ProjectBackupError.projectNotFound);
     }
 
     final benchmarks = await _store.getBenchmarksByProjectId(projectId);
@@ -357,7 +406,9 @@ class ProjectBackupService {
     for (final fieldBook in fieldBooks) {
       final fieldBookId = fieldBook.id;
       if (fieldBookId == null) {
-        throw const ProjectBackupException('야장 데이터가 손상되었습니다.');
+        throw const ProjectBackupException.of(
+          ProjectBackupError.fieldBookCorrupted,
+        );
       }
       measurements.addAll(
         await _store.getMeasurementsByFieldBookId(fieldBookId),
@@ -460,8 +511,11 @@ class ProjectBackupService {
     }
   }
 
-  static Map<String, dynamic> _asStringKeyMap(Object? value, String message) {
-    if (value is! Map) throw ProjectBackupException(message);
+  static Map<String, dynamic> _asStringKeyMap(
+    Object? value,
+    ProjectBackupError error,
+  ) {
+    if (value is! Map) throw ProjectBackupException.of(error);
     return value.map((key, value) => MapEntry(key.toString(), value));
   }
 
@@ -474,11 +528,15 @@ class ProjectBackupService {
       final id = benchmark.id;
       if (id == null ||
           (projectId != null && benchmark.projectId != projectId)) {
-        throw const ProjectBackupException('BM 데이터가 손상되었습니다.');
+        throw const ProjectBackupException.of(
+          ProjectBackupError.benchmarkCorrupted,
+        );
       }
       if (benchmark.photoPath != null &&
           !_isSafeBackupRelativePath(benchmark.photoPath!)) {
-        throw const ProjectBackupException('사진 백업 데이터가 손상되었습니다.');
+        throw const ProjectBackupException.of(
+          ProjectBackupError.photoCorrupted,
+        );
       }
       benchmarkIds.add(id);
     }
@@ -489,14 +547,18 @@ class ProjectBackupService {
       final id = fieldBook.id;
       if (id == null ||
           (projectId != null && fieldBook.projectId != projectId)) {
-        throw const ProjectBackupException('야장 데이터가 손상되었습니다.');
+        throw const ProjectBackupException.of(
+          ProjectBackupError.fieldBookCorrupted,
+        );
       }
       fieldBookIds.add(id);
     }
 
     for (final measurement in data.measurements) {
       if (!fieldBookIds.contains(measurement.fieldBookId)) {
-        throw const ProjectBackupException('측점 데이터가 손상되었습니다.');
+        throw const ProjectBackupException.of(
+          ProjectBackupError.measurementCorrupted,
+        );
       }
     }
 
@@ -505,12 +567,16 @@ class ProjectBackupService {
           asset.relativePath.trim().isEmpty ||
           !_isSafeBackupRelativePath(asset.relativePath) ||
           asset.contentBase64.trim().isEmpty) {
-        throw const ProjectBackupException('사진 백업 데이터가 손상되었습니다.');
+        throw const ProjectBackupException.of(
+          ProjectBackupError.photoCorrupted,
+        );
       }
       try {
         base64Decode(asset.contentBase64);
       } on FormatException {
-        throw const ProjectBackupException('사진 백업 데이터가 손상되었습니다.');
+        throw const ProjectBackupException.of(
+          ProjectBackupError.photoCorrupted,
+        );
       }
     }
   }

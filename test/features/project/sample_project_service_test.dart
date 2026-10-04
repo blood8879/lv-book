@@ -1,3 +1,5 @@
+import 'dart:ui' show Locale;
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lv_book/core/database/database_helper.dart';
 import 'package:lv_book/features/benchmark/data/benchmark_repository.dart';
@@ -8,6 +10,7 @@ import 'package:lv_book/features/fieldbook/data/measurement_repository.dart';
 import 'package:lv_book/features/fieldbook/domain/measurement.dart';
 import 'package:lv_book/features/project/data/project_repository.dart';
 import 'package:lv_book/features/project/data/sample_project_service.dart';
+import 'package:lv_book/l10n/l10n.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {
@@ -67,7 +70,9 @@ void main() {
   test(
     'creates project, BM, field book and measurements consistently',
     () async {
-      final project = await SampleProjectService().createSampleProject();
+      final project = await SampleProjectService().createSampleProject(
+        l10n: l10nKo,
+      );
 
       expect(project.id, isNotNull);
       expect(await count('projects'), 1);
@@ -76,7 +81,7 @@ void main() {
       expect(await count('measurements'), 6);
 
       final savedProject = await ProjectRepository().getById(project.id!);
-      expect(savedProject?.name, SampleProjectService.projectName);
+      expect(savedProject?.name, '예제 현장 (삭제 가능)');
 
       final bms = await BenchMarkRepository().getByProjectId(project.id!);
       expect(bms, hasLength(1));
@@ -89,6 +94,7 @@ void main() {
       final book = books.single;
       expect(book.startBmId, bms.single.id);
       expect(book.startElevation, 100.0);
+      expect(book.title, '예제 야장 (BM-1 왕복)');
       expect(book.surveyor, '홍길동');
       expect(book.instrument, isNotEmpty);
       expect(book.weather, isNotEmpty);
@@ -119,12 +125,36 @@ void main() {
   test('concurrent taps create only one sample project', () async {
     final service = SampleProjectService();
     final results = await Future.wait([
-      service.createSampleProject(),
-      service.createSampleProject(),
+      service.createSampleProject(l10n: l10nKo),
+      service.createSampleProject(l10n: l10nKo),
     ]);
 
     expect(results[0].id, results[1].id);
     expect(await count('projects'), 1);
     expect(await count('measurements'), 6);
+  });
+
+  test('sample project is created in English for the English app', () async {
+    final en = l10nFor(const Locale('en'));
+    final project = await SampleProjectService().createSampleProject(l10n: en);
+
+    final savedProject = await ProjectRepository().getById(project.id!);
+    expect(savedProject?.name, 'Sample site (deletable)');
+
+    final bm = (await BenchMarkRepository().getByProjectId(project.id!)).single;
+    expect(bm.name, 'BM-1');
+
+    final book = (await FieldBookRepository().getByProjectId(
+      project.id!,
+    )).single;
+    expect(book.title, 'Sample level book (BM-1 loop)');
+    expect(book.surveyor, 'J. Smith');
+
+    final saved = await MeasurementRepository().getByFieldBookId(book.id!);
+    expect(saved.last.stationName, 'BM-1 (close)');
+    expect(
+      LevelClosure.error(saved, startElevation: book.startElevation!).abs(),
+      lessThanOrEqualTo(0.001),
+    );
   });
 }

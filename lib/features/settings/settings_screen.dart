@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_snackbar.dart';
+import '../../l10n/l10n.dart';
 import '../ads/ad_providers.dart';
 import '../pro/pro_pdf_settings_screen.dart';
 import '../purchase/purchase_controller.dart';
@@ -15,25 +16,21 @@ class SettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = context.appColors;
+    final l10n = context.l10n;
     final adsRemovedAsync = ref.watch(adsRemovedProvider);
     final purchaseController = ref.watch(purchaseControllerProvider);
     // Select on the message serial: the ChangeNotifier instance is the same
     // object for previous/next, so comparing `previous.message` never fires.
     // Ads-removed state is refreshed app-wide by the controller itself.
-    ref.listen<(int, String?)>(
+    ref.listen<(int, PurchaseNotice?)>(
       purchaseControllerProvider.select(
-        (controller) => (controller.messageSerial, controller.message),
+        (controller) => (controller.messageSerial, controller.notice),
       ),
       (previous, next) {
-        final message = next.$2;
-        if (message == null || next.$1 == previous?.$1) return;
-        final isFailure =
-            message.contains('실패') ||
-            message.contains('오류') ||
-            message.contains('취소') ||
-            message.contains('못했습니다') ||
-            message.contains('없습니다');
-        if (isFailure) {
+        final notice = next.$2;
+        if (notice == null || next.$1 == previous?.$1) return;
+        final message = notice.localizedMessage(context.l10n);
+        if (notice.isError) {
           AppSnackbar.error(context, message);
         } else {
           AppSnackbar.success(context, message);
@@ -42,7 +39,7 @@ class SettingsScreen extends ConsumerWidget {
     );
 
     return Scaffold(
-      appBar: AppBar(title: const Text('설정')),
+      appBar: AppBar(title: Text(l10n.settingsTitle)),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(
           12,
@@ -56,16 +53,16 @@ class SettingsScreen extends ConsumerWidget {
             purchaseController: purchaseController,
           ),
           const SizedBox(height: 12),
-          const _SectionHeader(title: '구매 상태'),
+          _SectionHeader(title: l10n.settingsPurchaseStatusSection),
           adsRemovedAsync.when(
-            loading: () => const _StatusTile(
+            loading: () => _StatusTile(
               icon: Icons.sync,
-              title: '광고 제거 상태 확인 중',
-              subtitle: '스토어와 로컬 권한을 확인합니다.',
+              title: l10n.settingsAdsRemovedChecking,
+              subtitle: l10n.settingsAdsRemovedCheckingSubtitle,
             ),
             error: (error, _) => ListTile(
               leading: const Icon(Icons.error_outline),
-              title: const Text('광고 제거 상태를 불러오지 못했습니다'),
+              title: Text(l10n.settingsAdsRemovedLoadError),
               subtitle: Text('$error'),
             ),
             data: (adsRemoved) => Opacity(
@@ -80,11 +77,11 @@ class SettingsScreen extends ConsumerWidget {
                 secondary: Icon(
                   adsRemoved ? Icons.verified : Icons.workspace_premium,
                 ),
-                title: const Text('광고 제거'),
+                title: Text(l10n.settingsRemoveAdsTitle),
                 subtitle: Text(
                   adsRemoved
-                      ? '구매 상태가 적용되어 광고가 표시되지 않습니다.'
-                      : '스토어 상품 연결 후 일시구매로 모든 광고를 제거합니다.',
+                      ? l10n.settingsAdsRemovedActiveSubtitle
+                      : l10n.settingsAdsRemovedInactiveSubtitle,
                 ),
                 value: adsRemoved,
                 onChanged: null,
@@ -99,18 +96,18 @@ class SettingsScreen extends ConsumerWidget {
             ),
             tileColor: colors.panel,
             leading: const Icon(Icons.restore),
-            title: const Text('구매 복원'),
+            title: Text(l10n.settingsRestorePurchaseTitle),
             subtitle: Text(
               purchaseController.purchasePending
-                  ? '스토어에서 구매 내역을 확인하는 중입니다.'
-                  : '이미 구매한 Pro 권한을 복원합니다.',
+                  ? l10n.settingsRestorePurchasePendingSubtitle
+                  : l10n.settingsRestorePurchaseSubtitle,
             ),
             onTap: purchaseController.purchasePending
                 ? null
                 : purchaseController.restorePurchases,
           ),
           const SizedBox(height: 8),
-          const _SectionHeader(title: '문서 설정'),
+          _SectionHeader(title: l10n.settingsDocumentSection),
           ListTile(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -118,8 +115,8 @@ class SettingsScreen extends ConsumerWidget {
             ),
             tileColor: colors.panel,
             leading: const Icon(Icons.picture_as_pdf_outlined),
-            title: const Text('제출용 PDF 설정'),
-            subtitle: const Text('회사명, 템플릿, 워터마크, 서명을 설정합니다.'),
+            title: Text(l10n.settingsPdfSettingsTitle),
+            subtitle: Text(l10n.settingsPdfSettingsSubtitle),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               Navigator.push(
@@ -129,17 +126,17 @@ class SettingsScreen extends ConsumerWidget {
             },
           ),
           const SizedBox(height: 8),
-          const _SectionHeader(title: '광고 노출 정책'),
-          const _StatusTile(
+          _SectionHeader(title: l10n.adsPolicySection),
+          _StatusTile(
             icon: Icons.view_stream_outlined,
-            title: '배너 광고',
-            subtitle: '화면 폭에 맞는 적응형 배너를 하단에 표시합니다.',
+            title: l10n.adsPolicyBannerTitle,
+            subtitle: l10n.adsPolicyBannerSubtitle,
           ),
           const SizedBox(height: 8),
-          const _StatusTile(
+          _StatusTile(
             icon: Icons.ios_share,
-            title: '내보내기 광고',
-            subtitle: '공유 완료 후 최대 하루 3회, 10분 간격으로만 표시합니다.',
+            title: l10n.adsPolicyExportTitle,
+            subtitle: l10n.adsPolicyExportSubtitle,
           ),
         ],
       ),
@@ -159,6 +156,7 @@ class _ProPurchasePanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
+    final l10n = context.l10n;
     final isPro = adsRemovedAsync.valueOrNull == true;
     final isBusy =
         purchaseController.loading || purchaseController.purchasePending;
@@ -193,7 +191,7 @@ class _ProPurchasePanel extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      isPro ? 'Pro 활성화됨' : '레벨 야장 Pro',
+                      isPro ? l10n.proActiveTitle : l10n.coreAppProName,
                       style: Theme.of(
                         context,
                       ).textTheme.titleMedium?.copyWith(color: Colors.white),
@@ -201,10 +199,10 @@ class _ProPurchasePanel extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       isPro
-                          ? '광고 없이 제출용 문서를 만들 수 있습니다.'
+                          ? l10n.proActiveSubtitle
                           : price == null
-                          ? '일회성 구매로 현장 기록 Pro 기능을 잠금 해제합니다.'
-                          : '$price · 일회성 구매',
+                          ? l10n.proPitchSubtitle
+                          : l10n.proPriceOneTimePurchase(price),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Colors.white.withValues(alpha: 0.74),
                       ),
@@ -219,13 +217,22 @@ class _ProPurchasePanel extends StatelessWidget {
             spacing: 6,
             runSpacing: 6,
             children: [
-              _FeaturePill(label: '광고 제거', background: colors.darkSurface2),
               _FeaturePill(
-                label: 'TBM/BM 사진 좌표',
+                label: l10n.proFeatureNoAds,
                 background: colors.darkSurface2,
               ),
-              _FeaturePill(label: '일괄 내보내기', background: colors.darkSurface2),
-              _FeaturePill(label: '요약 보고서', background: colors.darkSurface2),
+              _FeaturePill(
+                label: l10n.proFeatureBenchmarkPhotoLocation,
+                background: colors.darkSurface2,
+              ),
+              _FeaturePill(
+                label: l10n.proFeatureBulkExport,
+                background: colors.darkSurface2,
+              ),
+              _FeaturePill(
+                label: l10n.proFeatureSummaryReport,
+                background: colors.darkSurface2,
+              ),
             ],
           ),
           if (!isPro) ...[
@@ -246,7 +253,7 @@ class _ProPurchasePanel extends StatelessWidget {
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Icon(Icons.shopping_bag_outlined),
-                label: Text(isBusy ? '처리 중' : '레벨 야장 Pro 구매'),
+                label: Text(isBusy ? l10n.coreProcessing : l10n.proBuyButton),
               ),
             ),
           ],

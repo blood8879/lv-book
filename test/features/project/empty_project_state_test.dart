@@ -9,6 +9,7 @@ import 'package:lv_book/features/project/domain/project.dart';
 import 'package:lv_book/features/project/presentation/project_list_screen.dart';
 import 'package:lv_book/features/purchase/purchase_controller.dart';
 import 'package:lv_book/features/purchase/purchase_providers.dart';
+import 'package:lv_book/l10n/l10n.dart';
 
 void main() {
   testWidgets('empty home offers new-project and sample-project actions', (
@@ -41,6 +42,42 @@ void main() {
     await tester.tap(find.text('새 프로젝트 만들기'));
     await tester.pumpAndSettle();
     expect(find.text('새 프로젝트'), findsOneWidget);
+  });
+
+  testWidgets('empty home is English on an English app', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          adsRemovedProvider.overrideWith((ref) async => true),
+          projectListProvider.overrideWith(_EmptyProjectListNotifier.new),
+          purchaseControllerProvider.overrideWith(
+            (ref) => PurchaseController(
+              adSettingsRepository: _MemoryAdSettingsRepository(),
+            ),
+          ),
+        ],
+        child: MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const ProjectListScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Lv Book'), findsOneWidget);
+    expect(find.text('Add your first site'), findsOneWidget);
+    expect(find.widgetWithText(FilledButton, 'Create project'), findsOneWidget);
+    expect(
+      find.widgetWithText(OutlinedButton, 'Try sample project'),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.text('Create project'));
+    await tester.pumpAndSettle();
+    expect(find.text('New project'), findsOneWidget);
+    expect(find.text('Site name *'), findsOneWidget);
   });
 
   testWidgets('EmptyState without actions renders no buttons', (tester) async {

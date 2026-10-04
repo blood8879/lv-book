@@ -6,6 +6,7 @@ import 'package:lv_book/features/export/csv_exporter.dart';
 import 'package:lv_book/features/fieldbook/domain/fieldbook.dart';
 import 'package:lv_book/features/fieldbook/domain/measurement.dart';
 import 'package:lv_book/features/import/csv_importer.dart';
+import 'package:lv_book/l10n/l10n.dart';
 
 void main() {
   final fieldBook = FieldBook(
@@ -63,6 +64,7 @@ void main() {
       measurements: measurements,
       bmName: 'BM.1',
       startElevation: 100,
+      l10n: l10nKo,
     ),
   );
 
@@ -78,6 +80,7 @@ void main() {
       csv,
       projectId: 1,
       fallbackDate: DateTime(2000),
+      l10n: l10nKo,
     );
     expect(result.errors, isEmpty);
     expect(result.fieldBook?.title, '왕복 야장');
@@ -89,6 +92,7 @@ void main() {
       exportCsv(),
       projectId: 7,
       fallbackDate: DateTime(2000),
+      l10n: l10nKo,
     );
     final imported = result.fieldBook!;
     expect(imported.projectId, 7);
@@ -108,6 +112,7 @@ void main() {
       exportCsv(),
       projectId: 1,
       fallbackDate: DateTime(2000),
+      l10n: l10nKo,
     ).measurements;
 
     expect(rows[1].type, MeasurementType.tp);
@@ -132,6 +137,7 @@ void main() {
       csv,
       projectId: 1,
       fallbackDate: DateTime(2026, 1, 2),
+      l10n: l10nKo,
     );
     expect(result.fieldBook?.date, DateTime(2026, 1, 2));
     expect(result.warnings.single, contains('어제'));
@@ -149,6 +155,7 @@ void main() {
       '야장명,��\n',
       projectId: 1,
       fallbackDate: DateTime(2026),
+      l10n: l10nKo,
     );
     expect(result.fieldBook, isNull);
     expect(result.errors.single, contains('UTF-8'));

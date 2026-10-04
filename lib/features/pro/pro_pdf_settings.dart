@@ -1,3 +1,4 @@
+import '../../l10n/l10n.dart';
 import '../fieldbook/domain/fieldbook.dart';
 
 enum ProDocumentTemplate { basic, submission, inspection }
@@ -5,16 +6,25 @@ enum ProDocumentTemplate { basic, submission, inspection }
 enum ProFileNamePattern { titleOnly, siteDateTitle, siteSectionDateTitle }
 
 extension ProDocumentTemplateTitle on ProDocumentTemplate {
-  String get title {
-    switch (this) {
-      case ProDocumentTemplate.basic:
-        return '기본 야장';
-      case ProDocumentTemplate.submission:
-        return '제출용';
-      case ProDocumentTemplate.inspection:
-        return '검측용';
-    }
-  }
+  /// Display name in the app language. The enum `name` is what is persisted.
+  String label(AppLocalizations l10n) => switch (this) {
+    ProDocumentTemplate.basic => l10n.proTemplateBasic,
+    ProDocumentTemplate.submission => l10n.proTemplateSubmission,
+    ProDocumentTemplate.inspection => l10n.proTemplateInspection,
+  };
+
+  /// Legacy Korean display name; prefer [label].
+  String get title => label(l10nKo);
+}
+
+extension ProFileNamePatternLabel on ProFileNamePattern {
+  /// Display name in the app language. The enum `name` is what is persisted.
+  String label(AppLocalizations l10n) => switch (this) {
+    ProFileNamePattern.titleOnly => l10n.proFileNameTitleOnly,
+    ProFileNamePattern.siteDateTitle => l10n.proFileNameSiteDateTitle,
+    ProFileNamePattern.siteSectionDateTitle =>
+      l10n.proFileNameSiteSectionDateTitle,
+  };
 }
 
 class ProPdfSettings {
@@ -195,6 +205,20 @@ class ProDocumentPreset {
   Map<String, dynamic> toJson() {
     return {'id': id, 'name': name, 'settings': settings.toJson()};
   }
+
+  /// Name shown in the UI. Built-in presets that still carry their default
+  /// name (in any app language) are shown in the current language; renamed
+  /// and custom presets show the saved name unchanged.
+  String displayName(AppLocalizations l10n) {
+    final template = ProDocumentPresets._builtInTemplates[id];
+    if (template != null) {
+      final isDefaultName = AppLocalizations.supportedLocales.any(
+        (locale) => template.label(lookupAppLocalizations(locale)) == name,
+      );
+      if (isDefaultName) return template.label(l10n);
+    }
+    return name;
+  }
 }
 
 class ProDocumentPresets {
@@ -206,29 +230,43 @@ class ProDocumentPresets {
     required this.presets,
   });
 
-  factory ProDocumentPresets.defaults({ProPdfSettings? migratedSettings}) {
+  /// Ids of the built-in presets and the template each one starts from.
+  static const Map<String, ProDocumentTemplate> _builtInTemplates = {
+    'basic': ProDocumentTemplate.basic,
+    'submission': ProDocumentTemplate.submission,
+    'inspection': ProDocumentTemplate.inspection,
+  };
+
+  /// Built-in presets for a first launch. Names and the inspection watermark
+  /// are written in [l10n]'s language (Korean when omitted); once saved they
+  /// are user data and never rewritten.
+  factory ProDocumentPresets.defaults({
+    ProPdfSettings? migratedSettings,
+    AppLocalizations? l10n,
+  }) {
+    final strings = l10n ?? l10nKo;
     return ProDocumentPresets(
       activePresetId: 'basic',
       presets: [
         ProDocumentPreset(
           id: 'basic',
-          name: '기본 야장',
+          name: ProDocumentTemplate.basic.label(strings),
           settings: migratedSettings ?? const ProPdfSettings(),
         ),
-        const ProDocumentPreset(
+        ProDocumentPreset(
           id: 'submission',
-          name: '제출용',
-          settings: ProPdfSettings(
+          name: ProDocumentTemplate.submission.label(strings),
+          settings: const ProPdfSettings(
             documentTemplate: ProDocumentTemplate.submission,
             includeSignatureLines: true,
           ),
         ),
-        const ProDocumentPreset(
+        ProDocumentPreset(
           id: 'inspection',
-          name: '검측용',
+          name: ProDocumentTemplate.inspection.label(strings),
           settings: ProPdfSettings(
             documentTemplate: ProDocumentTemplate.inspection,
-            watermarkText: '검측용',
+            watermarkText: strings.proInspectionWatermarkDefault,
             includeSignatureLines: true,
           ),
         ),
@@ -236,14 +274,17 @@ class ProDocumentPresets {
     );
   }
 
-  factory ProDocumentPresets.fromJson(Map<String, dynamic> json) {
+  factory ProDocumentPresets.fromJson(
+    Map<String, dynamic> json, {
+    AppLocalizations? l10n,
+  }) {
     final decodedPresets = (json['presets'] as List<dynamic>? ?? const [])
         .whereType<Map<String, dynamic>>()
         .map(ProDocumentPreset.fromJson)
         .where((preset) => preset.id.trim().isNotEmpty)
         .toList();
     if (decodedPresets.isEmpty) {
-      return ProDocumentPresets.defaults();
+      return ProDocumentPresets.defaults(l10n: l10n);
     }
     final activePresetId = json['activePresetId'] as String? ?? '';
     return ProDocumentPresets(
@@ -302,8 +343,14 @@ class ProDocumentPresets {
     );
   }
 
-  ProDocumentPresets addPreset(String name, ProPdfSettings settings) {
-    final trimmedName = name.trim().isEmpty ? '새 프리셋' : name.trim();
+  ProDocumentPresets addPreset(
+    String name,
+    ProPdfSettings settings, {
+    AppLocalizations? l10n,
+  }) {
+    final trimmedName = name.trim().isEmpty
+        ? (l10n ?? l10nKo).proPdfPresetNewName
+        : name.trim();
     final id = _nextPresetId(trimmedName);
     return copyWith(
       activePresetId: id,
