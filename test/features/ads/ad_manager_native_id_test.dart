@@ -52,4 +52,13 @@ void main() {
       'ca-app-pub-7612314432840835/2090884745',
     );
   });
+
+  test('banner/interstitial use test units in debug, live units in release', () {
+    expect(AdManager.resolveUnitId('live', 'test', isDebug: true), 'test');
+    expect(AdManager.resolveUnitId('live', 'test', isDebug: false), 'live');
+    // Under `flutter test` kDebugMode is true: no live unit is ever requested.
+    expect(AdManager.banner1Id, isNot(contains('7612314432840835')));
+    expect(AdManager.banner2Id, isNot(contains('7612314432840835')));
+    expect(AdManager.interstitialId, isNot(contains('7612314432840835')));
+  });
 }

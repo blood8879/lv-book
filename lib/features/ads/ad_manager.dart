@@ -2,9 +2,29 @@ import 'package:flutter/foundation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class AdManager {
-  static const String banner1Id = 'ca-app-pub-7612314432840835/8338000107';
-  static const String banner2Id = 'ca-app-pub-7612314432840835/2531139657';
-  static const String interstitialId = 'ca-app-pub-7612314432840835/4202267796';
+  static const String _banner1LiveId = 'ca-app-pub-7612314432840835/8338000107';
+  static const String _banner2LiveId = 'ca-app-pub-7612314432840835/2531139657';
+  static const String _interstitialLiveId =
+      'ca-app-pub-7612314432840835/4202267796';
+
+  // Google's official Android test units. Debug builds always use these so
+  // development never requests (or accidentally clicks) live ads — invalid
+  // traffic can get the AdMob account suspended.
+  static const String _testBannerId = 'ca-app-pub-3940256099942544/9214589741';
+  static const String _testInterstitialId =
+      'ca-app-pub-3940256099942544/1033173712';
+
+  static String get banner1Id => resolveUnitId(_banner1LiveId, _testBannerId);
+  static String get banner2Id => resolveUnitId(_banner2LiveId, _testBannerId);
+  static String get interstitialId =>
+      resolveUnitId(_interstitialLiveId, _testInterstitialId);
+
+  @visibleForTesting
+  static String resolveUnitId(
+    String liveId,
+    String testId, {
+    bool isDebug = kDebugMode,
+  }) => isDebug ? testId : liveId;
 
   // Android 네이티브 유닛 'lv_book_native'(AdMob, 2026-10-04 생성).
   // TODO(ads): iOS 유닛은 iOS AdMob 앱 등록 후 채울 것. 비어 있는 동안 릴리스
