@@ -28,8 +28,8 @@
     }
   },
   "projectProActiveTitle": "Pro active",
-  "projectProActiveMessage": "TBM/BM photos & coordinates, ad removal and submission PDFs are available.",
-  "projectProPromoMessage": "Unlock TBM/BM photos & coordinates, submission PDFs and ad removal.",
+  "projectProActiveMessage": "TBM/BM photos & coordinates, bulk export and ad removal are available.",
+  "projectProPromoMessage": "Unlock TBM/BM photos & coordinates, bulk export and ad removal.",
   "projectProGetButton": "Get Pro",
   "@projectProGetButton": {
     "description": "Home Pro panel button that opens settings (one-time purchase)."
@@ -87,7 +87,7 @@
     }
   },
   "projectSummaryLoading": "Organize level books and BMs by site.",
-  "projectSummaryStatsOpen": "{books, plural, =1{1 level book} other{{books} level books}} · {open} check required",
+  "projectSummaryStatsOpen": "{books, plural, =1{1 level book} other{{books} level books}} · {open} to review",
   "@projectSummaryStatsOpen": {
     "description": "Home summary when some level books need checking.",
     "placeholders": {
@@ -124,7 +124,7 @@
       }
     }
   },
-  "projectCardStatsOpen": "{books, plural, =1{1 level book} other{{books} level books}} · {open} check required",
+  "projectCardStatsOpen": "{books, plural, =1{1 level book} other{{books} level books}} · {open} to review",
   "@projectCardStatsOpen": {
     "placeholders": {
       "books": {

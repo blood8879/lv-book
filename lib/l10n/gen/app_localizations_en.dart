@@ -1049,7 +1049,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get proPdfSignatureLinesSubtitle =>
-      'Adds Prepared / Reviewed / Approved boxes at the bottom of the submission PDF.';
+      'Adds Prepared / Checked / Approved boxes at the bottom of the submission PDF.';
 
   @override
   String get proPdfSignatureLinesTitle => 'Show sign-off boxes';
@@ -1166,7 +1166,7 @@ class AppLocalizationsEn extends AppLocalizations {
       other: '$books level books',
       one: '1 level book',
     );
-    return '$_temp0 · $open check required';
+    return '$_temp0 · $open to review';
   }
 
   @override
@@ -1218,7 +1218,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get projectProActiveMessage =>
-      'TBM/BM photos & coordinates, ad removal and submission PDFs are available.';
+      'TBM/BM photos & coordinates, bulk export and ad removal are available.';
 
   @override
   String get projectProActiveTitle => 'Pro active';
@@ -1228,7 +1228,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get projectProPromoMessage =>
-      'Unlock TBM/BM photos & coordinates, submission PDFs and ad removal.';
+      'Unlock TBM/BM photos & coordinates, bulk export and ad removal.';
 
   @override
   String projectRecentWorkSubtitle(String project, String date) {
@@ -1309,7 +1309,7 @@ class AppLocalizationsEn extends AppLocalizations {
       other: '$books level books',
       one: '1 level book',
     );
-    return '$_temp0 · $open check required';
+    return '$_temp0 · $open to review';
   }
 
   @override

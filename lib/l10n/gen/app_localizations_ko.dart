@@ -1090,7 +1090,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String projectCardStatsOpen(int books, int open) {
-    return '야장 $books권 · 확인 필요 $open건';
+    return '야장 $books권 · 검토 대기 $open건';
   }
 
   @override
@@ -1142,7 +1142,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get projectProActiveMessage =>
-      'TBM/BM 사진 좌표, 광고 제거, 제출용 PDF를 사용할 수 있습니다.';
+      'TBM/BM 사진 좌표, 일괄 내보내기, 광고 제거를 사용할 수 있습니다.';
 
   @override
   String get projectProActiveTitle => 'Pro 활성화됨';
@@ -1152,7 +1152,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get projectProPromoMessage =>
-      'TBM/BM 사진 좌표, 제출용 PDF, 광고 제거를 잠금 해제하세요.';
+      'TBM/BM 사진 좌표, 일괄 내보내기, 광고 제거를 잠금 해제하세요.';
 
   @override
   String projectRecentWorkSubtitle(String project, String date) {
@@ -1217,7 +1217,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String projectSummaryStatsOpen(int books, int open) {
-    return '야장 $books권 · 확인 필요 $open건';
+    return '야장 $books권 · 검토 대기 $open건';
   }
 
   @override

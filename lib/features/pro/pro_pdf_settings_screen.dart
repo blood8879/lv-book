@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_snackbar.dart';
 import '../../l10n/l10n.dart';
+import '../quickmemo/presentation/quick_memo_fab.dart';
 import '../export/export_history_repository.dart';
 import '../fieldbook/domain/fieldbook.dart';
 import 'pro_pdf_settings.dart';
@@ -68,173 +69,180 @@ class _ProPdfSettingsScreenState extends ConsumerState<ProPdfSettingsScreen> {
     final presetsAsync = ref.watch(proDocumentPresetsProvider);
     final l10n = context.l10n;
 
-    return Scaffold(
-      appBar: AppBar(title: Text(l10n.proPdfSettingsTitle)),
-      bottomNavigationBar: _buildFooter(),
-      body: presetsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) =>
-            Center(child: Text(l10n.proPdfLoadError('$error'))),
-        data: (presets) {
-          _applyPresets(presets);
+    // A form screen: the floating quick-memo button would cover fields.
+    return HideQuickMemoFab(
+      child: Scaffold(
+        appBar: AppBar(title: Text(l10n.proPdfSettingsTitle)),
+        bottomNavigationBar: _buildFooter(),
+        body: presetsAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, _) =>
+              Center(child: Text(l10n.proPdfLoadError('$error'))),
+          data: (presets) {
+            _applyPresets(presets);
 
-          return ListView(
-            padding: const EdgeInsets.fromLTRB(
-              16,
-              16,
-              16,
-              AppConstants.quickMemoFabClearance,
-            ),
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: DropdownButtonFormField<String>(
-                      initialValue: presets.active.id,
-                      decoration: InputDecoration(
-                        labelText: l10n.proPdfPresetLabel,
-                        prefixIcon: const Icon(Icons.tune_outlined),
+            return ListView(
+              padding: const EdgeInsets.fromLTRB(
+                16,
+                16,
+                16,
+                AppConstants.quickMemoFabClearance,
+              ),
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: DropdownButtonFormField<String>(
+                        isExpanded: true,
+                        initialValue: presets.active.id,
+                        decoration: InputDecoration(
+                          labelText: l10n.proPdfPresetLabel,
+                          prefixIcon: const Icon(Icons.tune_outlined),
+                        ),
+                        items: presets.presets
+                            .map(
+                              (preset) => DropdownMenuItem(
+                                value: preset.id,
+                                child: Text(
+                                  preset.displayName(l10n),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (value) {
+                          if (value != null) {
+                            _selectPreset(value);
+                          }
+                        },
                       ),
-                      items: presets.presets
-                          .map(
-                            (preset) => DropdownMenuItem(
-                              value: preset.id,
-                              child: Text(preset.displayName(l10n)),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (value) {
-                        if (value != null) {
-                          _selectPreset(value);
-                        }
-                      },
                     ),
+                    const SizedBox(width: 8),
+                    IconButton.filledTonal(
+                      onPressed: () => _createPreset(presets.active.settings),
+                      tooltip: l10n.proPdfPresetAdd,
+                      icon: const Icon(Icons.add),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton.filledTonal(
+                      onPressed: () => _renamePreset(presets.active),
+                      tooltip: l10n.proPdfPresetRename,
+                      icon: const Icon(Icons.edit_outlined),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton.filledTonal(
+                      onPressed: presets.presets.length > 1
+                          ? () => _deletePreset(presets.active.id)
+                          : null,
+                      tooltip: l10n.proPdfPresetDeleteTooltip,
+                      icon: const Icon(Icons.delete_outline),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _companyController,
+                  decoration: InputDecoration(
+                    labelText: l10n.proPdfCompanyLabel,
+                    hintText: l10n.proPdfCompanyHint,
+                    prefixIcon: const Icon(Icons.business),
                   ),
-                  const SizedBox(width: 8),
-                  IconButton.filledTonal(
-                    onPressed: () => _createPreset(presets.active.settings),
-                    tooltip: l10n.proPdfPresetAdd,
-                    icon: const Icon(Icons.add),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _authorController,
+                  decoration: InputDecoration(
+                    labelText: l10n.proPdfAuthorLabel,
+                    hintText: l10n.proPdfAuthorHint,
+                    prefixIcon: const Icon(Icons.person_outline),
                   ),
-                  const SizedBox(width: 8),
-                  IconButton.filledTonal(
-                    onPressed: () => _renamePreset(presets.active),
-                    tooltip: l10n.proPdfPresetRename,
-                    icon: const Icon(Icons.edit_outlined),
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<ProDocumentTemplate>(
+                  initialValue: _documentTemplate,
+                  decoration: InputDecoration(
+                    labelText: l10n.proPdfTemplateLabel,
+                    prefixIcon: const Icon(Icons.description_outlined),
                   ),
-                  const SizedBox(width: 8),
-                  IconButton.filledTonal(
-                    onPressed: presets.presets.length > 1
-                        ? () => _deletePreset(presets.active.id)
-                        : null,
-                    tooltip: l10n.proPdfPresetDeleteTooltip,
-                    icon: const Icon(Icons.delete_outline),
+                  items: ProDocumentTemplate.values
+                      .map(
+                        (template) => DropdownMenuItem(
+                          value: template,
+                          child: Text(template.label(l10n)),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() => _documentTemplate = value);
+                    }
+                  },
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<ProFileNamePattern>(
+                  initialValue: _fileNamePattern,
+                  decoration: InputDecoration(
+                    labelText: l10n.proPdfFileNameRuleLabel,
+                    prefixIcon: const Icon(Icons.drive_file_rename_outline),
                   ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _companyController,
-                decoration: InputDecoration(
-                  labelText: l10n.proPdfCompanyLabel,
-                  hintText: l10n.proPdfCompanyHint,
-                  prefixIcon: const Icon(Icons.business),
+                  items: ProFileNamePattern.values
+                      .map(
+                        (pattern) => DropdownMenuItem(
+                          value: pattern,
+                          child: Text(pattern.label(l10n)),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() => _fileNamePattern = value);
+                    }
+                  },
                 ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _authorController,
-                decoration: InputDecoration(
-                  labelText: l10n.proPdfAuthorLabel,
-                  hintText: l10n.proPdfAuthorHint,
-                  prefixIcon: const Icon(Icons.person_outline),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _watermarkController,
+                  decoration: InputDecoration(
+                    labelText: l10n.proPdfWatermarkLabel,
+                    hintText: l10n.proPdfWatermarkHint,
+                    prefixIcon: const Icon(Icons.water_drop_outlined),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<ProDocumentTemplate>(
-                initialValue: _documentTemplate,
-                decoration: InputDecoration(
-                  labelText: l10n.proPdfTemplateLabel,
-                  prefixIcon: const Icon(Icons.description_outlined),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _footerNoteController,
+                  decoration: InputDecoration(
+                    labelText: l10n.proPdfFooterNoteLabel,
+                    hintText: l10n.proPdfFooterNoteHint,
+                    prefixIcon: const Icon(Icons.notes_outlined),
+                  ),
                 ),
-                items: ProDocumentTemplate.values
-                    .map(
-                      (template) => DropdownMenuItem(
-                        value: template,
-                        child: Text(template.label(l10n)),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() => _documentTemplate = value);
-                  }
-                },
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<ProFileNamePattern>(
-                initialValue: _fileNamePattern,
-                decoration: InputDecoration(
-                  labelText: l10n.proPdfFileNameRuleLabel,
-                  prefixIcon: const Icon(Icons.drive_file_rename_outline),
+                const SizedBox(height: 16),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  secondary: const Icon(Icons.fact_check_outlined),
+                  title: Text(l10n.proPdfShowJudgementTitle),
+                  subtitle: Text(l10n.proPdfShowJudgementSubtitle),
+                  value: _includeCheckJudgement,
+                  onChanged: (value) =>
+                      setState(() => _includeCheckJudgement = value),
                 ),
-                items: ProFileNamePattern.values
-                    .map(
-                      (pattern) => DropdownMenuItem(
-                        value: pattern,
-                        child: Text(pattern.label(l10n)),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() => _fileNamePattern = value);
-                  }
-                },
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _watermarkController,
-                decoration: InputDecoration(
-                  labelText: l10n.proPdfWatermarkLabel,
-                  hintText: l10n.proPdfWatermarkHint,
-                  prefixIcon: const Icon(Icons.water_drop_outlined),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  secondary: const Icon(Icons.draw_outlined),
+                  title: Text(l10n.proPdfSignatureLinesTitle),
+                  subtitle: Text(l10n.proPdfSignatureLinesSubtitle),
+                  value: _includeSignatureLines,
+                  onChanged: (value) =>
+                      setState(() => _includeSignatureLines = value),
                 ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _footerNoteController,
-                decoration: InputDecoration(
-                  labelText: l10n.proPdfFooterNoteLabel,
-                  hintText: l10n.proPdfFooterNoteHint,
-                  prefixIcon: const Icon(Icons.notes_outlined),
-                ),
-              ),
-              const SizedBox(height: 16),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                secondary: const Icon(Icons.fact_check_outlined),
-                title: Text(l10n.proPdfShowJudgementTitle),
-                subtitle: Text(l10n.proPdfShowJudgementSubtitle),
-                value: _includeCheckJudgement,
-                onChanged: (value) =>
-                    setState(() => _includeCheckJudgement = value),
-              ),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                secondary: const Icon(Icons.draw_outlined),
-                title: Text(l10n.proPdfSignatureLinesTitle),
-                subtitle: Text(l10n.proPdfSignatureLinesSubtitle),
-                value: _includeSignatureLines,
-                onChanged: (value) =>
-                    setState(() => _includeSignatureLines = value),
-              ),
-              if (_includeSignatureLines) _buildSignatureCard(),
-              const SizedBox(height: 12),
-              _FilenamePreview(settings: _currentSettings()),
-            ],
-          );
-        },
+                if (_includeSignatureLines) _buildSignatureCard(),
+                const SizedBox(height: 12),
+                _FilenamePreview(settings: _currentSettings()),
+              ],
+            );
+          },
+        ),
       ),
     );
   }

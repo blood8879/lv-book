@@ -1907,7 +1907,7 @@ abstract class AppLocalizations {
   /// No description provided for @proPdfSignatureLinesSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Adds Prepared / Reviewed / Approved boxes at the bottom of the submission PDF.'**
+  /// **'Adds Prepared / Checked / Approved boxes at the bottom of the submission PDF.'**
   String get proPdfSignatureLinesSubtitle;
 
   /// No description provided for @proPdfSignatureLinesTitle.
@@ -2063,7 +2063,7 @@ abstract class AppLocalizations {
   /// No description provided for @projectCardStatsOpen.
   ///
   /// In en, this message translates to:
-  /// **'{books, plural, =1{1 level book} other{{books} level books}} · {open} check required'**
+  /// **'{books, plural, =1{1 level book} other{{books} level books}} · {open} to review'**
   String projectCardStatsOpen(int books, int open);
 
   /// date is yyyy-MM-dd.
@@ -2153,7 +2153,7 @@ abstract class AppLocalizations {
   /// No description provided for @projectProActiveMessage.
   ///
   /// In en, this message translates to:
-  /// **'TBM/BM photos & coordinates, ad removal and submission PDFs are available.'**
+  /// **'TBM/BM photos & coordinates, bulk export and ad removal are available.'**
   String get projectProActiveMessage;
 
   /// No description provided for @projectProActiveTitle.
@@ -2171,7 +2171,7 @@ abstract class AppLocalizations {
   /// No description provided for @projectProPromoMessage.
   ///
   /// In en, this message translates to:
-  /// **'Unlock TBM/BM photos & coordinates, submission PDFs and ad removal.'**
+  /// **'Unlock TBM/BM photos & coordinates, bulk export and ad removal.'**
   String get projectProPromoMessage;
 
   /// date is yyyy-MM-dd.
@@ -2285,7 +2285,7 @@ abstract class AppLocalizations {
   /// Home summary when some level books need checking.
   ///
   /// In en, this message translates to:
-  /// **'{books, plural, =1{1 level book} other{{books} level books}} · {open} check required'**
+  /// **'{books, plural, =1{1 level book} other{{books} level books}} · {open} to review'**
   String projectSummaryStatsOpen(int books, int open);
 
   /// No description provided for @projectSummaryTitle.

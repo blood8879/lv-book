@@ -854,7 +854,7 @@
   "proPdfSignatureDescription": "Register a handwritten signature for the PDF 'Prepared by' box.",
   "proPdfSignatureDisplayError": "Can't display the signature",
   "proPdfSignatureEmpty": "No signature registered",
-  "proPdfSignatureLinesSubtitle": "Adds Prepared / Reviewed / Approved boxes at the bottom of the submission PDF.",
+  "proPdfSignatureLinesSubtitle": "Adds Prepared / Checked / Approved boxes at the bottom of the submission PDF.",
   "proPdfSignatureLinesTitle": "Show sign-off boxes",
   "proPdfSignatureRedo": "Sign again",
   "proPdfSignatureRegister": "Add signature",
@@ -928,7 +928,7 @@
       }
     }
   },
-  "projectCardStatsOpen": "{books, plural, =1{1 level book} other{{books} level books}} · {open} check required",
+  "projectCardStatsOpen": "{books, plural, =1{1 level book} other{{books} level books}} · {open} to review",
   "@projectCardStatsOpen": {
     "placeholders": {
       "books": {
@@ -975,13 +975,13 @@
   "projectListQuickMemoTooltip": "Quick memo",
   "projectListSettingsTooltip": "Settings",
   "projectNewDialogTitle": "New project",
-  "projectProActiveMessage": "TBM/BM photos & coordinates, ad removal and submission PDFs are available.",
+  "projectProActiveMessage": "TBM/BM photos & coordinates, bulk export and ad removal are available.",
   "projectProActiveTitle": "Pro active",
   "projectProGetButton": "Get Pro",
   "@projectProGetButton": {
     "description": "Home Pro panel button that opens settings (one-time purchase)."
   },
-  "projectProPromoMessage": "Unlock TBM/BM photos & coordinates, submission PDFs and ad removal.",
+  "projectProPromoMessage": "Unlock TBM/BM photos & coordinates, bulk export and ad removal.",
   "projectRecentWorkSubtitle": "Recent · {project} · {date}",
   "@projectRecentWorkSubtitle": {
     "description": "date is yyyy-MM-dd.",
@@ -1038,7 +1038,7 @@
       }
     }
   },
-  "projectSummaryStatsOpen": "{books, plural, =1{1 level book} other{{books} level books}} · {open} check required",
+  "projectSummaryStatsOpen": "{books, plural, =1{1 level book} other{{books} level books}} · {open} to review",
   "@projectSummaryStatsOpen": {
     "description": "Home summary when some level books need checking.",
     "placeholders": {

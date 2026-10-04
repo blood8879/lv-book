@@ -128,9 +128,8 @@ render_shot 02 'home.png'          'Every site in one place'     'Projects, leve
 render_shot 03 'levelbooks.png'    'Find, copy, export'          'Search and bulk export'                   0
 render_shot 04 'benchmarks.png'    'Benchmarks with status'      'Usable, possibly damaged, out of service' 0
 render_shot 05 'export.png'        'Submission-ready PDF'        'Preview before you print or share'        0
-render_shot 06 'check.png'         'Arithmetic check built in'   'Misclosure and tolerance at a glance'     0
-render_shot 07 'pdfsettings.png'   'Your company, your format'   'Company name, signature, watermark'       0
-render_shot 08 'editor_dark.png'   'Dark mode'                   'Comfortable on site, day or night'        1
+render_shot 06 'pdfsettings.png'   'Your company, your format'   'Company name, signature, watermark'       0
+render_shot 07 'editor_dark.png'   'Dark mode'                   'Comfortable on site, day or night'        1
 
 echo "==> done:"
 ls -1 "$OUT"/*.png

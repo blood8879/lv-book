@@ -121,7 +121,7 @@
   "proPdfShowJudgementTitle": "Show arithmetic check result",
   "proPdfShowJudgementSubtitle": "Include Within tolerance / Check required in PDF and CSV.",
   "proPdfSignatureLinesTitle": "Show sign-off boxes",
-  "proPdfSignatureLinesSubtitle": "Adds Prepared / Reviewed / Approved boxes at the bottom of the submission PDF.",
+  "proPdfSignatureLinesSubtitle": "Adds Prepared / Checked / Approved boxes at the bottom of the submission PDF.",
   "proPdfExportHistory": "Export history",
   "@proPdfExportHistory": {
     "description": "Button and dialog title."
