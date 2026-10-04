@@ -10,6 +10,7 @@ import '../../core/widgets/app_snackbar.dart';
 import '../../l10n/l10n.dart';
 import '../fieldbook/domain/fieldbook.dart';
 import '../fieldbook/domain/measurement.dart';
+import '../fieldbook/domain/misclosure.dart';
 import 'pdf_template.dart';
 import 'csv_exporter.dart';
 import '../ads/ad_manager.dart';
@@ -17,6 +18,7 @@ import '../ads/ad_providers.dart';
 import '../pro/pro_pdf_settings.dart';
 import '../pro/pro_providers.dart';
 import '../project/data/project_providers.dart';
+import '../settings/misclosure_tolerance_repository.dart';
 import 'export_file_namer.dart';
 import 'export_history_repository.dart';
 
@@ -26,12 +28,16 @@ class ExportScreen extends ConsumerStatefulWidget {
   final String bmName;
   final double startElevation;
 
+  /// Name of the closing BM when the book closes on another BM.
+  final String? closingBmName;
+
   const ExportScreen({
     super.key,
     required this.fieldBook,
     required this.measurements,
     required this.bmName,
     required this.startElevation,
+    this.closingBmName,
   });
 
   @override
@@ -122,6 +128,9 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final tolerance =
+        ref.watch(misclosureToleranceProvider).valueOrNull ??
+        MisclosureTolerance.defaults;
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.exportScreenTitle),
@@ -144,6 +153,8 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
           measurements: widget.measurements,
           bmName: widget.bmName,
           startElevation: widget.startElevation,
+          closingBmName: widget.closingBmName,
+          tolerance: tolerance,
           proSettings: _proPdfSettings,
           l10n: l10n,
         ),
@@ -160,11 +171,14 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
   Future<void> _sharePdf(BuildContext context) async {
     final l10n = context.l10n;
     try {
+      final tolerance = await ref.read(misclosureToleranceProvider.future);
       final pdfBytes = await PdfExporter.generateFieldBookPdf(
         fieldBook: widget.fieldBook,
         measurements: widget.measurements,
         bmName: widget.bmName,
         startElevation: widget.startElevation,
+        closingBmName: widget.closingBmName,
+        tolerance: tolerance,
         proSettings: _proPdfSettings,
         l10n: l10n,
       );
@@ -197,11 +211,14 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
   Future<void> _shareCsv(BuildContext context) async {
     final l10n = context.l10n;
     try {
+      final tolerance = await ref.read(misclosureToleranceProvider.future);
       final csvString = CsvExporter.generateFieldBookCsv(
         fieldBook: widget.fieldBook,
         measurements: widget.measurements,
         bmName: widget.bmName,
         startElevation: widget.startElevation,
+        closingBmName: widget.closingBmName,
+        tolerance: tolerance,
         proSettings: _proPdfSettings,
         l10n: l10n,
       );

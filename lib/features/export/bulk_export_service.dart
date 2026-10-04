@@ -10,6 +10,7 @@ import '../fieldbook/data/measurement_repository.dart';
 import '../fieldbook/domain/fieldbook.dart';
 import '../fieldbook/domain/measurement.dart';
 import '../fieldbook/domain/measurement_validation.dart';
+import '../fieldbook/domain/misclosure.dart';
 import '../pro/pro_settings_repository.dart';
 import 'csv_exporter.dart';
 import 'export_file_namer.dart';
@@ -33,7 +34,11 @@ class BulkExportService {
   final Future<Directory> Function() temporaryDirectoryProvider;
   final BulkExportShare shareFiles;
 
+  /// Misclosure tolerance rule from the app settings.
+  final MisclosureTolerance tolerance;
+
   BulkExportService({
+    this.tolerance = MisclosureTolerance.defaults,
     required this.adSettingsRepository,
     required this.proSettingsRepository,
     required this.measurementRepository,
@@ -70,6 +75,7 @@ class BulkExportService {
       if (measurements.isEmpty) continue;
 
       final bmName = await _resolveBmName(fieldBook);
+      final closingBmName = await _resolveClosingBmName(fieldBook);
       final startElevation =
           fieldBook.startElevation ?? measurements.first.gh ?? 0;
 
@@ -86,6 +92,8 @@ class BulkExportService {
           measurements: measurements,
           bmName: bmName,
           startElevation: startElevation,
+          closingBmName: closingBmName,
+          tolerance: tolerance,
           proSettings: settings,
           l10n: l10n,
         );
@@ -106,6 +114,8 @@ class BulkExportService {
           measurements: measurements,
           bmName: bmName,
           startElevation: startElevation,
+          closingBmName: closingBmName,
+          tolerance: tolerance,
           proSettings: settings,
           l10n: l10n,
         );
@@ -139,7 +149,11 @@ class BulkExportService {
         final file = File('${dir.path}/$summaryName');
         await file.writeAsString(
           CsvExporter.withBom(
-            SubmissionSummaryReport.generateCsv(summaryInputs, l10n: l10n),
+            SubmissionSummaryReport.generateCsv(
+              summaryInputs,
+              tolerance: tolerance,
+              l10n: l10n,
+            ),
           ),
         );
         files.add(XFile(file.path));
@@ -201,6 +215,14 @@ class BulkExportService {
     if (fieldBook.startBmId == null) return 'BM';
     final bm = await benchMarkRepository.getById(fieldBook.startBmId!);
     return bm?.name ?? 'BM';
+  }
+
+  Future<String?> _resolveClosingBmName(FieldBook fieldBook) async {
+    final id = fieldBook.closingBmId;
+    if (fieldBook.closingMode != ClosingReferenceMode.benchmark || id == null) {
+      return null;
+    }
+    return (await benchMarkRepository.getById(id))?.name;
   }
 
   String _safeFileName(String value) {

@@ -35,7 +35,7 @@
   "exportCheckDifference": "ΣBS - ΣFS",
   "exportCheckStartRl": "시작 GH",
   "exportCheckFinalRl": "최종 GH",
-  "exportCheckMisclosure": "오차",
+  "exportCheckMisclosure": "폐합오차",
   "exportCheckResult": "검산 판정",
   "exportSignaturePrepared": "작성",
   "exportSignatureChecked": "검토",
@@ -76,5 +76,12 @@
   "exportImportDateUnrecognized": "날짜 \"{value}\"를 인식할 수 없어 {date}로 설정했습니다.",
   "exportImportDateMissing": "날짜 항목이 없어 {date}로 설정했습니다.",
   "exportImportHeaderNotFound": "측량 표 헤더를 찾을 수 없습니다.",
-  "exportImportInvalidNumber": "{row}행 {column} 숫자 형식이 올바르지 않습니다."
+  "exportImportInvalidNumber": "{row}행 {column} 숫자 형식이 올바르지 않습니다.",
+  "exportFieldClosingBm": "폐합 BM",
+  "exportFieldClosingRl": "폐합 표고",
+  "exportClosingLoopName": "{name} (왕복)",
+  "exportCheckTitleWithClosure": "검산 및 폐합오차",
+  "exportCheckRlDifference": "최종 - 시작",
+  "exportCheckAllowed": "허용",
+  "exportCheckMisclosureUnavailable": "없음 (폐합 기준 없음)"
 }

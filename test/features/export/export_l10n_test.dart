@@ -330,7 +330,7 @@ void main() {
       final arb =
           jsonDecode(File('lib/l10n/src/export_en.arb').readAsStringSync())
               as Map<String, dynamic>;
-      final text = StringBuffer('ΣBS ΣFS 0123456789.-= m');
+      final text = StringBuffer('ΣBS ΣFS 0123456789.-=+± m');
       arb.forEach((key, value) {
         if (!key.startsWith('@') && value is String) text.write(value);
       });

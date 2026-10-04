@@ -88,6 +88,9 @@ class DatabaseHelper {
         date TEXT NOT NULL,
         start_bm_id INTEGER,
         start_elevation REAL,
+        closing_mode TEXT NOT NULL DEFAULT 'none',
+        closing_bm_id INTEGER,
+        closing_elevation REAL,
         memo TEXT,
         surveyor TEXT,
         checker TEXT,
@@ -100,7 +103,8 @@ class DatabaseHelper {
         reviewed_at TEXT,
         created_at TEXT NOT NULL,
         FOREIGN KEY (project_id) REFERENCES projects (id) ON DELETE CASCADE,
-        FOREIGN KEY (start_bm_id) REFERENCES benchmarks (id) ON DELETE SET NULL
+        FOREIGN KEY (start_bm_id) REFERENCES benchmarks (id) ON DELETE SET NULL,
+        FOREIGN KEY (closing_bm_id) REFERENCES benchmarks (id) ON DELETE SET NULL
       )
     ''');
 
@@ -180,6 +184,36 @@ class DatabaseHelper {
     }
     if (oldVersion < 8) {
       await _deleteOrphanRows(db);
+    }
+    if (oldVersion < 9) {
+      await _addClosingReference(db);
+    }
+  }
+
+  /// v9: closing reference (closing BM / known closing RL) per field book.
+  /// Existing books get 'none', i.e. only the arithmetic check as before.
+  /// Skips columns that already exist so a partially upgraded file reopens.
+  Future<void> _addClosingReference(Database db) async {
+    final columns = {
+      for (final row in await db.rawQuery('PRAGMA table_info(field_books)'))
+        row['name'] as String,
+    };
+    if (!columns.contains('closing_mode')) {
+      await db.execute(
+        "ALTER TABLE field_books ADD COLUMN closing_mode TEXT NOT NULL DEFAULT 'none'",
+      );
+    }
+    // A column added with REFERENCES must default to NULL (it does).
+    if (!columns.contains('closing_bm_id')) {
+      await db.execute(
+        'ALTER TABLE field_books ADD COLUMN closing_bm_id INTEGER '
+        'REFERENCES benchmarks (id) ON DELETE SET NULL',
+      );
+    }
+    if (!columns.contains('closing_elevation')) {
+      await db.execute(
+        'ALTER TABLE field_books ADD COLUMN closing_elevation REAL',
+      );
     }
   }
 

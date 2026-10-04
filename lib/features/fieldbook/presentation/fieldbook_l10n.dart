@@ -20,6 +20,7 @@ extension MeasurementCheckL10n on MeasurementCheck {
     MeasurementCheck.lastFs => l10n.fieldbookCheckLastFs,
     MeasurementCheck.tpComplete => l10n.fieldbookCheckTpComplete,
     MeasurementCheck.emptyRows => l10n.fieldbookCheckEmptyRows,
+    MeasurementCheck.arithmetic => l10n.fieldbookCheckArithmetic,
     MeasurementCheck.tolerance => l10n.fieldbookCheckTolerance,
   };
 }
@@ -32,6 +33,8 @@ extension MeasurementIssueL10n on MeasurementIssue {
     MeasurementIssue.tpIncomplete => l10n.fieldbookIssueTpIncomplete,
     MeasurementIssue.emptyRows => l10n.fieldbookIssueEmptyRows,
     MeasurementIssue.exceedsTolerance => l10n.fieldbookIssueExceedsTolerance,
+    MeasurementIssue.arithmeticMismatch =>
+      l10n.fieldbookIssueArithmeticMismatch,
   };
 }
 

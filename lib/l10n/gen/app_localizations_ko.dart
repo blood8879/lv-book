@@ -340,16 +340,25 @@ class AppLocalizationsKo extends AppLocalizations {
   String get exportBulkTitle => '일괄 내보내기';
 
   @override
+  String get exportCheckAllowed => '허용';
+
+  @override
   String get exportCheckDifference => 'ΣBS - ΣFS';
 
   @override
   String get exportCheckFinalRl => '최종 GH';
 
   @override
-  String get exportCheckMisclosure => '오차';
+  String get exportCheckMisclosure => '폐합오차';
+
+  @override
+  String get exportCheckMisclosureUnavailable => '없음 (폐합 기준 없음)';
 
   @override
   String get exportCheckResult => '검산 판정';
+
+  @override
+  String get exportCheckRlDifference => '최종 - 시작';
 
   @override
   String get exportCheckStartRl => '시작 GH';
@@ -358,8 +367,16 @@ class AppLocalizationsKo extends AppLocalizations {
   String get exportCheckTitle => '검산';
 
   @override
+  String get exportCheckTitleWithClosure => '검산 및 폐합오차';
+
+  @override
   String exportCheckValue(String label, String value) {
     return '$label = $value';
+  }
+
+  @override
+  String exportClosingLoopName(String name) {
+    return '$name (왕복)';
   }
 
   @override
@@ -407,6 +424,12 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get exportFieldChecker => '검측자';
+
+  @override
+  String get exportFieldClosingBm => '폐합 BM';
+
+  @override
+  String get exportFieldClosingRl => '폐합 표고';
 
   @override
   String get exportFieldCompany => '회사명';
@@ -573,6 +596,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get fieldbookBulkExportButton => '일괄 내보내기';
 
   @override
+  String get fieldbookCheckArithmetic => '검산';
+
+  @override
   String get fieldbookCheckEmptyRows => '빈 행';
 
   @override
@@ -598,6 +624,57 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get fieldbookChooseCsvFile => 'CSV 파일 선택 (.csv)';
+
+  @override
+  String get fieldbookClosingApply => '적용';
+
+  @override
+  String get fieldbookClosingBmLabel => '폐합 BM';
+
+  @override
+  String get fieldbookClosingElevationLabel => '폐합 표고 (m)';
+
+  @override
+  String get fieldbookClosingInvalid => '올바른 표고를 입력하세요.';
+
+  @override
+  String get fieldbookClosingLabel => '폐합 표고';
+
+  @override
+  String get fieldbookClosingLoop => '시작 BM (왕복)';
+
+  @override
+  String get fieldbookClosingLoopShort => '왕복';
+
+  @override
+  String get fieldbookClosingManual => '표고 직접 입력';
+
+  @override
+  String get fieldbookClosingManualShort => '직접 입력';
+
+  @override
+  String get fieldbookClosingNoBm => '이 현장에 사용할 수 있는 BM이 없습니다.';
+
+  @override
+  String get fieldbookClosingNone => '없음';
+
+  @override
+  String get fieldbookClosingNotSet => '미설정';
+
+  @override
+  String get fieldbookClosingOtherBm => '다른 BM';
+
+  @override
+  String get fieldbookClosingSheetHelp =>
+      '폐합오차 = 최종 표고 − 폐합 표고. 폐합 기준이 없으면 검산만 표시합니다.';
+
+  @override
+  String get fieldbookClosingSheetTitle => '폐합 기준';
+
+  @override
+  String fieldbookClosingSummary(String name, String rl) {
+    return '$name · $rl';
+  }
 
   @override
   String get fieldbookColumnHi => 'IH';
@@ -694,6 +771,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get fieldbookInstrumentLabel => '장비';
 
   @override
+  String get fieldbookIssueArithmeticMismatch => '검산이 맞지 않습니다. 지반고를 확인하세요.';
+
+  @override
   String get fieldbookIssueEmptyRows => '측정값이 없는 행을 정리하세요.';
 
   @override
@@ -713,6 +793,11 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get fieldbookJobNumberLabel => '공사번호';
+
+  @override
+  String fieldbookMisclosureCheckResult(String result) {
+    return '폐합오차 $result';
+  }
 
   @override
   String get fieldbookNewTitle => '새 야장';
@@ -846,13 +931,24 @@ class AppLocalizationsKo extends AppLocalizations {
   String get fieldbookStatusReviewed => '검토완료';
 
   @override
+  String fieldbookSummaryAllowed(String value) {
+    return '허용 $value';
+  }
+
+  @override
+  String get fieldbookSummaryArithmetic => '검산 오차';
+
+  @override
   String get fieldbookSummaryDiff => '차';
 
   @override
   String get fieldbookSummaryFinal => '최종';
 
   @override
-  String get fieldbookSummaryMisclosure => '오차';
+  String get fieldbookSummaryMisclosure => '폐합오차';
+
+  @override
+  String get fieldbookSummaryNoClosing => '폐합 기준 없음';
 
   @override
   String get fieldbookSummaryStart => '시작';
@@ -1349,6 +1445,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get settingsAdsRemovedLoadError => '광고 제거 상태를 불러오지 못했습니다';
 
   @override
+  String get settingsCheckSection => '검산·폐합';
+
+  @override
   String get settingsDocumentSection => '문서 설정';
 
   @override
@@ -1375,4 +1474,44 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get settingsTitle => '설정';
+
+  @override
+  String get settingsToleranceCoefficientLabel => '계수 c (mm)';
+
+  @override
+  String get settingsToleranceFixedHelper => '모든 야장에 같은 허용값을 적용합니다.';
+
+  @override
+  String get settingsToleranceFixedLabel => '허용값 (mm)';
+
+  @override
+  String settingsToleranceFixedSummary(String mm) {
+    return '고정 ±$mm mm';
+  }
+
+  @override
+  String settingsToleranceInvalid(String min, String max) {
+    return '$min–$max mm 사이로 입력하세요.';
+  }
+
+  @override
+  String get settingsToleranceModeFixed => '고정값';
+
+  @override
+  String get settingsToleranceModeSqrt => 'c·√n';
+
+  @override
+  String get settingsToleranceNote => '초과해도 경고만 표시되며 내보내기는 가능합니다.';
+
+  @override
+  String get settingsToleranceSqrtHelper =>
+      '허용 = c × √n mm, n = 기계 설치 횟수(BS 행 수)';
+
+  @override
+  String settingsToleranceSqrtSummary(String mm) {
+    return '$mm mm × √n (n = 기계 설치 횟수)';
+  }
+
+  @override
+  String get settingsToleranceTitle => '폐합 허용오차';
 }

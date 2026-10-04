@@ -274,6 +274,10 @@
   "@exportBulkTitle": {
     "description": "Bulk export screen title."
   },
+  "exportCheckAllowed": "Allowed",
+  "@exportCheckAllowed": {
+    "description": "Allowed misclosure label, value like '±0.0050'."
+  },
   "exportCheckDifference": "Difference",
   "@exportCheckDifference": {
     "description": "Arithmetic check: ΣBS − ΣFS."
@@ -284,11 +288,19 @@
   },
   "exportCheckMisclosure": "Misclosure",
   "@exportCheckMisclosure": {
-    "description": "Arithmetic check: misclosure (4 decimals)."
+    "description": "Misclosure = Final RL - closing RL (4 decimals, signed)."
+  },
+  "exportCheckMisclosureUnavailable": "n/a (no closing RL)",
+  "@exportCheckMisclosureUnavailable": {
+    "description": "Misclosure value when no closing BM/RL is set; only the arithmetic check is judged."
   },
   "exportCheckResult": "Result",
   "@exportCheckResult": {
     "description": "Arithmetic check judgement label. Never 'Pass/Fail'."
+  },
+  "exportCheckRlDifference": "Final - Start",
+  "@exportCheckRlDifference": {
+    "description": "Arithmetic check: Final RL − Start RL (equals ΣBS − ΣFS)."
   },
   "exportCheckStartRl": "Start RL",
   "@exportCheckStartRl": {
@@ -298,6 +310,10 @@
   "@exportCheckTitle": {
     "description": "Title of the arithmetic check box."
   },
+  "exportCheckTitleWithClosure": "Arithmetic check and misclosure",
+  "@exportCheckTitleWithClosure": {
+    "description": "PDF check box title when a closing RL is known."
+  },
   "exportCheckValue": "{label} = {value}",
   "@exportCheckValue": {
     "description": "An arithmetic-check line in the PDF, e.g. 'ΣBS = 2.700'. Value is preformatted.",
@@ -306,6 +322,15 @@
         "type": "String"
       },
       "value": {
+        "type": "String"
+      }
+    }
+  },
+  "exportClosingLoopName": "{name} (loop)",
+  "@exportClosingLoopName": {
+    "description": "PDF header value when the run closes on the start BM.",
+    "placeholders": {
+      "name": {
         "type": "String"
       }
     }
@@ -374,6 +399,14 @@
   "exportFieldChecker": "Checker",
   "@exportFieldChecker": {
     "description": "Exported document field."
+  },
+  "exportFieldClosingBm": "Closing BM",
+  "@exportFieldClosingBm": {
+    "description": "Header/CSV metadata label: BM the run closes on."
+  },
+  "exportFieldClosingRl": "Closing RL",
+  "@exportFieldClosingRl": {
+    "description": "Header/CSV metadata label: known RL the run closes on (3 decimals)."
   },
   "exportFieldCompany": "Company",
   "@exportFieldCompany": {
@@ -602,6 +635,10 @@
   "fieldbookBmNameHint": "e.g. BM.1",
   "fieldbookBmNameLabel": "BM name (optional)",
   "fieldbookBulkExportButton": "Bulk export",
+  "fieldbookCheckArithmetic": "Arithmetic check",
+  "@fieldbookCheckArithmetic": {
+    "description": "Checklist chip: ΣBS − ΣFS = Final RL − Start RL."
+  },
   "fieldbookCheckEmptyRows": "Empty rows",
   "fieldbookCheckFirstBs": "First BS",
   "fieldbookCheckLastFs": "Last FS",
@@ -611,6 +648,78 @@
   "fieldbookCheckerLabel": "Checker",
   "fieldbookChooseBackupFile": "Choose backup file (.json)",
   "fieldbookChooseCsvFile": "Choose CSV file (.csv)",
+  "fieldbookClosingApply": "Apply",
+  "@fieldbookClosingApply": {
+    "description": "Bottom sheet button."
+  },
+  "fieldbookClosingBmLabel": "Closing BM",
+  "@fieldbookClosingBmLabel": {
+    "description": "Dropdown label."
+  },
+  "fieldbookClosingElevationLabel": "Closing RL (m)",
+  "@fieldbookClosingElevationLabel": {
+    "description": "Manual closing RL input label."
+  },
+  "fieldbookClosingInvalid": "Enter a valid RL.",
+  "@fieldbookClosingInvalid": {
+    "description": "Validation error for the closing reference sheet."
+  },
+  "fieldbookClosingLabel": "Closing RL",
+  "@fieldbookClosingLabel": {
+    "description": "Editor top bar: label of the closing reference control."
+  },
+  "fieldbookClosingLoop": "Start BM (loop)",
+  "@fieldbookClosingLoop": {
+    "description": "Closing reference option: the run returns to the start BM."
+  },
+  "fieldbookClosingLoopShort": "Loop",
+  "@fieldbookClosingLoopShort": {
+    "description": "Short name of the loop closing (closes on the start BM)."
+  },
+  "fieldbookClosingManual": "Manual RL",
+  "@fieldbookClosingManual": {
+    "description": "Closing reference option: type a known RL."
+  },
+  "fieldbookClosingManualShort": "Manual",
+  "@fieldbookClosingManualShort": {
+    "description": "Short name of a manually entered closing RL."
+  },
+  "fieldbookClosingNoBm": "No usable BM in this project.",
+  "@fieldbookClosingNoBm": {
+    "description": "Shown when the project has no selectable BM."
+  },
+  "fieldbookClosingNone": "None",
+  "@fieldbookClosingNone": {
+    "description": "Closing reference option: none."
+  },
+  "fieldbookClosingNotSet": "Not set",
+  "@fieldbookClosingNotSet": {
+    "description": "Editor top bar: no closing reference."
+  },
+  "fieldbookClosingOtherBm": "Other BM",
+  "@fieldbookClosingOtherBm": {
+    "description": "Closing reference option: another project BM."
+  },
+  "fieldbookClosingSheetHelp": "Misclosure = Final RL − closing RL. Without a closing reference only the arithmetic check is shown.",
+  "@fieldbookClosingSheetHelp": {
+    "description": "Bottom sheet help text."
+  },
+  "fieldbookClosingSheetTitle": "Closing reference",
+  "@fieldbookClosingSheetTitle": {
+    "description": "Bottom sheet title."
+  },
+  "fieldbookClosingSummary": "{name} · {rl}",
+  "@fieldbookClosingSummary": {
+    "description": "Editor top bar value, e.g. 'Loop · 100.000'.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "rl": {
+        "type": "String"
+      }
+    }
+  },
   "fieldbookColumnHi": "HI",
   "fieldbookColumnNo": "Stn",
   "fieldbookColumnRl": "RL",
@@ -681,6 +790,10 @@
   "fieldbookImportButton": "Import",
   "fieldbookImportCsv": "Import CSV",
   "fieldbookInstrumentLabel": "Instrument",
+  "fieldbookIssueArithmeticMismatch": "Arithmetic check doesn't balance — check the RLs.",
+  "@fieldbookIssueArithmeticMismatch": {
+    "description": "Warning: ΣBS − ΣFS differs from Final RL − Start RL."
+  },
   "fieldbookIssueEmptyRows": "Remove rows with no readings.",
   "fieldbookIssueExceedsTolerance": "Exceeds tolerance — check the readings.",
   "fieldbookIssueFirstBsMissing": "The first row needs a backsight (BS).",
@@ -688,6 +801,15 @@
   "fieldbookIssueNoStationRows": "Add at least one station row.",
   "fieldbookIssueTpIncomplete": "TP rows need both BS and FS.",
   "fieldbookJobNumberLabel": "Job no.",
+  "fieldbookMisclosureCheckResult": "Misclosure: {result}",
+  "@fieldbookMisclosureCheckResult": {
+    "description": "Validation bar headline when a closing RL is known; result is 'Within tolerance' / 'Check required'.",
+    "placeholders": {
+      "result": {
+        "type": "String"
+      }
+    }
+  },
   "fieldbookNewTitle": "New level book",
   "fieldbookNoDataToExport": "No data to export",
   "fieldbookNoSearchResults": "No results",
@@ -757,9 +879,26 @@
   "fieldbookStatusDraft": "Draft",
   "fieldbookStatusNeedsCheck": "Needs check",
   "fieldbookStatusReviewed": "Reviewed",
+  "fieldbookSummaryAllowed": "Allowed {value}",
+  "@fieldbookSummaryAllowed": {
+    "description": "Caption under the misclosure, e.g. 'Allowed ±0.0050'.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "fieldbookSummaryArithmetic": "Arith. check",
+  "@fieldbookSummaryArithmetic": {
+    "description": "Editor summary cell label when no closing RL is set: arithmetic check residual (not a misclosure). Keep short."
+  },
   "fieldbookSummaryDiff": "Diff",
   "fieldbookSummaryFinal": "Final RL",
   "fieldbookSummaryMisclosure": "Misclosure",
+  "fieldbookSummaryNoClosing": "No closing RL",
+  "@fieldbookSummaryNoClosing": {
+    "description": "Caption under the arithmetic check cell: the closing misclosure is not available."
+  },
   "fieldbookSummaryStart": "Start RL",
   "fieldbookSurveyorLabel": "Surveyor",
   "fieldbookSurveyorSubtitle": "Surveyor {name}",
@@ -1152,6 +1291,10 @@
     "description": "Pro is a one-time purchase; never say subscription."
   },
   "settingsAdsRemovedLoadError": "Couldn't load ad removal status",
+  "settingsCheckSection": "Leveling check",
+  "@settingsCheckSection": {
+    "description": "Settings section header."
+  },
   "settingsDocumentSection": "Documents",
   "settingsPdfSettingsSubtitle": "Set company name, template, watermark and signature.",
   "settingsPdfSettingsTitle": "Submission PDF settings",
@@ -1160,5 +1303,67 @@
   "settingsRestorePurchasePendingSubtitle": "Checking your purchase history with the store.",
   "settingsRestorePurchaseSubtitle": "Restore the Pro purchase you already made.",
   "settingsRestorePurchaseTitle": "Restore purchase",
-  "settingsTitle": "Settings"
+  "settingsTitle": "Settings",
+  "settingsToleranceCoefficientLabel": "c (mm)",
+  "@settingsToleranceCoefficientLabel": {
+    "description": "Input label, c·√n rule."
+  },
+  "settingsToleranceFixedHelper": "Allowed |misclosure| for every level book.",
+  "@settingsToleranceFixedHelper": {
+    "description": "Helper for the fixed rule."
+  },
+  "settingsToleranceFixedLabel": "Allowance (mm)",
+  "@settingsToleranceFixedLabel": {
+    "description": "Input label, fixed rule."
+  },
+  "settingsToleranceFixedSummary": "Fixed ±{mm} mm",
+  "@settingsToleranceFixedSummary": {
+    "description": "Tile subtitle for the fixed rule.",
+    "placeholders": {
+      "mm": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsToleranceInvalid": "Enter {min}–{max} mm.",
+  "@settingsToleranceInvalid": {
+    "description": "Validation error.",
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsToleranceModeFixed": "Fixed",
+  "@settingsToleranceModeFixed": {
+    "description": "Segment: fixed allowance."
+  },
+  "settingsToleranceModeSqrt": "c·√n",
+  "@settingsToleranceModeSqrt": {
+    "description": "Segment: c times square root of setups."
+  },
+  "settingsToleranceNote": "Exceeding it is a warning; export is still allowed.",
+  "@settingsToleranceNote": {
+    "description": "Dialog note."
+  },
+  "settingsToleranceSqrtHelper": "Allowed = c × √n mm, n = instrument setups (BS rows).",
+  "@settingsToleranceSqrtHelper": {
+    "description": "Helper for the c·√n rule."
+  },
+  "settingsToleranceSqrtSummary": "{mm} mm × √n (n = setups)",
+  "@settingsToleranceSqrtSummary": {
+    "description": "Tile subtitle for the c·√n rule.",
+    "placeholders": {
+      "mm": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsToleranceTitle": "Misclosure tolerance",
+  "@settingsToleranceTitle": {
+    "description": "Settings tile and dialog title."
+  }
 }

@@ -9,6 +9,8 @@ import '../pro/pro_pdf_settings_screen.dart';
 import '../purchase/purchase_controller.dart';
 import '../purchase/purchase_providers.dart';
 import '../../core/constants/app_constants.dart';
+import '../fieldbook/domain/misclosure.dart';
+import 'misclosure_tolerance_repository.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -125,6 +127,9 @@ class SettingsScreen extends ConsumerWidget {
               );
             },
           ),
+          const SizedBox(height: 8),
+          _SectionHeader(title: l10n.settingsCheckSection),
+          const _MisclosureToleranceTile(),
           const SizedBox(height: 8),
           _SectionHeader(title: l10n.adsPolicySection),
           _StatusTile(
@@ -333,6 +338,191 @@ class _SectionHeader extends StatelessWidget {
           color: context.appColors.subtext,
         ),
       ),
+    );
+  }
+}
+
+String misclosureToleranceSummary(
+  AppLocalizations l10n,
+  MisclosureTolerance tolerance,
+) => switch (tolerance.mode) {
+  MisclosureToleranceMode.fixed => l10n.settingsToleranceFixedSummary(
+    formatToleranceMm(tolerance.fixedMm),
+  ),
+  MisclosureToleranceMode.sqrtSetups => l10n.settingsToleranceSqrtSummary(
+    formatToleranceMm(tolerance.coefficientMm),
+  ),
+};
+
+class _MisclosureToleranceTile extends ConsumerWidget {
+  const _MisclosureToleranceTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final colors = context.appColors;
+    final l10n = context.l10n;
+    final tolerance =
+        ref.watch(misclosureToleranceProvider).valueOrNull ??
+        MisclosureTolerance.defaults;
+    return ListTile(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: colors.line),
+      ),
+      tileColor: colors.panel,
+      leading: const Icon(Icons.straighten),
+      title: Text(l10n.settingsToleranceTitle),
+      subtitle: Text(misclosureToleranceSummary(l10n, tolerance)),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: () async {
+        final updated = await showDialog<MisclosureTolerance>(
+          context: context,
+          builder: (_) => MisclosureToleranceDialog(initial: tolerance),
+        );
+        if (updated == null || updated == tolerance) return;
+        try {
+          await ref.read(misclosureToleranceRepositoryProvider).save(updated);
+          ref.invalidate(misclosureToleranceProvider);
+          if (context.mounted) AppSnackbar.success(context, l10n.coreSaved);
+        } catch (error) {
+          if (context.mounted) {
+            AppSnackbar.error(context, l10n.coreErrorWithDetail('$error'));
+          }
+        }
+      },
+    );
+  }
+}
+
+/// Edits the misclosure tolerance rule; pops the new rule (or null).
+class MisclosureToleranceDialog extends StatefulWidget {
+  final MisclosureTolerance initial;
+
+  const MisclosureToleranceDialog({super.key, required this.initial});
+
+  @override
+  State<MisclosureToleranceDialog> createState() =>
+      _MisclosureToleranceDialogState();
+}
+
+class _MisclosureToleranceDialogState extends State<MisclosureToleranceDialog> {
+  late MisclosureToleranceMode _mode = widget.initial.mode;
+  late final _fixedController = TextEditingController(
+    text: formatToleranceMm(widget.initial.fixedMm),
+  );
+  late final _coefficientController = TextEditingController(
+    text: formatToleranceMm(widget.initial.coefficientMm),
+  );
+  bool _showErrors = false;
+
+  @override
+  void dispose() {
+    _fixedController.dispose();
+    _coefficientController.dispose();
+    super.dispose();
+  }
+
+  TextEditingController get _activeController =>
+      _mode == MisclosureToleranceMode.fixed
+      ? _fixedController
+      : _coefficientController;
+
+  void _submit() {
+    final value = MisclosureTolerance.parseMm(_activeController.text);
+    if (value == null) {
+      setState(() => _showErrors = true);
+      return;
+    }
+    Navigator.pop(
+      context,
+      MisclosureTolerance(
+        mode: _mode,
+        fixedMm: _mode == MisclosureToleranceMode.fixed
+            ? value
+            : widget.initial.fixedMm,
+        coefficientMm: _mode == MisclosureToleranceMode.sqrtSetups
+            ? value
+            : widget.initial.coefficientMm,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final colors = context.appColors;
+    final isFixed = _mode == MisclosureToleranceMode.fixed;
+    final invalid =
+        _showErrors &&
+        MisclosureTolerance.parseMm(_activeController.text) == null;
+    return AlertDialog(
+      title: Text(l10n.settingsToleranceTitle),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SegmentedButton<MisclosureToleranceMode>(
+              segments: [
+                ButtonSegment(
+                  value: MisclosureToleranceMode.fixed,
+                  label: Text(l10n.settingsToleranceModeFixed),
+                ),
+                ButtonSegment(
+                  value: MisclosureToleranceMode.sqrtSetups,
+                  label: Text(l10n.settingsToleranceModeSqrt),
+                ),
+              ],
+              selected: {_mode},
+              showSelectedIcon: false,
+              onSelectionChanged: (selection) => setState(() {
+                _mode = selection.first;
+                _showErrors = false;
+              }),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              key: ValueKey(_mode),
+              controller: _activeController,
+              autofocus: true,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              decoration: InputDecoration(
+                labelText: isFixed
+                    ? l10n.settingsToleranceFixedLabel
+                    : l10n.settingsToleranceCoefficientLabel,
+                helperText: isFixed
+                    ? l10n.settingsToleranceFixedHelper
+                    : l10n.settingsToleranceSqrtHelper,
+                helperMaxLines: 3,
+                errorText: invalid
+                    ? l10n.settingsToleranceInvalid(
+                        formatToleranceMm(MisclosureTolerance.minMm),
+                        formatToleranceMm(MisclosureTolerance.maxMm),
+                      )
+                    : null,
+              ),
+              onChanged: (_) {
+                if (_showErrors) setState(() {});
+              },
+              onSubmitted: (_) => _submit(),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              l10n.settingsToleranceNote,
+              style: TextStyle(fontSize: 12.5, color: colors.subtext),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(l10n.coreCancel),
+        ),
+        FilledButton(onPressed: _submit, child: Text(l10n.coreSave)),
+      ],
     );
   }
 }

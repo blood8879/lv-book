@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lv_book/features/fieldbook/domain/measurement.dart';
 import 'package:lv_book/features/fieldbook/domain/measurement_validation.dart';
+import 'package:lv_book/features/fieldbook/domain/misclosure.dart';
 
 void main() {
   test('valid field book shows all checklist items passing', () {
@@ -34,7 +35,7 @@ void main() {
         ),
       ],
       startElevation: 100,
-      tolerance: 0.001,
+      tolerance: const MisclosureTolerance.fixed(1),
     );
 
     expect(result.canExport, isTrue);

@@ -47,6 +47,13 @@ class BenchMarkRepository {
         where: 'start_bm_id = ?',
         whereArgs: [id],
       );
+      // Closing BM: the snapshotted closing_elevation keeps the RL.
+      await txn.update(
+        'field_books',
+        {'closing_bm_id': null},
+        where: 'closing_bm_id = ?',
+        whereArgs: [id],
+      );
       return await txn.delete('benchmarks', where: 'id = ?', whereArgs: [id]);
     });
   }

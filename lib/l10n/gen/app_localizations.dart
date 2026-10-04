@@ -686,6 +686,12 @@ abstract class AppLocalizations {
   /// **'Bulk export'**
   String get exportBulkTitle;
 
+  /// Allowed misclosure label, value like '±0.0050'.
+  ///
+  /// In en, this message translates to:
+  /// **'Allowed'**
+  String get exportCheckAllowed;
+
   /// Arithmetic check: ΣBS − ΣFS.
   ///
   /// In en, this message translates to:
@@ -698,17 +704,29 @@ abstract class AppLocalizations {
   /// **'Final RL'**
   String get exportCheckFinalRl;
 
-  /// Arithmetic check: misclosure (4 decimals).
+  /// Misclosure = Final RL - closing RL (4 decimals, signed).
   ///
   /// In en, this message translates to:
   /// **'Misclosure'**
   String get exportCheckMisclosure;
+
+  /// Misclosure value when no closing BM/RL is set; only the arithmetic check is judged.
+  ///
+  /// In en, this message translates to:
+  /// **'n/a (no closing RL)'**
+  String get exportCheckMisclosureUnavailable;
 
   /// Arithmetic check judgement label. Never 'Pass/Fail'.
   ///
   /// In en, this message translates to:
   /// **'Result'**
   String get exportCheckResult;
+
+  /// Arithmetic check: Final RL − Start RL (equals ΣBS − ΣFS).
+  ///
+  /// In en, this message translates to:
+  /// **'Final - Start'**
+  String get exportCheckRlDifference;
 
   /// Arithmetic check: first reduced level.
   ///
@@ -722,11 +740,23 @@ abstract class AppLocalizations {
   /// **'Arithmetic check'**
   String get exportCheckTitle;
 
+  /// PDF check box title when a closing RL is known.
+  ///
+  /// In en, this message translates to:
+  /// **'Arithmetic check and misclosure'**
+  String get exportCheckTitleWithClosure;
+
   /// An arithmetic-check line in the PDF, e.g. 'ΣBS = 2.700'. Value is preformatted.
   ///
   /// In en, this message translates to:
   /// **'{label} = {value}'**
   String exportCheckValue(String label, String value);
+
+  /// PDF header value when the run closes on the start BM.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} (loop)'**
+  String exportClosingLoopName(String name);
 
   /// Measurement table column: backsight.
   ///
@@ -811,6 +841,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Checker'**
   String get exportFieldChecker;
+
+  /// Header/CSV metadata label: BM the run closes on.
+  ///
+  /// In en, this message translates to:
+  /// **'Closing BM'**
+  String get exportFieldClosingBm;
+
+  /// Header/CSV metadata label: known RL the run closes on (3 decimals).
+  ///
+  /// In en, this message translates to:
+  /// **'Closing RL'**
+  String get exportFieldClosingRl;
 
   /// Exported document field: company name.
   ///
@@ -1100,6 +1142,12 @@ abstract class AppLocalizations {
   /// **'Bulk export'**
   String get fieldbookBulkExportButton;
 
+  /// Checklist chip: ΣBS − ΣFS = Final RL − Start RL.
+  ///
+  /// In en, this message translates to:
+  /// **'Arithmetic check'**
+  String get fieldbookCheckArithmetic;
+
   /// No description provided for @fieldbookCheckEmptyRows.
   ///
   /// In en, this message translates to:
@@ -1153,6 +1201,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Choose CSV file (.csv)'**
   String get fieldbookChooseCsvFile;
+
+  /// Bottom sheet button.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get fieldbookClosingApply;
+
+  /// Dropdown label.
+  ///
+  /// In en, this message translates to:
+  /// **'Closing BM'**
+  String get fieldbookClosingBmLabel;
+
+  /// Manual closing RL input label.
+  ///
+  /// In en, this message translates to:
+  /// **'Closing RL (m)'**
+  String get fieldbookClosingElevationLabel;
+
+  /// Validation error for the closing reference sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid RL.'**
+  String get fieldbookClosingInvalid;
+
+  /// Editor top bar: label of the closing reference control.
+  ///
+  /// In en, this message translates to:
+  /// **'Closing RL'**
+  String get fieldbookClosingLabel;
+
+  /// Closing reference option: the run returns to the start BM.
+  ///
+  /// In en, this message translates to:
+  /// **'Start BM (loop)'**
+  String get fieldbookClosingLoop;
+
+  /// Short name of the loop closing (closes on the start BM).
+  ///
+  /// In en, this message translates to:
+  /// **'Loop'**
+  String get fieldbookClosingLoopShort;
+
+  /// Closing reference option: type a known RL.
+  ///
+  /// In en, this message translates to:
+  /// **'Manual RL'**
+  String get fieldbookClosingManual;
+
+  /// Short name of a manually entered closing RL.
+  ///
+  /// In en, this message translates to:
+  /// **'Manual'**
+  String get fieldbookClosingManualShort;
+
+  /// Shown when the project has no selectable BM.
+  ///
+  /// In en, this message translates to:
+  /// **'No usable BM in this project.'**
+  String get fieldbookClosingNoBm;
+
+  /// Closing reference option: none.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get fieldbookClosingNone;
+
+  /// Editor top bar: no closing reference.
+  ///
+  /// In en, this message translates to:
+  /// **'Not set'**
+  String get fieldbookClosingNotSet;
+
+  /// Closing reference option: another project BM.
+  ///
+  /// In en, this message translates to:
+  /// **'Other BM'**
+  String get fieldbookClosingOtherBm;
+
+  /// Bottom sheet help text.
+  ///
+  /// In en, this message translates to:
+  /// **'Misclosure = Final RL − closing RL. Without a closing reference only the arithmetic check is shown.'**
+  String get fieldbookClosingSheetHelp;
+
+  /// Bottom sheet title.
+  ///
+  /// In en, this message translates to:
+  /// **'Closing reference'**
+  String get fieldbookClosingSheetTitle;
+
+  /// Editor top bar value, e.g. 'Loop · 100.000'.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} · {rl}'**
+  String fieldbookClosingSummary(String name, String rl);
 
   /// No description provided for @fieldbookColumnHi.
   ///
@@ -1316,6 +1460,12 @@ abstract class AppLocalizations {
   /// **'Instrument'**
   String get fieldbookInstrumentLabel;
 
+  /// Warning: ΣBS − ΣFS differs from Final RL − Start RL.
+  ///
+  /// In en, this message translates to:
+  /// **'Arithmetic check doesn\'t balance — check the RLs.'**
+  String get fieldbookIssueArithmeticMismatch;
+
   /// No description provided for @fieldbookIssueEmptyRows.
   ///
   /// In en, this message translates to:
@@ -1357,6 +1507,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Job no.'**
   String get fieldbookJobNumberLabel;
+
+  /// Validation bar headline when a closing RL is known; result is 'Within tolerance' / 'Check required'.
+  ///
+  /// In en, this message translates to:
+  /// **'Misclosure: {result}'**
+  String fieldbookMisclosureCheckResult(String result);
 
   /// No description provided for @fieldbookNewTitle.
   ///
@@ -1604,6 +1760,18 @@ abstract class AppLocalizations {
   /// **'Reviewed'**
   String get fieldbookStatusReviewed;
 
+  /// Caption under the misclosure, e.g. 'Allowed ±0.0050'.
+  ///
+  /// In en, this message translates to:
+  /// **'Allowed {value}'**
+  String fieldbookSummaryAllowed(String value);
+
+  /// Editor summary cell label when no closing RL is set: arithmetic check residual (not a misclosure). Keep short.
+  ///
+  /// In en, this message translates to:
+  /// **'Arith. check'**
+  String get fieldbookSummaryArithmetic;
+
   /// No description provided for @fieldbookSummaryDiff.
   ///
   /// In en, this message translates to:
@@ -1621,6 +1789,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Misclosure'**
   String get fieldbookSummaryMisclosure;
+
+  /// Caption under the arithmetic check cell: the closing misclosure is not available.
+  ///
+  /// In en, this message translates to:
+  /// **'No closing RL'**
+  String get fieldbookSummaryNoClosing;
 
   /// No description provided for @fieldbookSummaryStart.
   ///
@@ -2504,6 +2678,12 @@ abstract class AppLocalizations {
   /// **'Couldn\'t load ad removal status'**
   String get settingsAdsRemovedLoadError;
 
+  /// Settings section header.
+  ///
+  /// In en, this message translates to:
+  /// **'Leveling check'**
+  String get settingsCheckSection;
+
   /// No description provided for @settingsDocumentSection.
   ///
   /// In en, this message translates to:
@@ -2557,6 +2737,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Settings'**
   String get settingsTitle;
+
+  /// Input label, c·√n rule.
+  ///
+  /// In en, this message translates to:
+  /// **'c (mm)'**
+  String get settingsToleranceCoefficientLabel;
+
+  /// Helper for the fixed rule.
+  ///
+  /// In en, this message translates to:
+  /// **'Allowed |misclosure| for every level book.'**
+  String get settingsToleranceFixedHelper;
+
+  /// Input label, fixed rule.
+  ///
+  /// In en, this message translates to:
+  /// **'Allowance (mm)'**
+  String get settingsToleranceFixedLabel;
+
+  /// Tile subtitle for the fixed rule.
+  ///
+  /// In en, this message translates to:
+  /// **'Fixed ±{mm} mm'**
+  String settingsToleranceFixedSummary(String mm);
+
+  /// Validation error.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter {min}–{max} mm.'**
+  String settingsToleranceInvalid(String min, String max);
+
+  /// Segment: fixed allowance.
+  ///
+  /// In en, this message translates to:
+  /// **'Fixed'**
+  String get settingsToleranceModeFixed;
+
+  /// Segment: c times square root of setups.
+  ///
+  /// In en, this message translates to:
+  /// **'c·√n'**
+  String get settingsToleranceModeSqrt;
+
+  /// Dialog note.
+  ///
+  /// In en, this message translates to:
+  /// **'Exceeding it is a warning; export is still allowed.'**
+  String get settingsToleranceNote;
+
+  /// Helper for the c·√n rule.
+  ///
+  /// In en, this message translates to:
+  /// **'Allowed = c × √n mm, n = instrument setups (BS rows).'**
+  String get settingsToleranceSqrtHelper;
+
+  /// Tile subtitle for the c·√n rule.
+  ///
+  /// In en, this message translates to:
+  /// **'{mm} mm × √n (n = setups)'**
+  String settingsToleranceSqrtSummary(String mm);
+
+  /// Settings tile and dialog title.
+  ///
+  /// In en, this message translates to:
+  /// **'Misclosure tolerance'**
+  String get settingsToleranceTitle;
 }
 
 class _AppLocalizationsDelegate

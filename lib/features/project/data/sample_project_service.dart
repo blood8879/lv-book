@@ -4,6 +4,7 @@ import '../../../l10n/l10n.dart';
 import '../../benchmark/domain/benchmark.dart';
 import '../../fieldbook/domain/fieldbook.dart';
 import '../../fieldbook/domain/measurement.dart';
+import '../../fieldbook/domain/misclosure.dart';
 import '../domain/project.dart';
 
 /// One observed row of the sample run (BS/FS as a surveyor would enter them).
@@ -25,7 +26,9 @@ class SampleProjectService {
   static const benchmarkElevation = 100.000;
 
   /// BM-1 → TP-1 → No.1(중간점) → TP-2 → No.2(중간점) → BM-1 폐합.
-  /// ΣBS 4.375, ΣFS(전진) 4.374 → 폐합 GH 100.001 (오차 1mm 이내, 적합).
+  /// ΣBS 4.375, ΣFS(전진) 4.374 → 폐합 GH 100.001. The book closes on the
+  /// start BM (loop), so the misclosure is +0.0010 m: within the default
+  /// 1 mm tolerance (적합).
   static List<SampleObservation> observations(AppLocalizations l10n) => [
     const SampleObservation(benchmarkName, bs: 1.425),
     const SampleObservation('TP-1', bs: 1.612, fs: 0.873),
@@ -111,6 +114,7 @@ class SampleProjectService {
           date: today,
           startBmId: bmId,
           startElevation: benchmarkElevation,
+          closingMode: ClosingReferenceMode.loop,
           memo: l10n.projectSampleMemo,
           surveyor: l10n.projectSampleSurveyor,
           instrument: l10n.projectSampleInstrument,

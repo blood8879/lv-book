@@ -2,6 +2,7 @@ import 'package:csv/csv.dart';
 import '../../l10n/l10n.dart';
 import '../fieldbook/domain/fieldbook.dart';
 import '../fieldbook/domain/measurement.dart';
+import '../fieldbook/domain/misclosure.dart';
 import '../pro/pro_pdf_settings.dart';
 import 'export_judgement.dart';
 import 'export_labels.dart';
@@ -22,6 +23,8 @@ class CsvExporter {
     required List<Measurement> measurements,
     required String bmName,
     required double startElevation,
+    String? closingBmName,
+    MisclosureTolerance tolerance = MisclosureTolerance.defaults,
     ProPdfSettings? proSettings,
     required AppLocalizations l10n,
   }) {
@@ -64,6 +67,21 @@ class CsvExporter {
     }
     rows.add([l10n.exportFieldStartBm, bmName]);
     rows.add([l10n.exportFieldBmElevation, startElevation.toStringAsFixed(3)]);
+    // Closing reference (absent when none). A loop writes the start BM name
+    // with the start RL, which `CsvImporter` reads back as a loop.
+    final closingElevation = fieldBook.closingElevationFor(startElevation);
+    if (closingElevation != null) {
+      final closingName = switch (fieldBook.closingMode) {
+        ClosingReferenceMode.loop => bmName,
+        ClosingReferenceMode.benchmark => closingBmName,
+        _ => null,
+      };
+      _addMetadata(rows, l10n.exportFieldClosingBm, closingName);
+      rows.add([
+        l10n.exportFieldClosingRl,
+        closingElevation.toStringAsFixed(3),
+      ]);
+    }
     rows.add([]);
 
     // Table header
@@ -85,10 +103,13 @@ class CsvExporter {
 
     // Summary (검산): ΣFS counts only turning points and the final point so
     // that ΣBS − ΣFS equals 최종 GH − 시작 GH, consistent with LevelClosure.
-    final sums = LevelCheckSums.from(
+    final closure = LevelClosureCheck.compute(
       measurements,
       startElevation: startElevation,
+      closingElevation: closingElevation,
+      tolerance: tolerance,
     );
+    final sums = closure.sums;
     rows.add([]);
     rows.add([
       'ΣBS',
@@ -97,15 +118,27 @@ class CsvExporter {
       sums.sumFs.toStringAsFixed(3),
     ]);
     rows.add([l10n.exportCheckDifference, sums.difference.toStringAsFixed(3)]);
+    rows.add([
+      l10n.exportCheckRlDifference,
+      (sums.lastGh - sums.firstGh).toStringAsFixed(3),
+    ]);
     if (proSettings?.includeCheckJudgement == true) {
-      final error = LevelClosure.error(
-        measurements,
-        startElevation: startElevation,
-      );
-      rows.add([l10n.exportCheckMisclosure, error.toStringAsFixed(4)]);
+      final misclosure = closure.misclosure;
+      if (misclosure == null) {
+        rows.add([
+          l10n.exportCheckMisclosure,
+          l10n.exportCheckMisclosureUnavailable,
+        ]);
+      } else {
+        rows.add([l10n.exportCheckMisclosure, formatMisclosure(misclosure)]);
+        rows.add([
+          l10n.exportCheckAllowed,
+          formatAllowedMisclosure(closure.allowed),
+        ]);
+      }
       rows.add([
         l10n.exportCheckResult,
-        ExportJudgement.label(error, l10n: l10n),
+        ExportJudgement.labelFor(closure.isSuitable, l10n: l10n),
       ]);
     }
 

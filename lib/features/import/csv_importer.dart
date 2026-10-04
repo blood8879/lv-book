@@ -3,6 +3,7 @@ import 'package:csv/csv.dart';
 import '../../l10n/l10n.dart';
 import '../fieldbook/domain/fieldbook.dart';
 import '../fieldbook/domain/measurement.dart';
+import '../fieldbook/domain/misclosure.dart';
 
 class CsvImportResult {
   final FieldBook? fieldBook;
@@ -31,6 +32,9 @@ enum _CsvField {
   weather,
   section,
   jobNumber,
+  startBm,
+  closingBm,
+  closingRl,
 }
 
 /// Imports CSV files exported by Lv Book in either language.
@@ -67,6 +71,13 @@ class CsvImporter {
     'job no.': _CsvField.jobNumber,
     'job no': _CsvField.jobNumber,
     'job number': _CsvField.jobNumber,
+    '시작 bm': _CsvField.startBm,
+    'start bm': _CsvField.startBm,
+    '폐합 bm': _CsvField.closingBm,
+    'closing bm': _CsvField.closingBm,
+    '폐합 표고': _CsvField.closingRl,
+    'closing rl': _CsvField.closingRl,
+    'closing elevation': _CsvField.closingRl,
   };
 
   /// Table header cells that mark the start of the measurement table.
@@ -106,6 +117,7 @@ class CsvImporter {
     DateTime date = fallbackDate;
     var dateFound = false;
     double? startElevation;
+    double? closingElevation;
     final metadata = <_CsvField, String>{};
     var tableHeaderIndex = -1;
 
@@ -140,6 +152,10 @@ class CsvImporter {
           }
         case _CsvField.bmElevation:
           startElevation = double.tryParse(value);
+        case _CsvField.closingRl:
+          closingElevation = double.tryParse(value);
+        case _CsvField.startBm || _CsvField.closingBm:
+          if (value.isNotEmpty) metadata[field] = value;
         case _CsvField.surveyor ||
             _CsvField.checker ||
             _CsvField.instrument ||
@@ -194,12 +210,27 @@ class CsvImporter {
       );
     }
 
+    // BM ids cannot be resolved from a CSV, so a closing BM is kept as its
+    // RL (manual closing). Closing on the start BM at the start RL is a loop.
+    final closingMode = closingElevation == null
+        ? ClosingReferenceMode.none
+        : metadata[_CsvField.closingBm] != null &&
+              metadata[_CsvField.closingBm] == metadata[_CsvField.startBm] &&
+              startElevation != null &&
+              (closingElevation - startElevation).abs() <= toleranceEpsilon
+        ? ClosingReferenceMode.loop
+        : ClosingReferenceMode.manual;
+
     return CsvImportResult(
       fieldBook: FieldBook(
         projectId: projectId,
         title: title,
         date: date,
         startElevation: startElevation,
+        closingMode: closingMode,
+        closingElevation: closingMode == ClosingReferenceMode.manual
+            ? closingElevation
+            : null,
         surveyor: metadata[_CsvField.surveyor],
         checker: metadata[_CsvField.checker],
         instrument: metadata[_CsvField.instrument],

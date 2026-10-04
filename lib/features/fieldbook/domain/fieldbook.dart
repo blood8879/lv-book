@@ -1,3 +1,5 @@
+import 'misclosure.dart';
+
 enum FieldBookReviewStatus { draft, reviewed, needsCheck }
 
 extension FieldBookReviewStatusLabel on FieldBookReviewStatus {
@@ -36,6 +38,17 @@ class FieldBook {
   final DateTime date;
   final int? startBmId;
   final double? startElevation;
+
+  /// What the run closes on (see [ClosingReferenceMode]).
+  final ClosingReferenceMode closingMode;
+
+  /// Closing BM when [closingMode] is [ClosingReferenceMode.benchmark]
+  /// (FK, ON DELETE SET NULL; the snapshot below keeps the RL).
+  final int? closingBmId;
+
+  /// Known closing RL for [ClosingReferenceMode.benchmark] (snapshot of the
+  /// BM elevation at selection time) and [ClosingReferenceMode.manual].
+  final double? closingElevation;
   final String? memo;
   final String? surveyor;
   final String? checker;
@@ -55,6 +68,9 @@ class FieldBook {
     required this.date,
     this.startBmId,
     this.startElevation,
+    this.closingMode = ClosingReferenceMode.none,
+    this.closingBmId,
+    this.closingElevation,
     this.memo,
     this.surveyor,
     this.checker,
@@ -76,6 +92,9 @@ class FieldBook {
       'date': date.toIso8601String(),
       'start_bm_id': startBmId,
       'start_elevation': startElevation,
+      'closing_mode': closingMode.name,
+      'closing_bm_id': closingBmId,
+      'closing_elevation': closingElevation,
       'memo': memo,
       'surveyor': surveyor,
       'checker': checker,
@@ -98,6 +117,10 @@ class FieldBook {
       date: DateTime.parse(map['date'] as String),
       startBmId: map['start_bm_id'] as int?,
       startElevation: (map['start_elevation'] as num?)?.toDouble(),
+      // Absent in rows/backups written before the closing reference existed.
+      closingMode: ClosingReferenceMode.parse(map['closing_mode']),
+      closingBmId: map['closing_bm_id'] as int?,
+      closingElevation: (map['closing_elevation'] as num?)?.toDouble(),
       memo: map['memo'] as String?,
       surveyor: map['surveyor'] as String?,
       checker: map['checker'] as String?,
@@ -114,6 +137,15 @@ class FieldBook {
     );
   }
 
+  /// Known RL the run closes on, given the effective [startElevation];
+  /// null when no closing reference is set (or a stored one lost its RL).
+  double? closingElevationFor(double startElevation) => switch (closingMode) {
+    ClosingReferenceMode.none => null,
+    ClosingReferenceMode.loop => startElevation,
+    ClosingReferenceMode.benchmark ||
+    ClosingReferenceMode.manual => closingElevation,
+  };
+
   FieldBook copyWith({
     int? id,
     int? projectId,
@@ -121,6 +153,9 @@ class FieldBook {
     DateTime? date,
     int? startBmId,
     double? startElevation,
+    ClosingReferenceMode? closingMode,
+    Object? closingBmId = _unset,
+    Object? closingElevation = _unset,
     String? memo,
     String? surveyor,
     String? checker,
@@ -140,6 +175,13 @@ class FieldBook {
       date: date ?? this.date,
       startBmId: startBmId ?? this.startBmId,
       startElevation: startElevation ?? this.startElevation,
+      closingMode: closingMode ?? this.closingMode,
+      closingBmId: identical(closingBmId, _unset)
+          ? this.closingBmId
+          : closingBmId as int?,
+      closingElevation: identical(closingElevation, _unset)
+          ? this.closingElevation
+          : closingElevation as double?,
       memo: memo ?? this.memo,
       surveyor: surveyor ?? this.surveyor,
       checker: checker ?? this.checker,

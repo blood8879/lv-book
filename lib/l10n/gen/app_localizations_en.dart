@@ -373,6 +373,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exportBulkTitle => 'Bulk export';
 
   @override
+  String get exportCheckAllowed => 'Allowed';
+
+  @override
   String get exportCheckDifference => 'Difference';
 
   @override
@@ -382,7 +385,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exportCheckMisclosure => 'Misclosure';
 
   @override
+  String get exportCheckMisclosureUnavailable => 'n/a (no closing RL)';
+
+  @override
   String get exportCheckResult => 'Result';
+
+  @override
+  String get exportCheckRlDifference => 'Final - Start';
 
   @override
   String get exportCheckStartRl => 'Start RL';
@@ -391,8 +400,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exportCheckTitle => 'Arithmetic check';
 
   @override
+  String get exportCheckTitleWithClosure => 'Arithmetic check and misclosure';
+
+  @override
   String exportCheckValue(String label, String value) {
     return '$label = $value';
+  }
+
+  @override
+  String exportClosingLoopName(String name) {
+    return '$name (loop)';
   }
 
   @override
@@ -440,6 +457,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exportFieldChecker => 'Checker';
+
+  @override
+  String get exportFieldClosingBm => 'Closing BM';
+
+  @override
+  String get exportFieldClosingRl => 'Closing RL';
 
   @override
   String get exportFieldCompany => 'Company';
@@ -616,6 +639,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fieldbookBulkExportButton => 'Bulk export';
 
   @override
+  String get fieldbookCheckArithmetic => 'Arithmetic check';
+
+  @override
   String get fieldbookCheckEmptyRows => 'Empty rows';
 
   @override
@@ -641,6 +667,57 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get fieldbookChooseCsvFile => 'Choose CSV file (.csv)';
+
+  @override
+  String get fieldbookClosingApply => 'Apply';
+
+  @override
+  String get fieldbookClosingBmLabel => 'Closing BM';
+
+  @override
+  String get fieldbookClosingElevationLabel => 'Closing RL (m)';
+
+  @override
+  String get fieldbookClosingInvalid => 'Enter a valid RL.';
+
+  @override
+  String get fieldbookClosingLabel => 'Closing RL';
+
+  @override
+  String get fieldbookClosingLoop => 'Start BM (loop)';
+
+  @override
+  String get fieldbookClosingLoopShort => 'Loop';
+
+  @override
+  String get fieldbookClosingManual => 'Manual RL';
+
+  @override
+  String get fieldbookClosingManualShort => 'Manual';
+
+  @override
+  String get fieldbookClosingNoBm => 'No usable BM in this project.';
+
+  @override
+  String get fieldbookClosingNone => 'None';
+
+  @override
+  String get fieldbookClosingNotSet => 'Not set';
+
+  @override
+  String get fieldbookClosingOtherBm => 'Other BM';
+
+  @override
+  String get fieldbookClosingSheetHelp =>
+      'Misclosure = Final RL − closing RL. Without a closing reference only the arithmetic check is shown.';
+
+  @override
+  String get fieldbookClosingSheetTitle => 'Closing reference';
+
+  @override
+  String fieldbookClosingSummary(String name, String rl) {
+    return '$name · $rl';
+  }
 
   @override
   String get fieldbookColumnHi => 'HI';
@@ -737,6 +814,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fieldbookInstrumentLabel => 'Instrument';
 
   @override
+  String get fieldbookIssueArithmeticMismatch =>
+      'Arithmetic check doesn\'t balance — check the RLs.';
+
+  @override
   String get fieldbookIssueEmptyRows => 'Remove rows with no readings.';
 
   @override
@@ -759,6 +840,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get fieldbookJobNumberLabel => 'Job no.';
+
+  @override
+  String fieldbookMisclosureCheckResult(String result) {
+    return 'Misclosure: $result';
+  }
 
   @override
   String get fieldbookNewTitle => 'New level book';
@@ -892,6 +978,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fieldbookStatusReviewed => 'Reviewed';
 
   @override
+  String fieldbookSummaryAllowed(String value) {
+    return 'Allowed $value';
+  }
+
+  @override
+  String get fieldbookSummaryArithmetic => 'Arith. check';
+
+  @override
   String get fieldbookSummaryDiff => 'Diff';
 
   @override
@@ -899,6 +993,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get fieldbookSummaryMisclosure => 'Misclosure';
+
+  @override
+  String get fieldbookSummaryNoClosing => 'No closing RL';
 
   @override
   String get fieldbookSummaryStart => 'Start RL';
@@ -1451,6 +1548,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsAdsRemovedLoadError => 'Couldn\'t load ad removal status';
 
   @override
+  String get settingsCheckSection => 'Leveling check';
+
+  @override
   String get settingsDocumentSection => 'Documents';
 
   @override
@@ -1479,4 +1579,46 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsTitle => 'Settings';
+
+  @override
+  String get settingsToleranceCoefficientLabel => 'c (mm)';
+
+  @override
+  String get settingsToleranceFixedHelper =>
+      'Allowed |misclosure| for every level book.';
+
+  @override
+  String get settingsToleranceFixedLabel => 'Allowance (mm)';
+
+  @override
+  String settingsToleranceFixedSummary(String mm) {
+    return 'Fixed ±$mm mm';
+  }
+
+  @override
+  String settingsToleranceInvalid(String min, String max) {
+    return 'Enter $min–$max mm.';
+  }
+
+  @override
+  String get settingsToleranceModeFixed => 'Fixed';
+
+  @override
+  String get settingsToleranceModeSqrt => 'c·√n';
+
+  @override
+  String get settingsToleranceNote =>
+      'Exceeding it is a warning; export is still allowed.';
+
+  @override
+  String get settingsToleranceSqrtHelper =>
+      'Allowed = c × √n mm, n = instrument setups (BS rows).';
+
+  @override
+  String settingsToleranceSqrtSummary(String mm) {
+    return '$mm mm × √n (n = setups)';
+  }
+
+  @override
+  String get settingsToleranceTitle => 'Misclosure tolerance';
 }

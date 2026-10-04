@@ -11,6 +11,7 @@ import '../fieldbook/data/fieldbook_providers.dart';
 import '../fieldbook/domain/fieldbook.dart';
 import '../pro/pro_providers.dart';
 import '../project/data/project_providers.dart';
+import '../settings/misclosure_tolerance_repository.dart';
 import 'bulk_export_service.dart';
 import '../../core/constants/app_constants.dart';
 
@@ -275,6 +276,7 @@ class _BulkExportScreenState extends ConsumerState<BulkExportScreen> {
         proSettingsRepository: ref.read(proSettingsRepositoryProvider),
         measurementRepository: ref.read(measurementRepositoryProvider),
         benchMarkRepository: BenchMarkRepository(),
+        tolerance: await ref.read(misclosureToleranceProvider.future),
       );
       final fileCount = await service.shareFieldBooks(
         fieldBooks: selected,

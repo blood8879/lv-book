@@ -163,7 +163,7 @@
   },
   "exportCheckMisclosure": "Misclosure",
   "@exportCheckMisclosure": {
-    "description": "Arithmetic check: misclosure (4 decimals)."
+    "description": "Misclosure = Final RL - closing RL (4 decimals, signed)."
   },
   "exportCheckResult": "Result",
   "@exportCheckResult": {
@@ -363,5 +363,19 @@
         "type": "String"
       }
     }
-  }
+  },
+  "exportFieldClosingBm": "Closing BM",
+  "@exportFieldClosingBm": {"description": "Header/CSV metadata label: BM the run closes on."},
+  "exportFieldClosingRl": "Closing RL",
+  "@exportFieldClosingRl": {"description": "Header/CSV metadata label: known RL the run closes on (3 decimals)."},
+  "exportClosingLoopName": "{name} (loop)",
+  "@exportClosingLoopName": {"description": "PDF header value when the run closes on the start BM.", "placeholders": {"name": {"type": "String"}}},
+  "exportCheckTitleWithClosure": "Arithmetic check and misclosure",
+  "@exportCheckTitleWithClosure": {"description": "PDF check box title when a closing RL is known."},
+  "exportCheckRlDifference": "Final - Start",
+  "@exportCheckRlDifference": {"description": "Arithmetic check: Final RL − Start RL (equals ΣBS − ΣFS)."},
+  "exportCheckAllowed": "Allowed",
+  "@exportCheckAllowed": {"description": "Allowed misclosure label, value like '±0.0050'."},
+  "exportCheckMisclosureUnavailable": "n/a (no closing RL)",
+  "@exportCheckMisclosureUnavailable": {"description": "Misclosure value when no closing BM/RL is set; only the arithmetic check is judged."}
 }

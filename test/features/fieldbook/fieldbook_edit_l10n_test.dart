@@ -70,7 +70,12 @@ void main() {
     expect(find.text('IH'), findsNothing);
     expect(find.text('GH'), findsNothing);
     expect(find.text('Start RL'), findsWidgets);
-    expect(find.text('Misclosure'), findsOneWidget);
+    // No closing reference: only the arithmetic check, labelled as such.
+    expect(find.text('Misclosure'), findsNothing);
+    expect(find.text('Arith. check'), findsOneWidget);
+    expect(find.text('No closing RL'), findsOneWidget);
+    expect(find.text('Closing RL'), findsOneWidget);
+    expect(find.text('Not set'), findsOneWidget);
     expect(find.text('Arithmetic check: Within tolerance'), findsOneWidget);
     expect(find.text('Review'), findsOneWidget);
     expect(find.text('Draft'), findsOneWidget);

@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lv_book/features/fieldbook/domain/measurement.dart';
 import 'package:lv_book/features/fieldbook/domain/measurement_validation.dart';
+import 'package:lv_book/features/fieldbook/domain/misclosure.dart';
 
 void main() {
   test('valid closed loop displays suitable judgement', () {
@@ -10,7 +11,7 @@ void main() {
         Measurement(fieldBookId: 1, orderIndex: 1, stationName: 'No.1', fs: 1),
       ],
       startElevation: 100,
-      tolerance: 0.001,
+      tolerance: const MisclosureTolerance.fixed(1),
     );
 
     expect(result.judgementLabel, '적합');
@@ -23,7 +24,7 @@ void main() {
         Measurement(fieldBookId: 1, orderIndex: 0, stationName: 'No.1', fs: 1),
       ],
       startElevation: 100,
-      tolerance: 0.001,
+      tolerance: const MisclosureTolerance.fixed(1),
     );
 
     expect(result.canExport, isFalse);

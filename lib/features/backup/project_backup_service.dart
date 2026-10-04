@@ -472,11 +472,15 @@ class ProjectBackupService {
         for (final fieldBook in data.fieldBooks) {
           final oldId = fieldBook.id!;
           final startBmId = fieldBook.startBmId;
+          final closingBmId = fieldBook.closingBmId;
           final newId = await store.insertFieldBook(
             _copyFieldBookForRestore(
               fieldBook,
               projectId: newProjectId,
               startBmId: startBmId == null ? null : benchmarkIdMap[startBmId],
+              closingBmId: closingBmId == null
+                  ? null
+                  : benchmarkIdMap[closingBmId],
             ),
           );
           fieldBookIdMap[oldId] = newId;
@@ -541,7 +545,7 @@ class ProjectBackupService {
       benchmarkIds.add(id);
     }
 
-    // A start BM missing from the backup (e.g. deleted before foreign keys
+    // A start/closing BM missing from the backup (e.g. deleted before FKs
     // were enforced) is not fatal: restore remaps it to null.
     for (final fieldBook in data.fieldBooks) {
       final id = fieldBook.id;
@@ -593,6 +597,7 @@ class ProjectBackupService {
     FieldBook fieldBook, {
     required int projectId,
     required int? startBmId,
+    required int? closingBmId,
   }) {
     return FieldBook(
       projectId: projectId,
@@ -600,6 +605,11 @@ class ProjectBackupService {
       date: fieldBook.date,
       startBmId: startBmId,
       startElevation: fieldBook.startElevation,
+      // Older backups have no closing fields: restored as none.
+      // The closing RL snapshot survives a closing BM missing from the backup.
+      closingMode: fieldBook.closingMode,
+      closingBmId: closingBmId,
+      closingElevation: fieldBook.closingElevation,
       memo: fieldBook.memo,
       surveyor: fieldBook.surveyor,
       checker: fieldBook.checker,

@@ -22,4 +22,13 @@ class ExportJudgement {
         ? strings.coreJudgementWithinTolerance
         : strings.coreJudgementCheckRequired;
   }
+
+  /// Judgement text for an already-computed result (e.g.
+  /// `LevelClosureCheck.isSuitable`).
+  static String labelFor(bool suitable, {AppLocalizations? l10n}) {
+    final strings = l10n ?? l10nKo;
+    return suitable
+        ? strings.coreJudgementWithinTolerance
+        : strings.coreJudgementCheckRequired;
+  }
 }

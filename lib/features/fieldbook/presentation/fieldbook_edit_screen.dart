@@ -7,9 +7,15 @@ import '../data/measurement_repository.dart';
 import '../domain/fieldbook.dart';
 import '../domain/measurement.dart';
 import '../domain/measurement_validation.dart';
+import '../domain/misclosure.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_snackbar.dart';
 import '../../../core/widgets/semantic_pill.dart';
+import '../../benchmark/data/benchmark_providers.dart';
 import '../../benchmark/data/benchmark_repository.dart';
+import '../../benchmark/domain/benchmark.dart';
+import '../../benchmark/domain/benchmark_recheck.dart';
+import '../../settings/misclosure_tolerance_repository.dart';
 import '../../export/export_screen.dart';
 import '../../quickmemo/presentation/quick_memo_fab.dart';
 import '../../../core/utils/calculation.dart';
@@ -102,6 +108,12 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
   double? _persistedStartElevation;
   late FieldBookReviewStatus _reviewStatus;
   DateTime? _reviewedAt;
+
+  /// Closing reference (persisted on change, see [_applyClosingReference]).
+  late ClosingReferenceMode _closingMode;
+  int? _closingBmId;
+  double? _closingElevation;
+  String? _closingBmName;
   final int _initialRowCount = 20;
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _reviewMemoController = TextEditingController();
@@ -191,6 +203,9 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
     _reviewStatus = widget.fieldBook.reviewStatus;
     _reviewedAt = widget.fieldBook.reviewedAt;
     _reviewMemoController.text = widget.fieldBook.reviewMemo ?? '';
+    _closingMode = widget.fieldBook.closingMode;
+    _closingBmId = widget.fieldBook.closingBmId;
+    _closingElevation = widget.fieldBook.closingElevation;
     _loadData();
   }
 
@@ -230,6 +245,12 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
       final bmRepo = BenchMarkRepository();
       final bm = await bmRepo.getById(widget.fieldBook.startBmId!);
       if (bm != null) elevation = bm.elevation;
+    }
+
+    final closingBmId = _closingBmId;
+    if (_closingMode == ClosingReferenceMode.benchmark && closingBmId != null) {
+      final bm = await BenchMarkRepository().getById(closingBmId);
+      _closingBmName = bm?.name;
     }
 
     final measRepo = ref.read(measurementRepositoryProvider);
@@ -404,6 +425,9 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
       date: widget.fieldBook.date,
       startBmId: widget.fieldBook.startBmId,
       startElevation: _startElevation,
+      closingMode: _closingMode,
+      closingBmId: _closingBmId,
+      closingElevation: _closingElevation,
       memo: widget.fieldBook.memo,
       surveyor: widget.fieldBook.surveyor,
       checker: widget.fieldBook.checker,
@@ -567,9 +591,32 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
     }
   }
 
+  /// Known RL the run closes on (null: only the arithmetic check).
+  double? get _closingRl => switch (_closingMode) {
+    ClosingReferenceMode.none => null,
+    ClosingReferenceMode.loop => _startElevation,
+    ClosingReferenceMode.benchmark ||
+    ClosingReferenceMode.manual => _closingElevation,
+  };
+
+  MisclosureTolerance get _tolerance =>
+      _container.read(misclosureToleranceProvider).valueOrNull ??
+      MisclosureTolerance.defaults;
+
+  MeasurementValidationResult _validate(MisclosureTolerance tolerance) =>
+      MeasurementValidation.validate(
+        measurements: _toMeasurements(),
+        startElevation: _startElevation,
+        closingElevation: _closingRl,
+        tolerance: tolerance,
+      );
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final tolerance =
+        ref.watch(misclosureToleranceProvider).valueOrNull ??
+        MisclosureTolerance.defaults;
     // The app-wide quick-memo FAB would cover the validation chips and the
     // closure summary pinned to the bottom; it is offered from the app bar.
     return HideQuickMemoFab(
@@ -630,8 +677,8 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
                     _buildReviewPanel(),
                     _buildTableHeader(),
                     Expanded(child: _buildTableBody()),
-                    _buildValidationBar(),
-                    _buildSummary(),
+                    _buildValidationBar(_validate(tolerance)),
+                    _buildSummary(tolerance),
                   ],
                 ),
         ),
@@ -639,12 +686,14 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
     );
   }
 
+  /// Start RL input and, on the right, the closing reference button (one
+  /// row so the table keeps its height on small phones).
   Widget _buildStartElevationBar() {
     final colors = context.appColors;
     const onDark = Colors.white;
     final onDarkMuted = Colors.white.withValues(alpha: 0.62);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       color: colors.darkSurface,
       child: Row(
         children: [
@@ -656,9 +705,9 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
               color: onDarkMuted,
             ),
           ),
-          const Spacer(),
+          const SizedBox(width: 8),
           SizedBox(
-            width: 140,
+            width: 112,
             child: TextFormField(
               initialValue: _startElevation.toStringAsFixed(3),
               style: const TextStyle(
@@ -703,11 +752,132 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
               },
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 4),
           Text('m', style: TextStyle(fontSize: 14, color: onDarkMuted)),
+          const SizedBox(width: 12),
+          Expanded(
+            child: _buildClosingButton(
+              onDark: onDark,
+              onDarkMuted: onDarkMuted,
+            ),
+          ),
         ],
       ),
     );
+  }
+
+  String _closingSummaryText(AppLocalizations l10n) {
+    final rl = _closingRl;
+    if (rl == null) return l10n.fieldbookClosingNotSet;
+    final name = switch (_closingMode) {
+      ClosingReferenceMode.loop => l10n.fieldbookClosingLoopShort,
+      ClosingReferenceMode.benchmark => _closingBmName ?? 'BM',
+      _ => l10n.fieldbookClosingManualShort,
+    };
+    return l10n.fieldbookClosingSummary(name, rl.toStringAsFixed(3));
+  }
+
+  /// Two-line button "Closing RL / Loop · 100.000 ▾" that opens
+  /// [_editClosingReference].
+  Widget _buildClosingButton({
+    required Color onDark,
+    required Color onDarkMuted,
+  }) {
+    final l10n = context.l10n;
+    final isSet = _closingRl != null;
+    return Align(
+      alignment: Alignment.centerRight,
+      child: InkWell(
+        key: const ValueKey('closing-reference-button'),
+        borderRadius: BorderRadius.circular(8),
+        onTap: _editClosingReference,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 44, minWidth: 44),
+          child: Padding(
+            padding: const EdgeInsets.only(left: 6),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Flexible(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        l10n.fieldbookClosingLabel,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 11, color: onDarkMuted),
+                      ),
+                      Text(
+                        _closingSummaryText(l10n),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: isSet ? FontWeight.w700 : FontWeight.w500,
+                          color: isSet ? onDark : onDarkMuted,
+                          fontFeatures: AppTypography.tabularFeatures,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.expand_more, size: 18, color: onDarkMuted),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _editClosingReference() async {
+    final l10n = context.l10n;
+    List<BenchMark> benchmarks = const [];
+    try {
+      benchmarks = BenchMarkRecheck.selectableForFieldBook(
+        await ref.read(benchmarkListProvider(widget.projectId).future),
+      );
+    } catch (_) {
+      // Without the BM list only None / Loop / Manual can be chosen.
+    }
+    if (!mounted) return;
+    final result = await showModalBottomSheet<_ClosingChoice>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (_) => _ClosingReferenceSheet(
+        initialMode: _closingMode,
+        initialBmId: _closingBmId,
+        initialElevation: _closingElevation,
+        benchmarks: benchmarks,
+      ),
+    );
+    if (result == null || !mounted) return;
+    await _applyClosingReference(result, l10n);
+  }
+
+  Future<void> _applyClosingReference(
+    _ClosingChoice choice,
+    AppLocalizations l10n,
+  ) async {
+    setState(() {
+      _closingMode = choice.mode;
+      _closingBmId = choice.bmId;
+      _closingElevation = choice.elevation;
+      _closingBmName = choice.bmName;
+    });
+    try {
+      await _container
+          .read(fieldBookRepositoryProvider)
+          .updateClosingReference(_fieldBookWithReviewMetadata());
+      _container.invalidate(fieldBookListProvider(widget.projectId));
+    } catch (error) {
+      if (mounted) {
+        AppSnackbar.error(context, l10n.coreErrorWithDetail('$error'));
+      }
+    }
   }
 
   Widget _buildReviewPanel() {
@@ -1031,61 +1201,69 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
     );
   }
 
-  Widget _buildSummary() {
-    double? firstGh, lastGh;
-    for (final row in _rows) {
-      if (row.gh != null) {
-        firstGh ??= row.gh;
-        lastGh = row.gh;
-      }
-    }
-
-    final sums = LevelCheckSums.from(
+  Widget _buildSummary(MisclosureTolerance tolerance) {
+    final closure = LevelClosureCheck.compute(
       _toMeasurements(),
       startElevation: _startElevation,
+      closingElevation: _closingRl,
+      tolerance: tolerance,
     );
-    final sumBs = sums.sumBs;
-    final sumFs = sums.sumFs;
-    final diff = sums.difference;
-    final error = LevelClosure.error(
-      _toMeasurements(),
-      startElevation: _startElevation,
-    );
+    final sums = closure.sums;
+    final hasData = _rows.any((row) => row.gh != null);
     final colors = context.appColors;
     final l10n = context.l10n;
-    final errorColor = (firstGh != null && error.abs() < 0.001)
-        ? colors.green
-        : colors.err;
+    Color judged(bool ok) => hasData && ok ? colors.green : colors.err;
+    final misclosure = closure.misclosure;
 
+    // The dark panel runs to the screen edge; keep its text clear of the
+    // home indicator / gesture bar.
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: EdgeInsets.fromLTRB(16, 10, 16, 10 + bottomInset),
       color: colors.darkSurface,
       child: Column(
         children: [
           Row(
             children: [
-              _summaryItem('ΣBS', sumBs.toStringAsFixed(3)),
-              _summaryItem('ΣFS', sumFs.toStringAsFixed(3)),
-              _summaryItem(l10n.fieldbookSummaryDiff, diff.toStringAsFixed(3)),
+              _summaryItem('ΣBS', sums.sumBs.toStringAsFixed(3)),
+              _summaryItem('ΣFS', sums.sumFs.toStringAsFixed(3)),
+              _summaryItem(
+                l10n.fieldbookSummaryDiff,
+                sums.difference.toStringAsFixed(3),
+              ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _summaryItem(
                 l10n.fieldbookSummaryStart,
-                firstGh?.toStringAsFixed(3) ?? '-',
+                hasData ? sums.firstGh.toStringAsFixed(3) : '-',
               ),
               _summaryItem(
                 l10n.fieldbookSummaryFinal,
-                lastGh?.toStringAsFixed(3) ?? '-',
+                hasData ? sums.lastGh.toStringAsFixed(3) : '-',
               ),
-              _summaryItem(
-                l10n.fieldbookSummaryMisclosure,
-                error.toStringAsFixed(4),
-                valueColor: errorColor,
-              ),
+              // With a closing RL: the real misclosure (Final − closing RL).
+              // Without one: only the arithmetic check, labelled as such.
+              if (misclosure != null)
+                _summaryItem(
+                  l10n.fieldbookSummaryMisclosure,
+                  formatMisclosure(misclosure),
+                  valueColor: judged(closure.withinTolerance ?? false),
+                  caption: l10n.fieldbookSummaryAllowed(
+                    formatAllowedMisclosure(closure.allowed),
+                  ),
+                )
+              else
+                _summaryItem(
+                  l10n.fieldbookSummaryArithmetic,
+                  closure.arithmeticError.toStringAsFixed(4),
+                  valueColor: judged(closure.arithmeticOk),
+                  caption: l10n.fieldbookSummaryNoClosing,
+                ),
             ],
           ),
         ],
@@ -1093,11 +1271,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
     );
   }
 
-  Widget _buildValidationBar() {
-    final validation = MeasurementValidation.validate(
-      measurements: _toMeasurements(),
-      startElevation: _startElevation,
-    );
+  Widget _buildValidationBar(MeasurementValidationResult validation) {
     final isOk = validation.canExport;
     final colors = context.appColors;
     final l10n = context.l10n;
@@ -1119,11 +1293,15 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  isOk
-                      ? l10n.fieldbookArithmeticCheckResult(
+                  !isOk
+                      ? validation.issues.first.localizedMessage(l10n)
+                      : validation.misclosure != null
+                      ? l10n.fieldbookMisclosureCheckResult(
                           validation.localizedJudgement(l10n),
                         )
-                      : validation.issues.first.localizedMessage(l10n),
+                      : l10n.fieldbookArithmeticCheckResult(
+                          validation.localizedJudgement(l10n),
+                        ),
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 13,
@@ -1210,7 +1388,12 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
     return true;
   }
 
-  Widget _summaryItem(String label, String value, {Color? valueColor}) {
+  Widget _summaryItem(
+    String label,
+    String value, {
+    Color? valueColor,
+    String? caption,
+  }) {
     return Expanded(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1234,6 +1417,18 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
             ),
             overflow: TextOverflow.ellipsis,
           ),
+          if (caption != null)
+            Text(
+              caption,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 10.5,
+                height: 1.1,
+                color: Colors.white.withValues(alpha: 0.55),
+                fontFeatures: AppTypography.tabularFeatures,
+              ),
+            ),
         ],
       ),
     );
@@ -1241,10 +1436,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
 
   Future<void> _export() async {
     await _saveToDb();
-    final validation = MeasurementValidation.validate(
-      measurements: _toMeasurements(),
-      startElevation: _startElevation,
-    );
+    final validation = _validate(_tolerance);
     if (!validation.canExport && mounted) {
       final proceed = await _confirmExportValidation(validation);
       if (!proceed) return;
@@ -1279,6 +1471,9 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
             measurements: measurements,
             bmName: bmName,
             startElevation: _startElevation,
+            closingBmName: _closingMode == ClosingReferenceMode.benchmark
+                ? _closingBmName
+                : null,
           ),
         ),
       );
@@ -1296,5 +1491,212 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
     final month = value.month.toString().padLeft(2, '0');
     final day = value.day.toString().padLeft(2, '0');
     return '${value.year}-$month-$day';
+  }
+}
+
+/// Result of the closing reference sheet.
+class _ClosingChoice {
+  final ClosingReferenceMode mode;
+  final int? bmId;
+  final double? elevation;
+  final String? bmName;
+
+  const _ClosingChoice(this.mode, {this.bmId, this.elevation, this.bmName});
+}
+
+/// None / Start BM (loop) / Other BM / Manual RL.
+class _ClosingReferenceSheet extends StatefulWidget {
+  final ClosingReferenceMode initialMode;
+  final int? initialBmId;
+  final double? initialElevation;
+  final List<BenchMark> benchmarks;
+
+  const _ClosingReferenceSheet({
+    required this.initialMode,
+    required this.initialBmId,
+    required this.initialElevation,
+    required this.benchmarks,
+  });
+
+  @override
+  State<_ClosingReferenceSheet> createState() => _ClosingReferenceSheetState();
+}
+
+class _ClosingReferenceSheetState extends State<_ClosingReferenceSheet> {
+  late ClosingReferenceMode _mode = widget.initialMode;
+  late BenchMark? _bm = widget.benchmarks
+      .where((bm) => bm.id == widget.initialBmId)
+      .firstOrNull;
+  late final _elevationController = TextEditingController(
+    text: widget.initialMode == ClosingReferenceMode.manual
+        ? widget.initialElevation?.toStringAsFixed(3) ?? ''
+        : '',
+  );
+  bool _showError = false;
+
+  @override
+  void dispose() {
+    _elevationController.dispose();
+    super.dispose();
+  }
+
+  double? get _manualElevation {
+    final value = double.tryParse(_elevationController.text.trim());
+    return value != null && value.isFinite ? value : null;
+  }
+
+  _ClosingChoice? get _choice => switch (_mode) {
+    ClosingReferenceMode.none => const _ClosingChoice(
+      ClosingReferenceMode.none,
+    ),
+    ClosingReferenceMode.loop => const _ClosingChoice(
+      ClosingReferenceMode.loop,
+    ),
+    // Snapshot the BM elevation now (like the start RL), so later BM edits
+    // never silently change this book.
+    ClosingReferenceMode.benchmark =>
+      _bm == null
+          ? null
+          : _ClosingChoice(
+              ClosingReferenceMode.benchmark,
+              bmId: _bm!.id,
+              elevation: _bm!.elevation,
+              bmName: _bm!.name,
+            ),
+    ClosingReferenceMode.manual =>
+      _manualElevation == null
+          ? null
+          : _ClosingChoice(
+              ClosingReferenceMode.manual,
+              elevation: _manualElevation,
+            ),
+  };
+
+  void _apply() {
+    final choice = _choice;
+    if (choice == null) {
+      setState(() => _showError = true);
+      return;
+    }
+    Navigator.pop(context, choice);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final colors = context.appColors;
+    final options = [
+      (ClosingReferenceMode.none, l10n.fieldbookClosingNone),
+      (ClosingReferenceMode.loop, l10n.fieldbookClosingLoop),
+      (ClosingReferenceMode.benchmark, l10n.fieldbookClosingOtherBm),
+      (ClosingReferenceMode.manual, l10n.fieldbookClosingManual),
+    ];
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              l10n.fieldbookClosingSheetTitle,
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              l10n.fieldbookClosingSheetHelp,
+              style: TextStyle(fontSize: 12.5, color: colors.subtext),
+            ),
+            const SizedBox(height: 8),
+            RadioGroup<ClosingReferenceMode>(
+              groupValue: _mode,
+              onChanged: (value) {
+                if (value == null) return;
+                setState(() {
+                  _mode = value;
+                  _showError = false;
+                });
+              },
+              child: Column(
+                children: [
+                  for (final (mode, label) in options)
+                    RadioListTile<ClosingReferenceMode>(
+                      value: mode,
+                      title: Text(label),
+                      contentPadding: EdgeInsets.zero,
+                      dense: false,
+                    ),
+                ],
+              ),
+            ),
+            if (_mode == ClosingReferenceMode.benchmark)
+              widget.benchmarks.isEmpty
+                  ? Text(
+                      l10n.fieldbookClosingNoBm,
+                      style: TextStyle(color: colors.err, fontSize: 13),
+                    )
+                  : DropdownButtonFormField<BenchMark>(
+                      initialValue: _bm,
+                      decoration: InputDecoration(
+                        labelText: l10n.fieldbookClosingBmLabel,
+                        errorText: _showError && _bm == null
+                            ? l10n.fieldbookClosingInvalid
+                            : null,
+                      ),
+                      items: [
+                        for (final bm in widget.benchmarks)
+                          DropdownMenuItem(
+                            value: bm,
+                            child: Text(
+                              '${bm.name} (${bm.elevation.toStringAsFixed(3)}m)',
+                            ),
+                          ),
+                      ],
+                      onChanged: (value) => setState(() => _bm = value),
+                    ),
+            if (_mode == ClosingReferenceMode.manual)
+              TextField(
+                controller: _elevationController,
+                autofocus: true,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                  signed: true,
+                ),
+                decoration: InputDecoration(
+                  labelText: l10n.fieldbookClosingElevationLabel,
+                  errorText: _showError && _manualElevation == null
+                      ? l10n.fieldbookClosingInvalid
+                      : null,
+                ),
+                onChanged: (_) {
+                  if (_showError) setState(() {});
+                },
+                onSubmitted: (_) => _apply(),
+              ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(l10n.coreCancel),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: _apply,
+                    child: Text(l10n.fieldbookClosingApply),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

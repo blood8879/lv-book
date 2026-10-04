@@ -7,6 +7,7 @@ import 'package:printing/printing.dart';
 import '../../l10n/l10n.dart';
 import '../fieldbook/domain/fieldbook.dart';
 import '../fieldbook/domain/measurement.dart';
+import '../fieldbook/domain/misclosure.dart';
 import '../pro/pro_pdf_settings.dart';
 import 'export_judgement.dart';
 import 'export_labels.dart';
@@ -18,10 +19,19 @@ class PdfExporter {
     required List<Measurement> measurements,
     required String bmName,
     required double startElevation,
+    String? closingBmName,
+    MisclosureTolerance tolerance = MisclosureTolerance.defaults,
     ProPdfSettings? proSettings,
     required AppLocalizations l10n,
   }) async {
     final ttf = await _loadKoreanFont();
+    final closingElevation = fieldBook.closingElevationFor(startElevation);
+    final closure = LevelClosureCheck.compute(
+      measurements,
+      startElevation: startElevation,
+      closingElevation: closingElevation,
+      tolerance: tolerance,
+    );
 
     final pdf = pw.Document();
 
@@ -33,6 +43,13 @@ class PdfExporter {
           fieldBook,
           bmName,
           startElevation,
+          closingLabelsForTest(
+            fieldBook,
+            startElevation: startElevation,
+            bmName: bmName,
+            closingBmName: closingBmName,
+            l10n: l10n,
+          ),
           ttf,
           proSettings,
           l10n,
@@ -54,7 +71,7 @@ class PdfExporter {
           pw.SizedBox(height: 12),
           _buildTable(measurements, ttf, l10n),
           pw.SizedBox(height: 16),
-          _buildSummary(measurements, startElevation, ttf, proSettings, l10n),
+          _buildSummary(closure, ttf, proSettings, l10n),
           if (proSettings?.includeSignatureLines == true) ...[
             pw.SizedBox(height: 20),
             _buildSignatureLines(ttf, proSettings, l10n),
@@ -81,6 +98,7 @@ class PdfExporter {
     FieldBook fieldBook,
     String bmName,
     double startElevation,
+    List<String> closingLabels,
     pw.Font ttf,
     ProPdfSettings? proSettings,
     AppLocalizations l10n,
@@ -163,6 +181,16 @@ class PdfExporter {
             ),
           ],
         ),
+        if (closingLabels.isNotEmpty) ...[
+          pw.SizedBox(height: 4),
+          pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
+              for (final label in closingLabels)
+                pw.Text(label, style: pw.TextStyle(font: ttf, fontSize: 12)),
+            ],
+          ),
+        ],
         ..._metadataRows(fieldBook, ttf, l10n),
         if (fieldBook.memo != null && fieldBook.memo!.isNotEmpty)
           pw.Padding(
@@ -194,6 +222,31 @@ class PdfExporter {
           for (final item in items)
             pw.Text(item, style: pw.TextStyle(font: ttf, fontSize: 10)),
         ],
+      ),
+    ];
+  }
+
+  /// Header items for the closing reference ('Closing BM: BM-1 (loop)',
+  /// 'Closing RL: 100.000 m'); empty when none is set.
+  static List<String> closingLabelsForTest(
+    FieldBook fieldBook, {
+    required double startElevation,
+    required String bmName,
+    String? closingBmName,
+    required AppLocalizations l10n,
+  }) {
+    final closingElevation = fieldBook.closingElevationFor(startElevation);
+    if (closingElevation == null) return const [];
+    final name = switch (fieldBook.closingMode) {
+      ClosingReferenceMode.loop => l10n.exportClosingLoopName(bmName),
+      ClosingReferenceMode.benchmark => closingBmName ?? 'BM',
+      _ => null,
+    };
+    return [
+      if (name != null) l10n.exportLabelValue(l10n.exportFieldClosingBm, name),
+      l10n.exportLabelValue(
+        l10n.exportFieldClosingRl,
+        '${closingElevation.toStringAsFixed(3)} m',
       ),
     ];
   }
@@ -270,28 +323,69 @@ class PdfExporter {
     );
   }
 
+  /// Check box items as (label, value) pairs; also used by tests.
+  /// Row 1/2: arithmetic check (ΣBS − ΣFS = Final RL − Start RL).
+  /// Row 3: closing RL, misclosure and allowed value, or "not available".
+  static List<List<(String, String)>> checkRowsForTest(
+    LevelClosureCheck closure, {
+    required AppLocalizations l10n,
+  }) {
+    final sums = closure.sums;
+    final misclosure = closure.misclosure;
+    return [
+      [
+        ('ΣBS', sums.sumBs.toStringAsFixed(3)),
+        ('ΣFS', sums.sumFs.toStringAsFixed(3)),
+        (l10n.exportCheckDifference, sums.difference.toStringAsFixed(3)),
+      ],
+      [
+        (l10n.exportCheckStartRl, sums.firstGh.toStringAsFixed(3)),
+        (l10n.exportCheckFinalRl, sums.lastGh.toStringAsFixed(3)),
+        (
+          l10n.exportCheckRlDifference,
+          (sums.lastGh - sums.firstGh).toStringAsFixed(3),
+        ),
+      ],
+      if (misclosure == null)
+        [(l10n.exportCheckMisclosure, l10n.exportCheckMisclosureUnavailable)]
+      else
+        [
+          (
+            l10n.exportFieldClosingRl,
+            closure.closingElevation!.toStringAsFixed(3),
+          ),
+          (l10n.exportCheckMisclosure, formatMisclosure(misclosure)),
+          (l10n.exportCheckAllowed, formatAllowedMisclosure(closure.allowed)),
+        ],
+    ];
+  }
+
   static pw.Widget _buildSummary(
-    List<Measurement> measurements,
-    double startElevation,
+    LevelClosureCheck closure,
     pw.Font ttf,
     ProPdfSettings? proSettings,
     AppLocalizations l10n,
   ) {
-    final sums = LevelCheckSums.from(
-      measurements,
-      startElevation: startElevation,
-    );
-    final sumBs = sums.sumBs;
-    final sumFs = sums.sumFs;
-    final firstGh = sums.firstGh;
-    final lastGh = sums.lastGh;
-    final error = LevelClosure.error(
-      measurements,
-      startElevation: startElevation,
-    );
-    final isOk = ExportJudgement.isSuitable(error);
-
+    final isOk = closure.isSuitable;
+    final rows = checkRowsForTest(closure, l10n: l10n);
     final style = pw.TextStyle(font: ttf, fontSize: 10);
+    pw.TextStyle judged(bool ok) => style.copyWith(
+      fontWeight: pw.FontWeight.bold,
+      color: ok ? PdfColors.green : PdfColors.red,
+    );
+
+    pw.Widget item(int row, int column) {
+      final (label, value) = rows[row][column];
+      // Judged values: Final − Start (arithmetic check) and the misclosure.
+      final textStyle = switch ((row, column)) {
+        (1, 2) => judged(closure.arithmeticOk),
+        (2, 1) when closure.hasClosing => judged(
+          closure.withinTolerance ?? true,
+        ),
+        _ => style,
+      };
+      return pw.Text(l10n.exportCheckValue(label, value), style: textStyle);
+    }
 
     return pw.Container(
       padding: const pw.EdgeInsets.all(10),
@@ -304,66 +398,32 @@ class PdfExporter {
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
           pw.Text(
-            l10n.exportCheckTitle,
+            closure.hasClosing
+                ? l10n.exportCheckTitleWithClosure
+                : l10n.exportCheckTitle,
             style: pw.TextStyle(
               font: ttf,
               fontSize: 12,
               fontWeight: pw.FontWeight.bold,
             ),
           ),
-          pw.SizedBox(height: 6),
-          pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-            children: [
-              pw.Text(
-                l10n.exportCheckValue('ΣBS', sumBs.toStringAsFixed(3)),
-                style: style,
-              ),
-              pw.Text(
-                l10n.exportCheckValue('ΣFS', sumFs.toStringAsFixed(3)),
-                style: style,
-              ),
-              pw.Text(
-                l10n.exportCheckValue(
-                  l10n.exportCheckDifference,
-                  (sumBs - sumFs).toStringAsFixed(3),
-                ),
-                style: style,
-              ),
-            ],
-          ),
-          pw.SizedBox(height: 4),
-          pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-            children: [
-              pw.Text(
-                l10n.exportCheckValue(
-                  l10n.exportCheckStartRl,
-                  firstGh.toStringAsFixed(3),
-                ),
-                style: style,
-              ),
-              pw.Text(
-                l10n.exportCheckValue(
-                  l10n.exportCheckFinalRl,
-                  lastGh.toStringAsFixed(3),
-                ),
-                style: style,
-              ),
-              pw.Text(
-                l10n.exportCheckValue(
-                  l10n.exportCheckMisclosure,
-                  error.toStringAsFixed(4),
-                ),
-                style: pw.TextStyle(
-                  font: ttf,
-                  fontSize: 10,
-                  fontWeight: pw.FontWeight.bold,
-                  color: isOk ? PdfColors.green : PdfColors.red,
-                ),
-              ),
-            ],
-          ),
+          for (var r = 0; r < rows.length; r++) ...[
+            pw.SizedBox(height: r == 0 ? 6 : 4),
+            pw.Row(
+              mainAxisAlignment: rows[r].length == 1
+                  ? pw.MainAxisAlignment.start
+                  : pw.MainAxisAlignment.spaceBetween,
+              children: [
+                for (var c = 0; c < rows[r].length; c++)
+                  rows[r].length == 1
+                      ? pw.Text(
+                          l10n.exportCheckValue(rows[r][c].$1, rows[r][c].$2),
+                          style: style.copyWith(color: PdfColors.grey700),
+                        )
+                      : item(r, c),
+              ],
+            ),
+          ],
           if (proSettings?.includeCheckJudgement == true) ...[
             pw.SizedBox(height: 6),
             pw.Container(
@@ -382,7 +442,7 @@ class PdfExporter {
               child: pw.Text(
                 l10n.exportLabelValue(
                   l10n.exportCheckResult,
-                  ExportJudgement.label(error, l10n: l10n),
+                  ExportJudgement.labelFor(isOk, l10n: l10n),
                 ),
                 style: pw.TextStyle(
                   font: ttf,

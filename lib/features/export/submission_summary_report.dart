@@ -2,6 +2,7 @@ import '../../l10n/l10n.dart';
 import '../fieldbook/domain/fieldbook.dart';
 import '../fieldbook/domain/measurement.dart';
 import '../fieldbook/domain/measurement_validation.dart';
+import '../fieldbook/domain/misclosure.dart';
 import 'export_labels.dart';
 
 enum SubmissionSummaryError { noSelection }
@@ -45,7 +46,9 @@ class SubmissionSummaryRow {
   final String reviewStatus;
   final String reviewMemo;
   final DateTime? reviewedAt;
-  final double closureError;
+
+  /// Final RL − closing RL; null when the book has no closing reference.
+  final double? misclosure;
   final String judgement;
 
   const SubmissionSummaryRow({
@@ -57,7 +60,7 @@ class SubmissionSummaryRow {
     required this.reviewStatus,
     required this.reviewMemo,
     required this.reviewedAt,
-    required this.closureError,
+    required this.misclosure,
     required this.judgement,
   });
 }
@@ -65,6 +68,7 @@ class SubmissionSummaryRow {
 class SubmissionSummaryReport {
   static List<SubmissionSummaryRow> buildRows(
     List<FieldBookSummaryInput> inputs, {
+    MisclosureTolerance tolerance = MisclosureTolerance.defaults,
     required AppLocalizations l10n,
   }) {
     if (inputs.isEmpty) {
@@ -73,14 +77,15 @@ class SubmissionSummaryReport {
       );
     }
 
-    return [for (final input in inputs) _buildRow(input, l10n)];
+    return [for (final input in inputs) _buildRow(input, tolerance, l10n)];
   }
 
   static String generateCsv(
     List<FieldBookSummaryInput> inputs, {
+    MisclosureTolerance tolerance = MisclosureTolerance.defaults,
     required AppLocalizations l10n,
   }) {
-    final rows = buildRows(inputs, l10n: l10n);
+    final rows = buildRows(inputs, tolerance: tolerance, l10n: l10n);
     final buffer = StringBuffer()
       ..writeln(
         [
@@ -107,7 +112,9 @@ class SubmissionSummaryReport {
           row.reviewStatus,
           row.reviewMemo,
           row.reviewedAt == null ? '' : _formatDate(row.reviewedAt!),
-          row.closureError.toStringAsFixed(4),
+          row.misclosure == null
+              ? l10n.exportCheckMisclosureUnavailable
+              : formatMisclosure(row.misclosure!),
           row.judgement,
         ].map(_csvCell).join(','),
       );
@@ -117,11 +124,16 @@ class SubmissionSummaryReport {
 
   static SubmissionSummaryRow _buildRow(
     FieldBookSummaryInput input,
+    MisclosureTolerance tolerance,
     AppLocalizations l10n,
   ) {
     final validation = MeasurementValidation.validate(
       measurements: input.measurements,
       startElevation: input.startElevation,
+      closingElevation: input.fieldBook.closingElevationFor(
+        input.startElevation,
+      ),
+      tolerance: tolerance,
     );
     return SubmissionSummaryRow(
       title: input.fieldBook.title,
@@ -132,7 +144,7 @@ class SubmissionSummaryReport {
       reviewStatus: exportReviewStatusLabel(l10n, input.fieldBook.reviewStatus),
       reviewMemo: input.fieldBook.reviewMemo?.trim() ?? '',
       reviewedAt: input.fieldBook.reviewedAt,
-      closureError: validation.closureError,
+      misclosure: validation.misclosure,
       judgement: validation.canExport
           ? l10n.coreJudgementWithinTolerance
           : l10n.coreJudgementCheckRequired,

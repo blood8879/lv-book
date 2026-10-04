@@ -41,6 +41,22 @@ class FieldBookRepository {
     );
   }
 
+  /// Persists only the closing reference columns, so unsaved edits elsewhere
+  /// (e.g. the review panel) are not written as a side effect.
+  Future<int> updateClosingReference(FieldBook fieldBook) async {
+    final db = await _dbHelper.database;
+    return await db.update(
+      'field_books',
+      {
+        'closing_mode': fieldBook.closingMode.name,
+        'closing_bm_id': fieldBook.closingBmId,
+        'closing_elevation': fieldBook.closingElevation,
+      },
+      where: 'id = ?',
+      whereArgs: [fieldBook.id],
+    );
+  }
+
   Future<int> delete(int id) async {
     final db = await _dbHelper.database;
     return await db.transaction((txn) async {
