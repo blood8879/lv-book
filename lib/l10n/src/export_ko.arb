@@ -83,5 +83,16 @@
   "exportCheckTitleWithClosure": "검산 및 폐합오차",
   "exportCheckRlDifference": "최종 - 시작",
   "exportCheckAllowed": "허용",
-  "exportCheckMisclosureUnavailable": "없음 (폐합 기준 없음)"
+  "exportCheckMisclosureUnavailable": "없음 (폐합 기준 없음)",
+  "exportColumnIs": "중간점(IS)",
+  "exportColumnRise": "승(+)",
+  "exportColumnFall": "강(−)",
+  "exportFieldReductionMethod": "기입 방식",
+  "exportReductionHi": "기고식",
+  "exportReductionRiseFall": "승강식",
+  "exportFieldUnit": "단위",
+  "exportCheckSumRise": "Σ승",
+  "exportCheckSumFall": "Σ강",
+  "exportCheckRiseFallDifference": "Σ승 − Σ강",
+  "exportImportUnitMismatch": "파일 단위는 {fileUnit}, 앱 단위는 {appUnit}입니다. 값은 변환 없이 가져왔습니다."
 }

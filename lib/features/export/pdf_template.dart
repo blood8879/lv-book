@@ -8,6 +8,7 @@ import '../../l10n/l10n.dart';
 import '../fieldbook/domain/fieldbook.dart';
 import '../fieldbook/domain/measurement.dart';
 import '../fieldbook/domain/misclosure.dart';
+import '../fieldbook/domain/reduction.dart';
 import '../pro/pro_pdf_settings.dart';
 import 'export_judgement.dart';
 import 'export_labels.dart';
@@ -31,7 +32,9 @@ class PdfExporter {
       startElevation: startElevation,
       closingElevation: closingElevation,
       tolerance: tolerance,
+      method: fieldBook.reductionMethod,
     );
+    final unit = tolerance.unit;
 
     final pdf = pw.Document();
 
@@ -49,10 +52,12 @@ class PdfExporter {
             bmName: bmName,
             closingBmName: closingBmName,
             l10n: l10n,
+            unit: unit,
           ),
           ttf,
           proSettings,
           l10n,
+          unit,
         ),
         footer: (context) => _buildFooter(context, ttf, proSettings),
         build: (context) => [
@@ -69,7 +74,7 @@ class PdfExporter {
               ),
             ),
           pw.SizedBox(height: 12),
-          _buildTable(measurements, ttf, l10n),
+          _buildTable(measurements, fieldBook.reductionMethod, ttf, l10n),
           pw.SizedBox(height: 16),
           _buildSummary(closure, ttf, proSettings, l10n),
           if (proSettings?.includeSignatureLines == true) ...[
@@ -102,6 +107,7 @@ class PdfExporter {
     pw.Font ttf,
     ProPdfSettings? proSettings,
     AppLocalizations l10n,
+    LengthUnit unit,
   ) {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -175,7 +181,7 @@ class PdfExporter {
             pw.Text(
               l10n.exportLabelValue(
                 l10n.exportFieldBmElevation,
-                '${startElevation.toStringAsFixed(3)} m',
+                exportLength(startElevation, unit),
               ),
               style: pw.TextStyle(font: ttf, fontSize: 12),
             ),
@@ -191,7 +197,7 @@ class PdfExporter {
             ],
           ),
         ],
-        ..._metadataRows(fieldBook, ttf, l10n),
+        ..._metadataRows(fieldBook, ttf, l10n, unit),
         if (fieldBook.memo != null && fieldBook.memo!.isNotEmpty)
           pw.Padding(
             padding: const pw.EdgeInsets.only(top: 4),
@@ -210,8 +216,9 @@ class PdfExporter {
     FieldBook fieldBook,
     pw.Font ttf,
     AppLocalizations l10n,
+    LengthUnit unit,
   ) {
-    final items = metadataLabelsForTest(fieldBook, l10n: l10n);
+    final items = metadataLabelsForTest(fieldBook, l10n: l10n, unit: unit);
     if (items.isEmpty) return const [];
     return [
       pw.SizedBox(height: 4),
@@ -234,6 +241,7 @@ class PdfExporter {
     required String bmName,
     String? closingBmName,
     required AppLocalizations l10n,
+    LengthUnit unit = LengthUnit.metres,
   }) {
     final closingElevation = fieldBook.closingElevationFor(startElevation);
     if (closingElevation == null) return const [];
@@ -246,14 +254,18 @@ class PdfExporter {
       if (name != null) l10n.exportLabelValue(l10n.exportFieldClosingBm, name),
       l10n.exportLabelValue(
         l10n.exportFieldClosingRl,
-        '${closingElevation.toStringAsFixed(3)} m',
+        exportLength(closingElevation, unit),
       ),
     ];
   }
 
+  /// Header items. The reduction method and the unit are printed when they
+  /// differ from the defaults (HI, metres), so default books print as before;
+  /// metres are already visible on the BM/closing RL ('100.000 m').
   static List<String> metadataLabelsForTest(
     FieldBook fieldBook, {
     required AppLocalizations l10n,
+    LengthUnit unit = LengthUnit.metres,
   }) {
     String item(String label, String value) =>
         l10n.exportLabelValue(label, value);
@@ -270,6 +282,12 @@ class PdfExporter {
         item(l10n.exportFieldSection, fieldBook.workSection!.trim()),
       if (fieldBook.jobNumber?.trim().isNotEmpty == true)
         item(l10n.exportFieldJobNumber, fieldBook.jobNumber!.trim()),
+      if (fieldBook.reductionMethod != ReductionMethod.heightOfInstrument)
+        item(
+          l10n.exportFieldReductionMethod,
+          exportReductionMethodLabel(l10n, fieldBook.reductionMethod),
+        ),
+      if (unit != LengthUnit.metres) item(l10n.exportFieldUnit, unit.symbol),
       item(
         l10n.exportFieldReviewStatus,
         exportReviewStatusLabel(l10n, fieldBook.reviewStatus),
@@ -286,9 +304,14 @@ class PdfExporter {
 
   static pw.Widget _buildTable(
     List<Measurement> measurements,
+    ReductionMethod method,
     pw.Font ttf,
     AppLocalizations l10n,
   ) {
+    final columns = exportTableColumns(
+      method: method,
+      intermediateSights: exportUsesIntermediateColumn(l10n),
+    );
     final style = pw.TextStyle(font: ttf, fontSize: 10);
     final headerStyle = pw.TextStyle(
       font: ttf,
@@ -306,26 +329,15 @@ class PdfExporter {
       cellPadding: const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 4),
       border: pw.TableBorder.all(color: PdfColors.grey500, width: 0.7),
       headerDecoration: const pw.BoxDecoration(color: PdfColors.grey200),
-      headers: exportTableHeaders(l10n),
-      data: measurements.asMap().entries.map((entry) {
-        final i = entry.key;
-        final m = entry.value;
-        return [
-          '${i + 1}',
-          m.stationName,
-          m.bs?.toStringAsFixed(3) ?? '-',
-          m.fs?.toStringAsFixed(3) ?? '-',
-          m.ih?.toStringAsFixed(3) ?? '-',
-          m.gh?.toStringAsFixed(3) ?? '-',
-          m.type == MeasurementType.tp ? 'TP' : '',
-        ];
-      }).toList(),
+      headers: [for (final c in columns) exportColumnHeader(l10n, c)],
+      data: exportTableRows(measurements, columns: columns, empty: '-'),
     );
   }
 
   /// Check box items as (label, value) pairs; also used by tests.
   /// Row 1/2: arithmetic check (ΣBS − ΣFS = Final RL − Start RL).
-  /// Row 3: closing RL, misclosure and allowed value, or "not available".
+  /// Rise and fall only: ΣRise / ΣFall / ΣRise − ΣFall.
+  /// Last row: closing RL, misclosure and allowed value, or "not available".
   static List<List<(String, String)>> checkRowsForTest(
     LevelClosureCheck closure, {
     required AppLocalizations l10n,
@@ -346,6 +358,21 @@ class PdfExporter {
           (sums.lastGh - sums.firstGh).toStringAsFixed(3),
         ),
       ],
+      if (closure.method == ReductionMethod.riseAndFall)
+        [
+          (
+            l10n.exportCheckSumRise,
+            closure.riseFall.sumRise.toStringAsFixed(3),
+          ),
+          (
+            l10n.exportCheckSumFall,
+            closure.riseFall.sumFall.toStringAsFixed(3),
+          ),
+          (
+            l10n.exportCheckRiseFallDifference,
+            closure.riseFall.difference.toStringAsFixed(3),
+          ),
+        ],
       if (misclosure == null)
         [(l10n.exportCheckMisclosure, l10n.exportCheckMisclosureUnavailable)]
       else
@@ -374,12 +401,16 @@ class PdfExporter {
       color: ok ? PdfColors.green : PdfColors.red,
     );
 
+    final riseFallRow = closure.method == ReductionMethod.riseAndFall ? 2 : -1;
+    final closingRow = rows.length - 1;
     pw.Widget item(int row, int column) {
       final (label, value) = rows[row][column];
-      // Judged values: Final − Start (arithmetic check) and the misclosure.
+      // Judged values: Final − Start (arithmetic check), ΣRise − ΣFall and
+      // the misclosure.
       final textStyle = switch ((row, column)) {
         (1, 2) => judged(closure.arithmeticOk),
-        (2, 1) when closure.hasClosing => judged(
+        (_, 2) when row == riseFallRow => judged(closure.riseFallOk),
+        (_, 1) when row == closingRow && closure.hasClosing => judged(
           closure.withinTolerance ?? true,
         ),
         _ => style,

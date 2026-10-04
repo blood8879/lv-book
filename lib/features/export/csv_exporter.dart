@@ -3,6 +3,7 @@ import '../../l10n/l10n.dart';
 import '../fieldbook/domain/fieldbook.dart';
 import '../fieldbook/domain/measurement.dart';
 import '../fieldbook/domain/misclosure.dart';
+import '../fieldbook/domain/reduction.dart';
 import '../pro/pro_pdf_settings.dart';
 import 'export_judgement.dart';
 import 'export_labels.dart';
@@ -67,6 +68,14 @@ class CsvExporter {
     }
     rows.add([l10n.exportFieldStartBm, bmName]);
     rows.add([l10n.exportFieldBmElevation, startElevation.toStringAsFixed(3)]);
+    final method = fieldBook.reductionMethod;
+    // Both rows are read back by `CsvImporter` (either language); files
+    // without them import as HI / unit unknown.
+    rows.add([
+      l10n.exportFieldReductionMethod,
+      exportReductionMethodLabel(l10n, method),
+    ]);
+    rows.add([l10n.exportFieldUnit, tolerance.unit.symbol]);
     // Closing reference (absent when none). A loop writes the start BM name
     // with the start RL, which `CsvImporter` reads back as a loop.
     final closingElevation = fieldBook.closingElevationFor(startElevation);
@@ -84,22 +93,14 @@ class CsvExporter {
     }
     rows.add([]);
 
-    // Table header
-    rows.add(exportTableHeaders(l10n));
-
-    // Data rows
-    for (int i = 0; i < measurements.length; i++) {
-      final m = measurements[i];
-      rows.add([
-        i + 1,
-        m.stationName,
-        m.bs?.toStringAsFixed(3) ?? '',
-        m.fs?.toStringAsFixed(3) ?? '',
-        m.ih?.toStringAsFixed(3) ?? '',
-        m.gh?.toStringAsFixed(3) ?? '',
-        m.type == MeasurementType.tp ? 'TP' : '',
-      ]);
-    }
+    // Table: English adds the IS column; rise and fall replaces HI with
+    // Rise / Fall.
+    final columns = exportTableColumns(
+      method: method,
+      intermediateSights: exportUsesIntermediateColumn(l10n),
+    );
+    rows.add([for (final c in columns) exportColumnHeader(l10n, c)]);
+    rows.addAll(exportTableRows(measurements, columns: columns));
 
     // Summary (검산): ΣFS counts only turning points and the final point so
     // that ΣBS − ΣFS equals 최종 GH − 시작 GH, consistent with LevelClosure.
@@ -108,6 +109,7 @@ class CsvExporter {
       startElevation: startElevation,
       closingElevation: closingElevation,
       tolerance: tolerance,
+      method: method,
     );
     final sums = closure.sums;
     rows.add([]);
@@ -118,6 +120,18 @@ class CsvExporter {
       sums.sumFs.toStringAsFixed(3),
     ]);
     rows.add([l10n.exportCheckDifference, sums.difference.toStringAsFixed(3)]);
+    if (method == ReductionMethod.riseAndFall) {
+      rows.add([
+        l10n.exportCheckSumRise,
+        closure.riseFall.sumRise.toStringAsFixed(3),
+        l10n.exportCheckSumFall,
+        closure.riseFall.sumFall.toStringAsFixed(3),
+      ]);
+      rows.add([
+        l10n.exportCheckRiseFallDifference,
+        closure.riseFall.difference.toStringAsFixed(3),
+      ]);
+    }
     rows.add([
       l10n.exportCheckRlDifference,
       (sums.lastGh - sums.firstGh).toStringAsFixed(3),

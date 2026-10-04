@@ -1,5 +1,6 @@
 import 'measurement.dart';
 import 'misclosure.dart';
+import 'reduction.dart';
 
 /// Export checklist entries. UI text comes from l10n
 /// (`fieldbook_l10n.dart`); [MeasurementValidationItem.label] is the legacy
@@ -16,6 +17,9 @@ enum MeasurementCheck {
 
   /// |misclosure| ≤ allowed; only present when a closing RL is known.
   tolerance,
+
+  /// ΣRise − ΣFall = ΣBS − ΣFS = Final RL − Start RL; rise-and-fall books.
+  riseFall,
 }
 
 /// Problems found by [MeasurementValidation]. UI text comes from l10n
@@ -29,6 +33,7 @@ enum MeasurementIssue {
   emptyRows,
   exceedsTolerance,
   arithmeticMismatch,
+  riseFallMismatch,
 }
 
 const _koCheckLabels = {
@@ -39,6 +44,7 @@ const _koCheckLabels = {
   MeasurementCheck.emptyRows: '빈 행',
   MeasurementCheck.arithmetic: '검산',
   MeasurementCheck.tolerance: '허용오차',
+  MeasurementCheck.riseFall: '승강 검산',
 };
 
 const _koPassedMessages = {
@@ -49,6 +55,7 @@ const _koPassedMessages = {
   MeasurementCheck.emptyRows: '측정값 없는 행이 없습니다.',
   MeasurementCheck.arithmetic: '검산이 맞습니다.',
   MeasurementCheck.tolerance: '허용오차 이내입니다.',
+  MeasurementCheck.riseFall: '승강 검산이 맞습니다.',
 };
 
 const _koFailedMessages = {
@@ -59,6 +66,7 @@ const _koFailedMessages = {
   MeasurementCheck.emptyRows: '측정값이 없는 행을 정리하세요.',
   MeasurementCheck.arithmetic: '검산이 맞지 않습니다.',
   MeasurementCheck.tolerance: '허용오차를 초과했습니다.',
+  MeasurementCheck.riseFall: '승강 검산이 맞지 않습니다.',
 };
 
 const _koIssueMessages = {
@@ -69,6 +77,7 @@ const _koIssueMessages = {
   MeasurementIssue.emptyRows: '측정값이 없는 행을 정리하세요.',
   MeasurementIssue.exceedsTolerance: '허용오차를 초과했습니다.',
   MeasurementIssue.arithmeticMismatch: '검산이 맞지 않습니다.',
+  MeasurementIssue.riseFallMismatch: '승강 검산이 맞지 않습니다.',
 };
 
 class MeasurementValidationItem {
@@ -152,6 +161,7 @@ class MeasurementValidation {
     required double startElevation,
     double? closingElevation,
     MisclosureTolerance tolerance = MisclosureTolerance.defaults,
+    ReductionMethod method = ReductionMethod.heightOfInstrument,
   }) {
     final issues = <MeasurementIssue>[];
     final rows = trimTrailingUnmeasured(
@@ -191,11 +201,16 @@ class MeasurementValidation {
       startElevation: startElevation,
       closingElevation: closingElevation,
       tolerance: tolerance,
+      method: method,
     );
+    final isRiseFall = method == ReductionMethod.riseAndFall;
     final withinTolerance = closure.withinTolerance;
     final structuralOk = issues.isEmpty;
     if (structuralOk && !closure.arithmeticOk) {
       issues.add(MeasurementIssue.arithmeticMismatch);
+    }
+    if (structuralOk && isRiseFall && !closure.riseFallOk) {
+      issues.add(MeasurementIssue.riseFallMismatch);
     }
     if (structuralOk && withinTolerance == false) {
       issues.add(MeasurementIssue.exceedsTolerance);
@@ -227,6 +242,11 @@ class MeasurementValidation {
         check: MeasurementCheck.arithmetic,
         passed: closure.arithmeticOk,
       ),
+      if (isRiseFall)
+        MeasurementValidationItem(
+          check: MeasurementCheck.riseFall,
+          passed: closure.riseFallOk,
+        ),
       if (withinTolerance != null)
         MeasurementValidationItem(
           check: MeasurementCheck.tolerance,

@@ -236,23 +236,23 @@ abstract class AppLocalizations {
   /// **'e.g. 100.000'**
   String get benchmarkElevationHint;
 
-  /// No description provided for @benchmarkElevationInvalidError.
+  /// BM form error. unit: m or ft.
   ///
   /// In en, this message translates to:
-  /// **'Enter the elevation as a number (m)'**
-  String get benchmarkElevationInvalidError;
+  /// **'Enter the elevation as a number ({unit})'**
+  String benchmarkElevationInvalidError(String unit);
 
-  /// No description provided for @benchmarkElevationLabel.
+  /// BM form label. unit: m or ft.
   ///
   /// In en, this message translates to:
-  /// **'Elevation (m) *'**
-  String get benchmarkElevationLabel;
+  /// **'Elevation ({unit}) *'**
+  String benchmarkElevationLabel(String unit);
 
-  /// elevation formatted with 3 decimals by the caller.
+  /// BM list line. unit: m or ft.
   ///
   /// In en, this message translates to:
-  /// **'Elevation {elevation} m'**
-  String benchmarkElevationLine(String elevation);
+  /// **'Elevation {elevation} {unit}'**
+  String benchmarkElevationLine(String elevation, String unit);
 
   /// No description provided for @benchmarkEmptyMessage.
   ///
@@ -722,6 +722,12 @@ abstract class AppLocalizations {
   /// **'Result'**
   String get exportCheckResult;
 
+  /// Check box: ΣRise − ΣFall (equals ΣBS − ΣFS and Final − Start).
+  ///
+  /// In en, this message translates to:
+  /// **'ΣRise − ΣFall'**
+  String get exportCheckRiseFallDifference;
+
   /// Arithmetic check: Final RL − Start RL (equals ΣBS − ΣFS).
   ///
   /// In en, this message translates to:
@@ -733,6 +739,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Start RL'**
   String get exportCheckStartRl;
+
+  /// Check box: sum of falls.
+  ///
+  /// In en, this message translates to:
+  /// **'ΣFall'**
+  String get exportCheckSumFall;
+
+  /// Check box: sum of rises.
+  ///
+  /// In en, this message translates to:
+  /// **'ΣRise'**
+  String get exportCheckSumRise;
 
   /// Title of the arithmetic check box.
   ///
@@ -764,6 +782,12 @@ abstract class AppLocalizations {
   /// **'BS'**
   String get exportColumnBs;
 
+  /// Table column of a rise-and-fall book.
+  ///
+  /// In en, this message translates to:
+  /// **'Fall'**
+  String get exportColumnFall;
+
   /// Measurement table column: foresight.
   ///
   /// In en, this message translates to:
@@ -776,6 +800,12 @@ abstract class AppLocalizations {
   /// **'HI'**
   String get exportColumnHi;
 
+  /// Table column: intermediate sight reading (English exports only).
+  ///
+  /// In en, this message translates to:
+  /// **'IS'**
+  String get exportColumnIs;
+
   /// Measurement table column: row number.
   ///
   /// In en, this message translates to:
@@ -787,6 +817,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Remarks'**
   String get exportColumnRemarks;
+
+  /// Table column of a rise-and-fall book.
+  ///
+  /// In en, this message translates to:
+  /// **'Rise'**
+  String get exportColumnRise;
 
   /// Measurement table column: reduced level.
   ///
@@ -884,6 +920,12 @@ abstract class AppLocalizations {
   /// **'Memo'**
   String get exportFieldMemo;
 
+  /// Header/CSV metadata label: HI or rise and fall. CsvImporter accepts both languages.
+  ///
+  /// In en, this message translates to:
+  /// **'Reduction method'**
+  String get exportFieldReductionMethod;
+
   /// Exported document field.
   ///
   /// In en, this message translates to:
@@ -926,6 +968,12 @@ abstract class AppLocalizations {
   /// **'Level book'**
   String get exportFieldTitle;
 
+  /// Header/CSV metadata label for the length unit (m / ft).
+  ///
+  /// In en, this message translates to:
+  /// **'Unit'**
+  String get exportFieldUnit;
+
   /// Exported document field.
   ///
   /// In en, this message translates to:
@@ -961,6 +1009,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Row {row}: {column} is not a valid number.'**
   String exportImportInvalidNumber(int row, String column);
+
+  /// CSV import warning when the file unit differs from the app unit.
+  ///
+  /// In en, this message translates to:
+  /// **'The file is in {fileUnit} but the app is set to {appUnit}. Numbers were imported unchanged.'**
+  String exportImportUnitMismatch(String fileUnit, String appUnit);
 
   /// CSV import error: not UTF-8.
   ///
@@ -1033,6 +1087,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Couldn\'t create the PDF: {error}'**
   String exportPdfError(String error);
+
+  /// Reduction method value in PDF/CSV.
+  ///
+  /// In en, this message translates to:
+  /// **'Height of instrument'**
+  String get exportReductionHi;
+
+  /// Reduction method value in PDF/CSV.
+  ///
+  /// In en, this message translates to:
+  /// **'Rise and fall'**
+  String get exportReductionRiseFall;
 
   /// Review status in exported documents.
   ///
@@ -1166,6 +1232,12 @@ abstract class AppLocalizations {
   /// **'Last FS'**
   String get fieldbookCheckLastFs;
 
+  /// Validation chip: ΣRise − ΣFall = ΣBS − ΣFS = Final RL − Start RL.
+  ///
+  /// In en, this message translates to:
+  /// **'Rise/Fall check'**
+  String get fieldbookCheckRiseFall;
+
   /// No description provided for @fieldbookCheckStationRows.
   ///
   /// In en, this message translates to:
@@ -1214,11 +1286,11 @@ abstract class AppLocalizations {
   /// **'Closing BM'**
   String get fieldbookClosingBmLabel;
 
-  /// Manual closing RL input label.
+  /// Manual closing RL input label. unit: m or ft.
   ///
   /// In en, this message translates to:
-  /// **'Closing RL (m)'**
-  String get fieldbookClosingElevationLabel;
+  /// **'Closing RL ({unit})'**
+  String fieldbookClosingElevationLabel(String unit);
 
   /// Validation error for the closing reference sheet.
   ///
@@ -1309,6 +1381,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Stn'**
   String get fieldbookColumnNo;
+
+  /// Editor table header of the signed rise(+)/fall(−) column; must fit ~68 px.
+  ///
+  /// In en, this message translates to:
+  /// **'Rise/Fall'**
+  String get fieldbookColumnRiseFall;
 
   /// No description provided for @fieldbookColumnRl.
   ///
@@ -1496,6 +1574,12 @@ abstract class AppLocalizations {
   /// **'Add at least one station row.'**
   String get fieldbookIssueNoStationRows;
 
+  /// Validation warning for rise-and-fall books.
+  ///
+  /// In en, this message translates to:
+  /// **'ΣRise − ΣFall does not match ΣBS − ΣFS. Check the readings.'**
+  String get fieldbookIssueRiseFallMismatch;
+
   /// No description provided for @fieldbookIssueTpIncomplete.
   ///
   /// In en, this message translates to:
@@ -1531,6 +1615,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No results'**
   String get fieldbookNoSearchResults;
+
+  /// Helper under the reduction method selector.
+  ///
+  /// In en, this message translates to:
+  /// **'Rise & Fall shows the rise/fall of each reading and adds the ΣRise − ΣFall check. RLs are the same.'**
+  String get fieldbookReductionHelp;
+
+  /// Reduction method: height of instrument (short, segmented button).
+  ///
+  /// In en, this message translates to:
+  /// **'HI'**
+  String get fieldbookReductionHi;
+
+  /// Label for the HI / Rise & Fall selector.
+  ///
+  /// In en, this message translates to:
+  /// **'Reduction method'**
+  String get fieldbookReductionMethodLabel;
+
+  /// Reduction method: rise and fall (short, segmented button).
+  ///
+  /// In en, this message translates to:
+  /// **'Rise & Fall'**
+  String get fieldbookReductionRiseFall;
 
   /// No description provided for @fieldbookRestoreBackupError.
   ///
@@ -1712,11 +1820,11 @@ abstract class AppLocalizations {
   /// **'e.g. 100.000'**
   String get fieldbookStartElevationHint;
 
-  /// No description provided for @fieldbookStartElevationLabel.
+  /// New level book: start RL input. unit: m or ft.
   ///
   /// In en, this message translates to:
-  /// **'Start RL (m) *'**
-  String get fieldbookStartElevationLabel;
+  /// **'Start RL ({unit}) *'**
+  String fieldbookStartElevationLabel(String unit);
 
   /// No description provided for @fieldbookStartRlLabel.
   ///
@@ -1796,11 +1904,29 @@ abstract class AppLocalizations {
   /// **'No closing RL'**
   String get fieldbookSummaryNoClosing;
 
+  /// Caption under Diff: ΣRise − ΣFall, must equal Diff (short; ~100 px).
+  ///
+  /// In en, this message translates to:
+  /// **'R − F {value}'**
+  String fieldbookSummaryRiseMinusFall(String value);
+
   /// No description provided for @fieldbookSummaryStart.
   ///
   /// In en, this message translates to:
   /// **'Start RL'**
   String get fieldbookSummaryStart;
+
+  /// Caption under ΣFS for rise-and-fall books.
+  ///
+  /// In en, this message translates to:
+  /// **'ΣFall {value}'**
+  String fieldbookSummarySumFall(String value);
+
+  /// Caption under ΣBS for rise-and-fall books (3 decimals by caller).
+  ///
+  /// In en, this message translates to:
+  /// **'ΣRise {value}'**
+  String fieldbookSummarySumRise(String value);
 
   /// No description provided for @fieldbookSurveyorLabel.
   ///
@@ -2738,11 +2864,11 @@ abstract class AppLocalizations {
   /// **'Settings'**
   String get settingsTitle;
 
-  /// Input label, c·√n rule.
+  /// Input label, c·√n rule. unit: mm or ft.
   ///
   /// In en, this message translates to:
-  /// **'c (mm)'**
-  String get settingsToleranceCoefficientLabel;
+  /// **'c ({unit})'**
+  String settingsToleranceCoefficientLabel(String unit);
 
   /// Helper for the fixed rule.
   ///
@@ -2750,23 +2876,23 @@ abstract class AppLocalizations {
   /// **'Allowed |misclosure| for every level book.'**
   String get settingsToleranceFixedHelper;
 
-  /// Input label, fixed rule.
+  /// Input label, fixed rule. unit: mm or ft.
   ///
   /// In en, this message translates to:
-  /// **'Allowance (mm)'**
-  String get settingsToleranceFixedLabel;
+  /// **'Allowance ({unit})'**
+  String settingsToleranceFixedLabel(String unit);
 
-  /// Tile subtitle for the fixed rule.
+  /// Tile subtitle for the fixed rule. unit: mm (metres) or ft (feet).
   ///
   /// In en, this message translates to:
-  /// **'Fixed ±{mm} mm'**
-  String settingsToleranceFixedSummary(String mm);
+  /// **'Fixed ±{value} {unit}'**
+  String settingsToleranceFixedSummary(String value, String unit);
 
   /// Validation error.
   ///
   /// In en, this message translates to:
-  /// **'Enter {min}–{max} mm.'**
-  String settingsToleranceInvalid(String min, String max);
+  /// **'Enter {min}–{max} {unit}.'**
+  String settingsToleranceInvalid(String min, String max, String unit);
 
   /// Segment: fixed allowance.
   ///
@@ -2789,20 +2915,44 @@ abstract class AppLocalizations {
   /// Helper for the c·√n rule.
   ///
   /// In en, this message translates to:
-  /// **'Allowed = c × √n mm, n = instrument setups (BS rows).'**
-  String get settingsToleranceSqrtHelper;
+  /// **'Allowed = c × √n {unit}, n = instrument setups (BS rows).'**
+  String settingsToleranceSqrtHelper(String unit);
 
   /// Tile subtitle for the c·√n rule.
   ///
   /// In en, this message translates to:
-  /// **'{mm} mm × √n (n = setups)'**
-  String settingsToleranceSqrtSummary(String mm);
+  /// **'{value} {unit} × √n (n = setups)'**
+  String settingsToleranceSqrtSummary(String value, String unit);
 
   /// Settings tile and dialog title.
   ///
   /// In en, this message translates to:
   /// **'Misclosure tolerance'**
   String get settingsToleranceTitle;
+
+  /// Length unit option.
+  ///
+  /// In en, this message translates to:
+  /// **'Feet (ft)'**
+  String get settingsUnitFeet;
+
+  /// Length unit option.
+  ///
+  /// In en, this message translates to:
+  /// **'Metres (m)'**
+  String get settingsUnitMetres;
+
+  /// One-line note under the unit choice.
+  ///
+  /// In en, this message translates to:
+  /// **'Only labels change; existing numbers are not converted.'**
+  String get settingsUnitNote;
+
+  /// Settings tile/dialog title: length unit of readings.
+  ///
+  /// In en, this message translates to:
+  /// **'Units'**
+  String get settingsUnitTitle;
 }
 
 class _AppLocalizationsDelegate

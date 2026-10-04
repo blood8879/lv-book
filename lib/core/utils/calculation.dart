@@ -92,4 +92,35 @@ class LevelRun {
     }
     return results;
   }
+
+  /// Rise (+) / fall (−) of each row for the rise-and-fall presentation;
+  /// null where the row has no reduced foresight (rows before and including
+  /// the first BS, BS-only rows, empty rows).
+  ///
+  /// difference = previous reading − this row's FS, where the previous
+  /// reading is the last staff reading on the same instrument setup: the BS
+  /// of the setup (first BS or a turning point's BS) or the preceding IS/FS.
+  /// Follows [compute]: the result equals the change in RL from the previous
+  /// reduced row, so ΣRise − ΣFall = ΣBS − ΣFS = Final RL − Start RL.
+  static List<double?> riseFall(List<LevelRunInput> rows) {
+    final results = <double?>[];
+    double? previous;
+    for (final row in rows) {
+      final bs = row.bs;
+      final fs = row.fs;
+      if (previous == null) {
+        // Before the first setup: a BS starts it, anything else is ignored
+        // (an FS on the first BS row is ignored by [compute] as well).
+        if (bs != null) previous = bs;
+        results.add(null);
+      } else if (fs == null) {
+        results.add(null);
+      } else {
+        results.add(previous - fs);
+        // A turning point's BS starts the next setup.
+        previous = bs ?? fs;
+      }
+    }
+    return results;
+  }
 }

@@ -1,5 +1,6 @@
 import '../../benchmark/domain/benchmark.dart';
 import 'fieldbook.dart';
+import 'reduction.dart';
 
 class FieldBookQuickStartSuggestion {
   final String? surveyor;
@@ -11,6 +12,9 @@ class FieldBookQuickStartSuggestion {
   final BenchMark? startBm;
   final double? startElevation;
 
+  /// Method of the latest book, so a crew that books rise and fall keeps it.
+  final ReductionMethod reductionMethod;
+
   const FieldBookQuickStartSuggestion({
     this.surveyor,
     this.checker,
@@ -20,6 +24,7 @@ class FieldBookQuickStartSuggestion {
     this.jobNumber,
     this.startBm,
     this.startElevation,
+    this.reductionMethod = ReductionMethod.heightOfInstrument,
   });
 
   bool get useCustomBm => startBm == null;
@@ -52,6 +57,7 @@ class FieldBookQuickStart {
       jobNumber: _blankToNull(latest.jobNumber),
       startBm: startBm?.isSelectableForFieldBook == true ? startBm : null,
       startElevation: latest.startElevation,
+      reductionMethod: latest.reductionMethod,
     );
   }
 

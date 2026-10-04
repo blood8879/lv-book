@@ -119,8 +119,8 @@ void main() {
     test('fixed default is 1 mm and the boundary is inclusive', () {
       const tolerance = MisclosureTolerance.defaults;
       expect(tolerance.mode, MisclosureToleranceMode.fixed);
-      expect(tolerance.allowedMeters(1), 0.001);
-      expect(tolerance.allowedMeters(99), 0.001);
+      expect(tolerance.allowed(1), 0.001);
+      expect(tolerance.allowed(99), 0.001);
       // 100.301 − 100.300 is 0.00099999… or 0.0010000…1 in binary.
       expect(tolerance.isWithin(100.301 - 100.300, setups: 2), isTrue);
       expect(tolerance.isWithin(-(100.301 - 100.300), setups: 2), isTrue);
@@ -130,8 +130,8 @@ void main() {
 
     test('c·√n uses the number of instrument setups', () {
       const tolerance = MisclosureTolerance.sqrtSetups(5);
-      expect(tolerance.allowedMeters(4), closeTo(0.010, 1e-12));
-      expect(tolerance.allowedMeters(0), closeTo(0.005, 1e-12));
+      expect(tolerance.allowed(4), closeTo(0.010, 1e-12));
+      expect(tolerance.allowed(0), closeTo(0.005, 1e-12));
       expect(tolerance.isWithin(0.010, setups: 4), isTrue);
       expect(tolerance.isWithin(-0.010, setups: 4), isTrue);
       expect(tolerance.isWithin(0.0101, setups: 4), isFalse);

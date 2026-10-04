@@ -23,6 +23,8 @@ import '../../export/bulk_export_screen.dart';
 import '../../import/csv_importer.dart';
 import '../../project/data/project_providers.dart';
 import 'fieldbook_edit_screen.dart';
+import 'reduction_method_selector.dart';
+import '../../settings/misclosure_tolerance_repository.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../l10n/l10n.dart';
 
@@ -231,6 +233,8 @@ class FieldBookListScreen extends ConsumerWidget {
         quickStart.startBm ?? (benchmarks.isNotEmpty ? benchmarks.first : null);
     bool useCustomBm = benchmarks.isEmpty; // default to custom if no BMs exist
     if (quickStart.startBm != null) useCustomBm = false;
+    var reductionMethod = quickStart.reductionMethod;
+    final unit = ref.read(lengthUnitProvider).symbol;
 
     showModalBottomSheet<void>(
       context: context,
@@ -298,7 +302,7 @@ class FieldBookListScreen extends ConsumerWidget {
                             return DropdownMenuItem(
                               value: bm,
                               child: Text(
-                                '${bm.name} (${bm.elevation.toStringAsFixed(3)}m)',
+                                '${bm.name} (${bm.elevation.toStringAsFixed(3)}$unit)',
                               ),
                             );
                           }).toList(),
@@ -341,7 +345,7 @@ class FieldBookListScreen extends ConsumerWidget {
                     TextField(
                       controller: elevationController,
                       decoration: InputDecoration(
-                        labelText: l10n.fieldbookStartElevationLabel,
+                        labelText: l10n.fieldbookStartElevationLabel(unit),
                         hintText: l10n.fieldbookStartElevationHint,
                       ),
                       keyboardType: const TextInputType.numberWithOptions(
@@ -349,6 +353,12 @@ class FieldBookListScreen extends ConsumerWidget {
                       ),
                     ),
                   ],
+                  const SizedBox(height: 12),
+                  ReductionMethodSelector(
+                    value: reductionMethod,
+                    onChanged: (value) =>
+                        setState(() => reductionMethod = value),
+                  ),
                   const SizedBox(height: 4),
                   ExpansionTile(
                     tilePadding: EdgeInsets.zero,
@@ -431,6 +441,7 @@ class FieldBookListScreen extends ConsumerWidget {
                               date: DateTime.now(),
                               startBmId: bmId,
                               startElevation: elevation,
+                              reductionMethod: reductionMethod,
                               surveyor: _blankToNull(surveyorController.text),
                               checker: _blankToNull(checkerController.text),
                               instrument: _blankToNull(
@@ -626,6 +637,7 @@ class FieldBookListScreen extends ConsumerWidget {
                         projectId: projectId,
                         fallbackDate: DateTime.now(),
                         l10n: l10n,
+                        appUnit: ref.read(lengthUnitProvider),
                       );
                       if (result.fieldBook == null) {
                         AppSnackbar.error(context, result.errors.join('\n'));

@@ -73,7 +73,7 @@
   "fieldbookStartBmLabel": "시작 BM",
   "fieldbookBmNameLabel": "BM 이름 (선택)",
   "fieldbookBmNameHint": "예: BM.1",
-  "fieldbookStartElevationLabel": "시작 표고 (m) *",
+  "fieldbookStartElevationLabel": "시작 표고 ({unit}) *",
   "fieldbookStartElevationHint": "예: 100.000",
   "fieldbookSiteDetailsTitle": "현장 메타데이터",
   "fieldbookSiteDetailsSummary": "측량자·장비·날씨 등 6항목",
@@ -136,7 +136,17 @@
   "fieldbookClosingManual": "표고 직접 입력",
   "fieldbookClosingBmLabel": "폐합 BM",
   "fieldbookClosingNoBm": "이 현장에 사용할 수 있는 BM이 없습니다.",
-  "fieldbookClosingElevationLabel": "폐합 표고 (m)",
+  "fieldbookClosingElevationLabel": "폐합 표고 ({unit})",
   "fieldbookClosingInvalid": "올바른 표고를 입력하세요.",
-  "fieldbookClosingApply": "적용"
+  "fieldbookClosingApply": "적용",
+  "fieldbookReductionMethodLabel": "기입 방식",
+  "fieldbookReductionHi": "기고식",
+  "fieldbookReductionRiseFall": "승강식",
+  "fieldbookReductionHelp": "승강식은 관측마다 승(+)/강(−)을 표시하고 Σ승 − Σ강 검산을 추가합니다. 지반고는 같습니다.",
+  "fieldbookColumnRiseFall": "승강",
+  "fieldbookCheckRiseFall": "승강 검산",
+  "fieldbookIssueRiseFallMismatch": "승강 검산(Σ승 − Σ강)이 ΣBS − ΣFS와 맞지 않습니다. 관측값을 확인하세요.",
+  "fieldbookSummarySumRise": "Σ승 {value}",
+  "fieldbookSummarySumFall": "Σ강 {value}",
+  "fieldbookSummaryRiseMinusFall": "승−강 {value}"
 }

@@ -57,6 +57,17 @@ class FieldBookRepository {
     );
   }
 
+  /// Persists only the reduction method (HI / rise and fall).
+  Future<int> updateReductionMethod(FieldBook fieldBook) async {
+    final db = await _dbHelper.database;
+    return await db.update(
+      'field_books',
+      {'reduction_method': fieldBook.reductionMethod.name},
+      where: 'id = ?',
+      whereArgs: [fieldBook.id],
+    );
+  }
+
   Future<int> delete(int id) async {
     final db = await _dbHelper.database;
     return await db.transaction((txn) async {

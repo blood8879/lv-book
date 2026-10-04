@@ -84,14 +84,18 @@ class AppLocalizationsKo extends AppLocalizations {
   String get benchmarkElevationHint => '예: 100.000';
 
   @override
-  String get benchmarkElevationInvalidError => '표고를 숫자(m)로 입력하세요';
+  String benchmarkElevationInvalidError(String unit) {
+    return '표고를 숫자($unit)로 입력하세요';
+  }
 
   @override
-  String get benchmarkElevationLabel => '표고 (m) *';
+  String benchmarkElevationLabel(String unit) {
+    return '표고 ($unit) *';
+  }
 
   @override
-  String benchmarkElevationLine(String elevation) {
-    return '표고 $elevation m';
+  String benchmarkElevationLine(String elevation, String unit) {
+    return '표고 $elevation $unit';
   }
 
   @override
@@ -358,10 +362,19 @@ class AppLocalizationsKo extends AppLocalizations {
   String get exportCheckResult => '검산 판정';
 
   @override
+  String get exportCheckRiseFallDifference => 'Σ승 − Σ강';
+
+  @override
   String get exportCheckRlDifference => '최종 - 시작';
 
   @override
   String get exportCheckStartRl => '시작 GH';
+
+  @override
+  String get exportCheckSumFall => 'Σ강';
+
+  @override
+  String get exportCheckSumRise => 'Σ승';
 
   @override
   String get exportCheckTitle => '검산';
@@ -383,16 +396,25 @@ class AppLocalizationsKo extends AppLocalizations {
   String get exportColumnBs => '후시(BS)';
 
   @override
+  String get exportColumnFall => '강(−)';
+
+  @override
   String get exportColumnFs => '전시(FS)';
 
   @override
   String get exportColumnHi => '기계고(IH)';
 
   @override
+  String get exportColumnIs => '중간점(IS)';
+
+  @override
   String get exportColumnNo => 'No.';
 
   @override
   String get exportColumnRemarks => '비고';
+
+  @override
+  String get exportColumnRise => '승(+)';
 
   @override
   String get exportColumnRl => '지반고(GH)';
@@ -447,6 +469,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get exportFieldMemo => '메모';
 
   @override
+  String get exportFieldReductionMethod => '기입 방식';
+
+  @override
   String get exportFieldReviewDate => '검토일';
 
   @override
@@ -466,6 +491,9 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get exportFieldTitle => '야장명';
+
+  @override
+  String get exportFieldUnit => '단위';
 
   @override
   String get exportFieldWeather => '날씨';
@@ -489,6 +517,11 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String exportImportInvalidNumber(int row, String column) {
     return '$row행 $column 숫자 형식이 올바르지 않습니다.';
+  }
+
+  @override
+  String exportImportUnitMismatch(String fileUnit, String appUnit) {
+    return '파일 단위는 $fileUnit, 앱 단위는 $appUnit입니다. 값은 변환 없이 가져왔습니다.';
   }
 
   @override
@@ -537,6 +570,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String exportPdfError(String error) {
     return 'PDF 생성 실패: $error';
   }
+
+  @override
+  String get exportReductionHi => '기고식';
+
+  @override
+  String get exportReductionRiseFall => '승강식';
 
   @override
   String get exportReviewStatusDraft => '작성중';
@@ -608,6 +647,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get fieldbookCheckLastFs => '마지막 FS';
 
   @override
+  String get fieldbookCheckRiseFall => '승강 검산';
+
+  @override
   String get fieldbookCheckStationRows => '측점 행';
 
   @override
@@ -632,7 +674,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get fieldbookClosingBmLabel => '폐합 BM';
 
   @override
-  String get fieldbookClosingElevationLabel => '폐합 표고 (m)';
+  String fieldbookClosingElevationLabel(String unit) {
+    return '폐합 표고 ($unit)';
+  }
 
   @override
   String get fieldbookClosingInvalid => '올바른 표고를 입력하세요.';
@@ -681,6 +725,9 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get fieldbookColumnNo => 'NO';
+
+  @override
+  String get fieldbookColumnRiseFall => '승강';
 
   @override
   String get fieldbookColumnRl => 'GH';
@@ -789,6 +836,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get fieldbookIssueNoStationRows => '측점 행이 필요합니다.';
 
   @override
+  String get fieldbookIssueRiseFallMismatch =>
+      '승강 검산(Σ승 − Σ강)이 ΣBS − ΣFS와 맞지 않습니다. 관측값을 확인하세요.';
+
+  @override
   String get fieldbookIssueTpIncomplete => 'TP 행에는 후시(BS)와 전시(FS)가 모두 필요합니다.';
 
   @override
@@ -807,6 +858,19 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get fieldbookNoSearchResults => '검색 결과가 없습니다';
+
+  @override
+  String get fieldbookReductionHelp =>
+      '승강식은 관측마다 승(+)/강(−)을 표시하고 Σ승 − Σ강 검산을 추가합니다. 지반고는 같습니다.';
+
+  @override
+  String get fieldbookReductionHi => '기고식';
+
+  @override
+  String get fieldbookReductionMethodLabel => '기입 방식';
+
+  @override
+  String get fieldbookReductionRiseFall => '승강식';
 
   @override
   String fieldbookRestoreBackupError(String error) {
@@ -905,7 +969,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get fieldbookStartElevationHint => '예: 100.000';
 
   @override
-  String get fieldbookStartElevationLabel => '시작 표고 (m) *';
+  String fieldbookStartElevationLabel(String unit) {
+    return '시작 표고 ($unit) *';
+  }
 
   @override
   String get fieldbookStartRlLabel => '시작 표고';
@@ -951,7 +1017,22 @@ class AppLocalizationsKo extends AppLocalizations {
   String get fieldbookSummaryNoClosing => '폐합 기준 없음';
 
   @override
+  String fieldbookSummaryRiseMinusFall(String value) {
+    return '승−강 $value';
+  }
+
+  @override
   String get fieldbookSummaryStart => '시작';
+
+  @override
+  String fieldbookSummarySumFall(String value) {
+    return 'Σ강 $value';
+  }
+
+  @override
+  String fieldbookSummarySumRise(String value) {
+    return 'Σ승 $value';
+  }
 
   @override
   String get fieldbookSurveyorLabel => '측량자';
@@ -1476,22 +1557,26 @@ class AppLocalizationsKo extends AppLocalizations {
   String get settingsTitle => '설정';
 
   @override
-  String get settingsToleranceCoefficientLabel => '계수 c (mm)';
+  String settingsToleranceCoefficientLabel(String unit) {
+    return '계수 c ($unit)';
+  }
 
   @override
   String get settingsToleranceFixedHelper => '모든 야장에 같은 허용값을 적용합니다.';
 
   @override
-  String get settingsToleranceFixedLabel => '허용값 (mm)';
-
-  @override
-  String settingsToleranceFixedSummary(String mm) {
-    return '고정 ±$mm mm';
+  String settingsToleranceFixedLabel(String unit) {
+    return '허용값 ($unit)';
   }
 
   @override
-  String settingsToleranceInvalid(String min, String max) {
-    return '$min–$max mm 사이로 입력하세요.';
+  String settingsToleranceFixedSummary(String value, String unit) {
+    return '고정 ±$value $unit';
+  }
+
+  @override
+  String settingsToleranceInvalid(String min, String max, String unit) {
+    return '$min–$max $unit 사이로 입력하세요.';
   }
 
   @override
@@ -1504,14 +1589,27 @@ class AppLocalizationsKo extends AppLocalizations {
   String get settingsToleranceNote => '초과해도 경고만 표시되며 내보내기는 가능합니다.';
 
   @override
-  String get settingsToleranceSqrtHelper =>
-      '허용 = c × √n mm, n = 기계 설치 횟수(BS 행 수)';
+  String settingsToleranceSqrtHelper(String unit) {
+    return '허용 = c × √n $unit, n = 기계 설치 횟수(BS 행 수)';
+  }
 
   @override
-  String settingsToleranceSqrtSummary(String mm) {
-    return '$mm mm × √n (n = 기계 설치 횟수)';
+  String settingsToleranceSqrtSummary(String value, String unit) {
+    return '$value $unit × √n (n = 기계 설치 횟수)';
   }
 
   @override
   String get settingsToleranceTitle => '폐합 허용오차';
+
+  @override
+  String get settingsUnitFeet => '피트 (ft)';
+
+  @override
+  String get settingsUnitMetres => '미터 (m)';
+
+  @override
+  String get settingsUnitNote => '표시 단위만 바뀌며 기존 값은 변환되지 않습니다.';
+
+  @override
+  String get settingsUnitTitle => '단위';
 }

@@ -93,7 +93,9 @@ void main() {
       expect(csv, contains('Job no.,J-2026-01'));
       expect(csv, contains('Review status,Reviewed'));
       expect(csv, contains('BM elevation,100.000'));
-      expect(csv, contains('No.,Station,BS,FS,HI,RL,Remarks'));
+      expect(csv, contains('No.,Station,BS,IS,FS,HI,RL,Remarks'));
+      expect(csv, contains('Reduction method,Height of instrument'));
+      expect(csv, contains('Unit,m'));
       expect(csv, contains('Difference,'));
       expect(csv, contains('Misclosure,'));
       expect(csv, contains('Result,'));

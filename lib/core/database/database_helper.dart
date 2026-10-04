@@ -91,6 +91,7 @@ class DatabaseHelper {
         closing_mode TEXT NOT NULL DEFAULT 'none',
         closing_bm_id INTEGER,
         closing_elevation REAL,
+        reduction_method TEXT NOT NULL DEFAULT 'heightOfInstrument',
         memo TEXT,
         surveyor TEXT,
         checker TEXT,
@@ -187,6 +188,24 @@ class DatabaseHelper {
     }
     if (oldVersion < 9) {
       await _addClosingReference(db);
+    }
+    if (oldVersion < 10) {
+      await _addReductionMethod(db);
+    }
+  }
+
+  /// v10: per field book reduction method (HI / rise and fall). Existing
+  /// books keep the HI presentation. Idempotent like [_addClosingReference].
+  Future<void> _addReductionMethod(Database db) async {
+    final columns = {
+      for (final row in await db.rawQuery('PRAGMA table_info(field_books)'))
+        row['name'] as String,
+    };
+    if (!columns.contains('reduction_method')) {
+      await db.execute(
+        "ALTER TABLE field_books ADD COLUMN reduction_method TEXT NOT NULL "
+        "DEFAULT 'heightOfInstrument'",
+      );
     }
   }
 

@@ -61,13 +61,32 @@
   "benchmarkDescriptionLabel": "Description (optional)",
   "benchmarkEditDialogTitle": "Edit BM",
   "benchmarkElevationHint": "e.g. 100.000",
-  "benchmarkElevationInvalidError": "Enter the elevation as a number (m)",
-  "benchmarkElevationLabel": "Elevation (m) *",
-  "benchmarkElevationLine": "Elevation {elevation} m",
+  "benchmarkElevationInvalidError": "Enter the elevation as a number ({unit})",
+  "@benchmarkElevationInvalidError": {
+    "description": "BM form error. unit: m or ft.",
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "benchmarkElevationLabel": "Elevation ({unit}) *",
+  "@benchmarkElevationLabel": {
+    "description": "BM form label. unit: m or ft.",
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "benchmarkElevationLine": "Elevation {elevation} {unit}",
   "@benchmarkElevationLine": {
-    "description": "elevation formatted with 3 decimals by the caller.",
+    "description": "BM list line. unit: m or ft.",
     "placeholders": {
       "elevation": {
+        "type": "String"
+      },
+      "unit": {
         "type": "String"
       }
     }
@@ -298,6 +317,10 @@
   "@exportCheckResult": {
     "description": "Arithmetic check judgement label. Never 'Pass/Fail'."
   },
+  "exportCheckRiseFallDifference": "ΣRise − ΣFall",
+  "@exportCheckRiseFallDifference": {
+    "description": "Check box: ΣRise − ΣFall (equals ΣBS − ΣFS and Final − Start)."
+  },
   "exportCheckRlDifference": "Final - Start",
   "@exportCheckRlDifference": {
     "description": "Arithmetic check: Final RL − Start RL (equals ΣBS − ΣFS)."
@@ -305,6 +328,14 @@
   "exportCheckStartRl": "Start RL",
   "@exportCheckStartRl": {
     "description": "Arithmetic check: first reduced level."
+  },
+  "exportCheckSumFall": "ΣFall",
+  "@exportCheckSumFall": {
+    "description": "Check box: sum of falls."
+  },
+  "exportCheckSumRise": "ΣRise",
+  "@exportCheckSumRise": {
+    "description": "Check box: sum of rises."
   },
   "exportCheckTitle": "Arithmetic check",
   "@exportCheckTitle": {
@@ -339,6 +370,10 @@
   "@exportColumnBs": {
     "description": "Measurement table column: backsight."
   },
+  "exportColumnFall": "Fall",
+  "@exportColumnFall": {
+    "description": "Table column of a rise-and-fall book."
+  },
   "exportColumnFs": "FS",
   "@exportColumnFs": {
     "description": "Measurement table column: foresight."
@@ -347,6 +382,10 @@
   "@exportColumnHi": {
     "description": "Measurement table column: height of instrument."
   },
+  "exportColumnIs": "IS",
+  "@exportColumnIs": {
+    "description": "Table column: intermediate sight reading (English exports only)."
+  },
   "exportColumnNo": "No.",
   "@exportColumnNo": {
     "description": "Measurement table column: row number."
@@ -354,6 +393,10 @@
   "exportColumnRemarks": "Remarks",
   "@exportColumnRemarks": {
     "description": "Measurement table column: remarks (TP marker)."
+  },
+  "exportColumnRise": "Rise",
+  "@exportColumnRise": {
+    "description": "Table column of a rise-and-fall book."
   },
   "exportColumnRl": "RL",
   "@exportColumnRl": {
@@ -428,6 +471,10 @@
   "@exportFieldMemo": {
     "description": "Exported document field: level book memo."
   },
+  "exportFieldReductionMethod": "Reduction method",
+  "@exportFieldReductionMethod": {
+    "description": "Header/CSV metadata label: HI or rise and fall. CsvImporter accepts both languages."
+  },
   "exportFieldReviewDate": "Review date",
   "@exportFieldReviewDate": {
     "description": "Exported document field."
@@ -455,6 +502,10 @@
   "exportFieldTitle": "Level book",
   "@exportFieldTitle": {
     "description": "Exported document field: level book title."
+  },
+  "exportFieldUnit": "Unit",
+  "@exportFieldUnit": {
+    "description": "Header/CSV metadata label for the length unit (m / ft)."
   },
   "exportFieldWeather": "Weather",
   "@exportFieldWeather": {
@@ -497,6 +548,18 @@
         "type": "int"
       },
       "column": {
+        "type": "String"
+      }
+    }
+  },
+  "exportImportUnitMismatch": "The file is in {fileUnit} but the app is set to {appUnit}. Numbers were imported unchanged.",
+  "@exportImportUnitMismatch": {
+    "description": "CSV import warning when the file unit differs from the app unit.",
+    "placeholders": {
+      "fileUnit": {
+        "type": "String"
+      },
+      "appUnit": {
         "type": "String"
       }
     }
@@ -582,6 +645,14 @@
       }
     }
   },
+  "exportReductionHi": "Height of instrument",
+  "@exportReductionHi": {
+    "description": "Reduction method value in PDF/CSV."
+  },
+  "exportReductionRiseFall": "Rise and fall",
+  "@exportReductionRiseFall": {
+    "description": "Reduction method value in PDF/CSV."
+  },
   "exportReviewStatusDraft": "Draft",
   "@exportReviewStatusDraft": {
     "description": "Review status in exported documents."
@@ -642,6 +713,10 @@
   "fieldbookCheckEmptyRows": "Empty rows",
   "fieldbookCheckFirstBs": "First BS",
   "fieldbookCheckLastFs": "Last FS",
+  "fieldbookCheckRiseFall": "Rise/Fall check",
+  "@fieldbookCheckRiseFall": {
+    "description": "Validation chip: ΣRise − ΣFall = ΣBS − ΣFS = Final RL − Start RL."
+  },
   "fieldbookCheckStationRows": "Station rows",
   "fieldbookCheckTolerance": "Tolerance",
   "fieldbookCheckTpComplete": "TP complete",
@@ -656,9 +731,14 @@
   "@fieldbookClosingBmLabel": {
     "description": "Dropdown label."
   },
-  "fieldbookClosingElevationLabel": "Closing RL (m)",
+  "fieldbookClosingElevationLabel": "Closing RL ({unit})",
   "@fieldbookClosingElevationLabel": {
-    "description": "Manual closing RL input label."
+    "description": "Manual closing RL input label. unit: m or ft.",
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
   },
   "fieldbookClosingInvalid": "Enter a valid RL.",
   "@fieldbookClosingInvalid": {
@@ -722,6 +802,10 @@
   },
   "fieldbookColumnHi": "HI",
   "fieldbookColumnNo": "Stn",
+  "fieldbookColumnRiseFall": "Rise/Fall",
+  "@fieldbookColumnRiseFall": {
+    "description": "Editor table header of the signed rise(+)/fall(−) column; must fit ~68 px."
+  },
   "fieldbookColumnRl": "RL",
   "fieldbookContinueButton": "Continue",
   "fieldbookCopyName": "{name} copy",
@@ -799,6 +883,10 @@
   "fieldbookIssueFirstBsMissing": "The first row needs a backsight (BS).",
   "fieldbookIssueLastFsMissing": "The last row needs a foresight (FS).",
   "fieldbookIssueNoStationRows": "Add at least one station row.",
+  "fieldbookIssueRiseFallMismatch": "ΣRise − ΣFall does not match ΣBS − ΣFS. Check the readings.",
+  "@fieldbookIssueRiseFallMismatch": {
+    "description": "Validation warning for rise-and-fall books."
+  },
   "fieldbookIssueTpIncomplete": "TP rows need both BS and FS.",
   "fieldbookJobNumberLabel": "Job no.",
   "fieldbookMisclosureCheckResult": "Misclosure: {result}",
@@ -813,6 +901,22 @@
   "fieldbookNewTitle": "New level book",
   "fieldbookNoDataToExport": "No data to export",
   "fieldbookNoSearchResults": "No results",
+  "fieldbookReductionHelp": "Rise & Fall shows the rise/fall of each reading and adds the ΣRise − ΣFall check. RLs are the same.",
+  "@fieldbookReductionHelp": {
+    "description": "Helper under the reduction method selector."
+  },
+  "fieldbookReductionHi": "HI",
+  "@fieldbookReductionHi": {
+    "description": "Reduction method: height of instrument (short, segmented button)."
+  },
+  "fieldbookReductionMethodLabel": "Reduction method",
+  "@fieldbookReductionMethodLabel": {
+    "description": "Label for the HI / Rise & Fall selector."
+  },
+  "fieldbookReductionRiseFall": "Rise & Fall",
+  "@fieldbookReductionRiseFall": {
+    "description": "Reduction method: rise and fall (short, segmented button)."
+  },
   "fieldbookRestoreBackupError": "Couldn't restore backup: {error}",
   "@fieldbookRestoreBackupError": {
     "placeholders": {
@@ -864,7 +968,15 @@
   "fieldbookSiteDetailsTitle": "Site details",
   "fieldbookStartBmLabel": "Start BM",
   "fieldbookStartElevationHint": "e.g. 100.000",
-  "fieldbookStartElevationLabel": "Start RL (m) *",
+  "fieldbookStartElevationLabel": "Start RL ({unit}) *",
+  "@fieldbookStartElevationLabel": {
+    "description": "New level book: start RL input. unit: m or ft.",
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
   "fieldbookStartRlLabel": "Start RL",
   "fieldbookStationHelper": "Leave blank to show the row number ({row})",
   "@fieldbookStationHelper": {
@@ -899,7 +1011,34 @@
   "@fieldbookSummaryNoClosing": {
     "description": "Caption under the arithmetic check cell: the closing misclosure is not available."
   },
+  "fieldbookSummaryRiseMinusFall": "R − F {value}",
+  "@fieldbookSummaryRiseMinusFall": {
+    "description": "Caption under Diff: ΣRise − ΣFall, must equal Diff (short; ~100 px).",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
   "fieldbookSummaryStart": "Start RL",
+  "fieldbookSummarySumFall": "ΣFall {value}",
+  "@fieldbookSummarySumFall": {
+    "description": "Caption under ΣFS for rise-and-fall books.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "fieldbookSummarySumRise": "ΣRise {value}",
+  "@fieldbookSummarySumRise": {
+    "description": "Caption under ΣBS for rise-and-fall books (3 decimals by caller).",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
   "fieldbookSurveyorLabel": "Surveyor",
   "fieldbookSurveyorSubtitle": "Surveyor {name}",
   "@fieldbookSurveyorSubtitle": {
@@ -1304,28 +1443,41 @@
   "settingsRestorePurchaseSubtitle": "Restore the Pro purchase you already made.",
   "settingsRestorePurchaseTitle": "Restore purchase",
   "settingsTitle": "Settings",
-  "settingsToleranceCoefficientLabel": "c (mm)",
+  "settingsToleranceCoefficientLabel": "c ({unit})",
   "@settingsToleranceCoefficientLabel": {
-    "description": "Input label, c·√n rule."
+    "description": "Input label, c·√n rule. unit: mm or ft.",
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
   },
   "settingsToleranceFixedHelper": "Allowed |misclosure| for every level book.",
   "@settingsToleranceFixedHelper": {
     "description": "Helper for the fixed rule."
   },
-  "settingsToleranceFixedLabel": "Allowance (mm)",
+  "settingsToleranceFixedLabel": "Allowance ({unit})",
   "@settingsToleranceFixedLabel": {
-    "description": "Input label, fixed rule."
-  },
-  "settingsToleranceFixedSummary": "Fixed ±{mm} mm",
-  "@settingsToleranceFixedSummary": {
-    "description": "Tile subtitle for the fixed rule.",
+    "description": "Input label, fixed rule. unit: mm or ft.",
     "placeholders": {
-      "mm": {
+      "unit": {
         "type": "String"
       }
     }
   },
-  "settingsToleranceInvalid": "Enter {min}–{max} mm.",
+  "settingsToleranceFixedSummary": "Fixed ±{value} {unit}",
+  "@settingsToleranceFixedSummary": {
+    "description": "Tile subtitle for the fixed rule. unit: mm (metres) or ft (feet).",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsToleranceInvalid": "Enter {min}–{max} {unit}.",
   "@settingsToleranceInvalid": {
     "description": "Validation error.",
     "placeholders": {
@@ -1333,6 +1485,9 @@
         "type": "String"
       },
       "max": {
+        "type": "String"
+      },
+      "unit": {
         "type": "String"
       }
     }
@@ -1349,15 +1504,23 @@
   "@settingsToleranceNote": {
     "description": "Dialog note."
   },
-  "settingsToleranceSqrtHelper": "Allowed = c × √n mm, n = instrument setups (BS rows).",
+  "settingsToleranceSqrtHelper": "Allowed = c × √n {unit}, n = instrument setups (BS rows).",
   "@settingsToleranceSqrtHelper": {
-    "description": "Helper for the c·√n rule."
+    "description": "Helper for the c·√n rule.",
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
   },
-  "settingsToleranceSqrtSummary": "{mm} mm × √n (n = setups)",
+  "settingsToleranceSqrtSummary": "{value} {unit} × √n (n = setups)",
   "@settingsToleranceSqrtSummary": {
     "description": "Tile subtitle for the c·√n rule.",
     "placeholders": {
-      "mm": {
+      "value": {
+        "type": "String"
+      },
+      "unit": {
         "type": "String"
       }
     }
@@ -1365,5 +1528,21 @@
   "settingsToleranceTitle": "Misclosure tolerance",
   "@settingsToleranceTitle": {
     "description": "Settings tile and dialog title."
+  },
+  "settingsUnitFeet": "Feet (ft)",
+  "@settingsUnitFeet": {
+    "description": "Length unit option."
+  },
+  "settingsUnitMetres": "Metres (m)",
+  "@settingsUnitMetres": {
+    "description": "Length unit option."
+  },
+  "settingsUnitNote": "Only labels change; existing numbers are not converted.",
+  "@settingsUnitNote": {
+    "description": "One-line note under the unit choice."
+  },
+  "settingsUnitTitle": "Units",
+  "@settingsUnitTitle": {
+    "description": "Settings tile/dialog title: length unit of readings."
   }
 }

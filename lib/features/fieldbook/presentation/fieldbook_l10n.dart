@@ -1,6 +1,7 @@
 import '../../../l10n/l10n.dart';
 import '../domain/fieldbook.dart';
 import '../domain/measurement_validation.dart';
+import '../domain/reduction.dart';
 
 /// Maps field book domain codes to text in the app language. Also used by
 /// exports (pass the same [AppLocalizations] the document is rendered in).
@@ -22,6 +23,7 @@ extension MeasurementCheckL10n on MeasurementCheck {
     MeasurementCheck.emptyRows => l10n.fieldbookCheckEmptyRows,
     MeasurementCheck.arithmetic => l10n.fieldbookCheckArithmetic,
     MeasurementCheck.tolerance => l10n.fieldbookCheckTolerance,
+    MeasurementCheck.riseFall => l10n.fieldbookCheckRiseFall,
   };
 }
 
@@ -35,6 +37,7 @@ extension MeasurementIssueL10n on MeasurementIssue {
     MeasurementIssue.exceedsTolerance => l10n.fieldbookIssueExceedsTolerance,
     MeasurementIssue.arithmeticMismatch =>
       l10n.fieldbookIssueArithmeticMismatch,
+    MeasurementIssue.riseFallMismatch => l10n.fieldbookIssueRiseFallMismatch,
   };
 }
 
@@ -47,4 +50,12 @@ extension MeasurementValidationResultL10n on MeasurementValidationResult {
   List<String> localizedMessages(AppLocalizations l10n) => [
     for (final issue in issues) issue.localizedMessage(l10n),
   ];
+}
+
+extension ReductionMethodL10n on ReductionMethod {
+  /// Short label for selectors ('HI' / 'Rise & Fall'; '기고식' / '승강식').
+  String localizedLabel(AppLocalizations l10n) => switch (this) {
+    ReductionMethod.heightOfInstrument => l10n.fieldbookReductionHi,
+    ReductionMethod.riseAndFall => l10n.fieldbookReductionRiseFall,
+  };
 }

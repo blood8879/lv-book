@@ -129,6 +129,8 @@ class SettingsScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
           _SectionHeader(title: l10n.settingsCheckSection),
+          const _LengthUnitTile(),
+          const SizedBox(height: 8),
           const _MisclosureToleranceTile(),
           const SizedBox(height: 8),
           _SectionHeader(title: l10n.adsPolicySection),
@@ -347,12 +349,133 @@ String misclosureToleranceSummary(
   MisclosureTolerance tolerance,
 ) => switch (tolerance.mode) {
   MisclosureToleranceMode.fixed => l10n.settingsToleranceFixedSummary(
-    formatToleranceMm(tolerance.fixedMm),
+    formatToleranceValue(tolerance.fixedEntry),
+    tolerance.unit.toleranceSymbol,
   ),
   MisclosureToleranceMode.sqrtSetups => l10n.settingsToleranceSqrtSummary(
-    formatToleranceMm(tolerance.coefficientMm),
+    formatToleranceValue(tolerance.coefficientEntry),
+    tolerance.unit.toleranceSymbol,
   ),
 };
+
+/// 'Metres (m)' / 'Feet (ft)'.
+String lengthUnitName(AppLocalizations l10n, LengthUnit unit) => switch (unit) {
+  LengthUnit.metres => l10n.settingsUnitMetres,
+  LengthUnit.feet => l10n.settingsUnitFeet,
+};
+
+Future<void> _saveTolerance(
+  BuildContext context,
+  WidgetRef ref,
+  MisclosureTolerance updated,
+) async {
+  final l10n = context.l10n;
+  try {
+    await ref.read(misclosureToleranceRepositoryProvider).save(updated);
+    ref.invalidate(misclosureToleranceProvider);
+    if (context.mounted) AppSnackbar.success(context, l10n.coreSaved);
+  } catch (error) {
+    if (context.mounted) {
+      AppSnackbar.error(context, l10n.coreErrorWithDetail('$error'));
+    }
+  }
+}
+
+/// App length unit (labels only; numbers are never converted).
+class _LengthUnitTile extends ConsumerWidget {
+  const _LengthUnitTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final colors = context.appColors;
+    final l10n = context.l10n;
+    final tolerance =
+        ref.watch(misclosureToleranceProvider).valueOrNull ??
+        MisclosureTolerance.defaults;
+    return ListTile(
+      key: const ValueKey('length-unit-tile'),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: colors.line),
+      ),
+      tileColor: colors.panel,
+      leading: const Icon(Icons.square_foot),
+      title: Text(l10n.settingsUnitTitle),
+      subtitle: Text(lengthUnitName(l10n, tolerance.unit)),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: () async {
+        final unit = await showDialog<LengthUnit>(
+          context: context,
+          builder: (_) => LengthUnitDialog(initial: tolerance.unit),
+        );
+        if (unit == null || unit == tolerance.unit || !context.mounted) return;
+        await _saveTolerance(context, ref, tolerance.copyWith(unit: unit));
+      },
+    );
+  }
+}
+
+/// Metres / Feet choice with the "not converted" note; pops the unit.
+class LengthUnitDialog extends StatefulWidget {
+  final LengthUnit initial;
+
+  const LengthUnitDialog({super.key, required this.initial});
+
+  @override
+  State<LengthUnitDialog> createState() => _LengthUnitDialogState();
+}
+
+class _LengthUnitDialogState extends State<LengthUnitDialog> {
+  late LengthUnit _unit = widget.initial;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final colors = context.appColors;
+    return AlertDialog(
+      title: Text(l10n.settingsUnitTitle),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            RadioGroup<LengthUnit>(
+              groupValue: _unit,
+              onChanged: (value) {
+                if (value != null) setState(() => _unit = value);
+              },
+              child: Column(
+                children: [
+                  for (final unit in LengthUnit.values)
+                    RadioListTile<LengthUnit>(
+                      value: unit,
+                      title: Text(lengthUnitName(l10n, unit)),
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              l10n.settingsUnitNote,
+              style: TextStyle(fontSize: 12.5, color: colors.subtext),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(l10n.coreCancel),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(context, _unit),
+          child: Text(l10n.coreSave),
+        ),
+      ],
+    );
+  }
+}
 
 class _MisclosureToleranceTile extends ConsumerWidget {
   const _MisclosureToleranceTile();
@@ -379,22 +502,17 @@ class _MisclosureToleranceTile extends ConsumerWidget {
           context: context,
           builder: (_) => MisclosureToleranceDialog(initial: tolerance),
         );
-        if (updated == null || updated == tolerance) return;
-        try {
-          await ref.read(misclosureToleranceRepositoryProvider).save(updated);
-          ref.invalidate(misclosureToleranceProvider);
-          if (context.mounted) AppSnackbar.success(context, l10n.coreSaved);
-        } catch (error) {
-          if (context.mounted) {
-            AppSnackbar.error(context, l10n.coreErrorWithDetail('$error'));
-          }
+        if (updated == null || updated == tolerance || !context.mounted) {
+          return;
         }
+        await _saveTolerance(context, ref, updated);
       },
     );
   }
 }
 
-/// Edits the misclosure tolerance rule; pops the new rule (or null).
+/// Edits the misclosure tolerance rule in the entry unit of
+/// `initial.unit` (mm for metres, ft for feet); pops the new rule (or null).
 class MisclosureToleranceDialog extends StatefulWidget {
   final MisclosureTolerance initial;
 
@@ -408,12 +526,14 @@ class MisclosureToleranceDialog extends StatefulWidget {
 class _MisclosureToleranceDialogState extends State<MisclosureToleranceDialog> {
   late MisclosureToleranceMode _mode = widget.initial.mode;
   late final _fixedController = TextEditingController(
-    text: formatToleranceMm(widget.initial.fixedMm),
+    text: formatToleranceValue(widget.initial.fixedEntry),
   );
   late final _coefficientController = TextEditingController(
-    text: formatToleranceMm(widget.initial.coefficientMm),
+    text: formatToleranceValue(widget.initial.coefficientEntry),
   );
   bool _showErrors = false;
+
+  LengthUnit get _unit => widget.initial.unit;
 
   @override
   void dispose() {
@@ -428,23 +548,12 @@ class _MisclosureToleranceDialogState extends State<MisclosureToleranceDialog> {
       : _coefficientController;
 
   void _submit() {
-    final value = MisclosureTolerance.parseMm(_activeController.text);
+    final value = MisclosureTolerance.parseEntry(_activeController.text, _unit);
     if (value == null) {
       setState(() => _showErrors = true);
       return;
     }
-    Navigator.pop(
-      context,
-      MisclosureTolerance(
-        mode: _mode,
-        fixedMm: _mode == MisclosureToleranceMode.fixed
-            ? value
-            : widget.initial.fixedMm,
-        coefficientMm: _mode == MisclosureToleranceMode.sqrtSetups
-            ? value
-            : widget.initial.coefficientMm,
-      ),
-    );
+    Navigator.pop(context, widget.initial.withEntry(_mode, value));
   }
 
   @override
@@ -452,9 +561,10 @@ class _MisclosureToleranceDialogState extends State<MisclosureToleranceDialog> {
     final l10n = context.l10n;
     final colors = context.appColors;
     final isFixed = _mode == MisclosureToleranceMode.fixed;
+    final symbol = _unit.toleranceSymbol;
     final invalid =
         _showErrors &&
-        MisclosureTolerance.parseMm(_activeController.text) == null;
+        MisclosureTolerance.parseEntry(_activeController.text, _unit) == null;
     return AlertDialog(
       title: Text(l10n.settingsToleranceTitle),
       content: SingleChildScrollView(
@@ -490,16 +600,21 @@ class _MisclosureToleranceDialogState extends State<MisclosureToleranceDialog> {
               ),
               decoration: InputDecoration(
                 labelText: isFixed
-                    ? l10n.settingsToleranceFixedLabel
-                    : l10n.settingsToleranceCoefficientLabel,
+                    ? l10n.settingsToleranceFixedLabel(symbol)
+                    : l10n.settingsToleranceCoefficientLabel(symbol),
                 helperText: isFixed
                     ? l10n.settingsToleranceFixedHelper
-                    : l10n.settingsToleranceSqrtHelper,
+                    : l10n.settingsToleranceSqrtHelper(symbol),
                 helperMaxLines: 3,
                 errorText: invalid
                     ? l10n.settingsToleranceInvalid(
-                        formatToleranceMm(MisclosureTolerance.minMm),
-                        formatToleranceMm(MisclosureTolerance.maxMm),
+                        formatToleranceValue(
+                          MisclosureTolerance.minEntry(_unit),
+                        ),
+                        formatToleranceValue(
+                          MisclosureTolerance.maxEntry(_unit),
+                        ),
+                        symbol,
                       )
                     : null,
               ),

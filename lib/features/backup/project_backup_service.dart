@@ -610,6 +610,8 @@ class ProjectBackupService {
       closingMode: fieldBook.closingMode,
       closingBmId: closingBmId,
       closingElevation: fieldBook.closingElevation,
+      // Older backups have no reduction method: restored as HI.
+      reductionMethod: fieldBook.reductionMethod,
       memo: fieldBook.memo,
       surveyor: fieldBook.surveyor,
       checker: fieldBook.checker,

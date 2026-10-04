@@ -199,6 +199,11 @@ converted screen when cheap.
 | 지반고 GH | **RL** (reduced level) | `지반고(GH)` → "RL" |
 | TP | **TP** (turning point) | |
 | 중간점 | **intermediate sight** (IS) | |
+| 기고식 (기입 방식) | **HI** (height of instrument) | reduction method, default |
+| 승강식 | **Rise & Fall** (exports: "Rise and fall") | reduction method |
+| 승(+) / 강(−) | **Rise** / **Fall** | editor column "Rise/Fall" (signed) |
+| 기입 방식 | **Reduction method** | |
+| 단위 | **Unit(s)** | Metres (m) / Feet (ft) |
 | 측점 / 측점명 | **station** / "Station" | |
 | 시작 표고 | **Start RL** | |
 | 최종 (표고) | **Final RL** | |
@@ -226,8 +231,13 @@ Rules:
   (Korean rule bans 불합격). Exceeding tolerance is a **warning**: wording like
   "Check required", "Exceeds tolerance — check the readings".
 - Pro is a **one-time purchase**. Never "subscription", "subscribe", "per month".
-- Units: meters, `m`. Same decimals as Korean: 3 (misclosure 4). No locale
-  number formatting (no thousands separators, always `.` decimal).
+- Units: app setting Metres / Feet (`LengthUnit`); never hardcode `m` —
+  take `unit.symbol` ('m' / 'ft') as a `{unit}` placeholder. Readings are
+  never converted. Tolerance is entered in mm (metres) or ft (feet). Same
+  decimals as Korean: 3 (misclosure 4). No locale number formatting (no
+  thousands separators, always `.` decimal).
+- English PDF/CSV print intermediate sights in an IS column (BS | IS | FS);
+  Korean exports keep the original layout. `CsvImporter` accepts both.
 - Dates: data and exports keep `yyyy-MM-dd`; UI may stay ISO.
 - Sentence case for buttons/titles ("Save level book", not "Save Level Book"),
   except proper names (Lv Book, Pro, BM, TBM).

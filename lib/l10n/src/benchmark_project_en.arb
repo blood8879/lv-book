@@ -180,15 +180,8 @@
   },
   "benchmarkEmptyTitle": "Add a BM (benchmark)",
   "benchmarkEmptyMessage": "Add a BM/TBM as your elevation reference with the + button,\nthen load it as the start RL when writing a level book.",
-  "benchmarkElevationLine": "Elevation {elevation} m",
-  "@benchmarkElevationLine": {
-    "description": "elevation formatted with 3 decimals by the caller.",
-    "placeholders": {
-      "elevation": {
-        "type": "String"
-      }
-    }
-  },
+  "benchmarkElevationLine": "Elevation {elevation} {unit}",
+  "@benchmarkElevationLine": {"description": "BM list line. unit: m or ft.", "placeholders": {"elevation": {"type": "String"}, "unit": {"type": "String"}}},
   "benchmarkKindLine": "Type: {kind}",
   "@benchmarkKindLine": {
     "description": "kind is BM or TBM.",
@@ -218,7 +211,8 @@
   "benchmarkEditDialogTitle": "Edit BM",
   "benchmarkNameLabel": "BM name *",
   "benchmarkNameHint": "e.g. BM.1",
-  "benchmarkElevationLabel": "Elevation (m) *",
+  "benchmarkElevationLabel": "Elevation ({unit}) *",
+  "@benchmarkElevationLabel": {"description": "BM form label. unit: m or ft.", "placeholders": {"unit": {"type": "String"}}},
   "benchmarkElevationHint": "e.g. 100.000",
   "benchmarkDescriptionLabel": "Description (optional)",
   "benchmarkLocationHintLabel": "Location hint",
@@ -226,7 +220,8 @@
   "benchmarkStatusLabel": "Status",
   "benchmarkKindLabel": "Type",
   "benchmarkNameRequiredError": "Enter a BM name",
-  "benchmarkElevationInvalidError": "Enter the elevation as a number (m)",
+  "benchmarkElevationInvalidError": "Enter the elevation as a number ({unit})",
+  "@benchmarkElevationInvalidError": {"description": "BM form error. unit: m or ft.", "placeholders": {"unit": {"type": "String"}}},
   "benchmarkDeleteDialogTitle": "Delete BM",
   "benchmarkDeleteConfirm": "Delete \"{name}\" (elevation: {elevation})?",
   "@benchmarkDeleteConfirm": {

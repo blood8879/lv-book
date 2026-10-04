@@ -15,6 +15,7 @@ import '../../ads/ad_manager.dart';
 import '../../ads/ad_providers.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../l10n/l10n.dart';
+import '../../settings/misclosure_tolerance_repository.dart';
 
 class BenchmarkListScreen extends ConsumerWidget {
   final int projectId;
@@ -161,7 +162,10 @@ class BenchmarkListScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              l10n.benchmarkElevationLine(bm.elevation.toStringAsFixed(3)),
+              l10n.benchmarkElevationLine(
+                bm.elevation.toStringAsFixed(3),
+                ref.watch(lengthUnitProvider).symbol,
+              ),
               style: TextStyle(
                 color: isStopped ? colors.err : null,
                 fontFeatures: AppTypography.tabularFeatures,
@@ -241,7 +245,9 @@ class BenchmarkListScreen extends ConsumerWidget {
                 TextField(
                   controller: elevationController,
                   decoration: InputDecoration(
-                    labelText: l10n.benchmarkElevationLabel,
+                    labelText: l10n.benchmarkElevationLabel(
+                      ref.read(lengthUnitProvider).symbol,
+                    ),
                     hintText: l10n.benchmarkElevationHint,
                     errorText: elevationError,
                   ),
@@ -331,7 +337,9 @@ class BenchmarkListScreen extends ConsumerWidget {
                       ? l10n.benchmarkNameRequiredError
                       : null;
                   elevationError = elevation == null
-                      ? l10n.benchmarkElevationInvalidError
+                      ? l10n.benchmarkElevationInvalidError(
+                          ref.read(lengthUnitProvider).symbol,
+                        )
                       : null;
                 });
                 if (name.isNotEmpty && elevation != null) {
@@ -403,7 +411,9 @@ class BenchmarkListScreen extends ConsumerWidget {
                 TextField(
                   controller: elevationController,
                   decoration: InputDecoration(
-                    labelText: l10n.benchmarkElevationLabel,
+                    labelText: l10n.benchmarkElevationLabel(
+                      ref.read(lengthUnitProvider).symbol,
+                    ),
                     errorText: elevationError,
                   ),
                   keyboardType: const TextInputType.numberWithOptions(
@@ -492,7 +502,9 @@ class BenchmarkListScreen extends ConsumerWidget {
                       ? l10n.benchmarkNameRequiredError
                       : null;
                   elevationError = elevation == null
-                      ? l10n.benchmarkElevationInvalidError
+                      ? l10n.benchmarkElevationInvalidError(
+                          ref.read(lengthUnitProvider).symbol,
+                        )
                       : null;
                 });
                 if (name.isNotEmpty && elevation != null) {

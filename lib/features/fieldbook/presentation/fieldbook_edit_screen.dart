@@ -8,6 +8,7 @@ import '../domain/fieldbook.dart';
 import '../domain/measurement.dart';
 import '../domain/measurement_validation.dart';
 import '../domain/misclosure.dart';
+import '../domain/reduction.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_snackbar.dart';
 import '../../../core/widgets/semantic_pill.dart';
@@ -21,6 +22,7 @@ import '../../quickmemo/presentation/quick_memo_fab.dart';
 import '../../../core/utils/calculation.dart';
 import '../../../l10n/l10n.dart';
 import 'fieldbook_l10n.dart';
+import 'reduction_method_selector.dart';
 
 /// Display text for a BS/FS reading: 3 decimals (e.g. 1.94 → '1.940'), but
 /// never rounds away entered precision (1.2345 stays '1.2345').
@@ -44,6 +46,9 @@ class _RowData {
   String fsText;
   double? ih;
   double? gh;
+
+  /// Rise (+) / fall (−) for rise-and-fall books (see [LevelRun.riseFall]).
+  double? riseFall;
   bool isTP;
   bool manualTp;
   int? dbId;
@@ -114,6 +119,9 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
   int? _closingBmId;
   double? _closingElevation;
   String? _closingBmName;
+
+  /// HI / rise and fall (persisted on change, see [_applyReductionMethod]).
+  late ReductionMethod _reductionMethod;
   final int _initialRowCount = 20;
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _reviewMemoController = TextEditingController();
@@ -206,6 +214,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
     _closingMode = widget.fieldBook.closingMode;
     _closingBmId = widget.fieldBook.closingBmId;
     _closingElevation = widget.fieldBook.closingElevation;
+    _reductionMethod = widget.fieldBook.reductionMethod;
     _loadData();
   }
 
@@ -287,16 +296,19 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
   }
 
   void _recalculate() {
-    final results = LevelRun.compute(_startElevation, [
+    final inputs = [
       for (final row in _rows)
         LevelRunInput(bs: row.bs, fs: row.fs, manualTp: row.manualTp),
-    ]);
+    ];
+    final results = LevelRun.compute(_startElevation, inputs);
+    final riseFall = LevelRun.riseFall(inputs);
     for (int i = 0; i < _rows.length; i++) {
       final row = _rows[i];
       final result = results[i];
       row.isTP = result.isTP;
       row.ih = result.ih;
       row.gh = result.gh;
+      row.riseFall = riseFall[i];
     }
     setState(() {});
   }
@@ -428,6 +440,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
       closingMode: _closingMode,
       closingBmId: _closingBmId,
       closingElevation: _closingElevation,
+      reductionMethod: _reductionMethod,
       memo: widget.fieldBook.memo,
       surveyor: widget.fieldBook.surveyor,
       checker: widget.fieldBook.checker,
@@ -609,6 +622,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
         startElevation: _startElevation,
         closingElevation: _closingRl,
         tolerance: tolerance,
+        method: _reductionMethod,
       );
 
   @override
@@ -753,7 +767,10 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
             ),
           ),
           const SizedBox(width: 4),
-          Text('m', style: TextStyle(fontSize: 14, color: onDarkMuted)),
+          Text(
+            _tolerance.unit.symbol,
+            style: TextStyle(fontSize: 14, color: onDarkMuted),
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: _buildClosingButton(
@@ -852,6 +869,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
         initialBmId: _closingBmId,
         initialElevation: _closingElevation,
         benchmarks: benchmarks,
+        unit: _tolerance.unit,
       ),
     );
     if (result == null || !mounted) return;
@@ -880,6 +898,24 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
     }
   }
 
+  Future<void> _applyReductionMethod(ReductionMethod method) async {
+    if (method == _reductionMethod) return;
+    final l10n = context.l10n;
+    setState(() => _reductionMethod = method);
+    try {
+      await _container
+          .read(fieldBookRepositoryProvider)
+          .updateReductionMethod(_fieldBookWithReviewMetadata());
+      _container.invalidate(fieldBookListProvider(widget.projectId));
+    } catch (error) {
+      if (mounted) {
+        AppSnackbar.error(context, l10n.coreErrorWithDetail('$error'));
+      }
+    }
+  }
+
+  bool get _isRiseFall => _reductionMethod == ReductionMethod.riseAndFall;
+
   Widget _buildReviewPanel() {
     final reviewedAt = _reviewedAt;
     final colors = context.appColors;
@@ -895,74 +931,107 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
           l10n.fieldbookReviewPanelTitle,
           style: Theme.of(context).textTheme.titleSmall,
         ),
-        trailing: Text(
-          [
-            _reviewStatus.localizedLabel(l10n),
-            if (reviewedAt != null)
-              l10n.fieldbookReviewedOn(_formatDate(reviewedAt)),
-          ].join(' · '),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(fontSize: 13, color: colors.subtext),
+        // Capped so a long summary (large text, rise and fall) never
+        // squeezes the title into a narrow column.
+        trailing: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.sizeOf(context).width * 0.5,
+          ),
+          child: Text(
+            [
+              if (_isRiseFall) _reductionMethod.localizedLabel(l10n),
+              _reviewStatus.localizedLabel(l10n),
+              if (reviewedAt != null)
+                l10n.fieldbookReviewedOn(_formatDate(reviewedAt)),
+            ].join(' · '),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.end,
+            style: TextStyle(fontSize: 13, color: colors.subtext),
+          ),
         ),
         children: [
-          DropdownButtonFormField<FieldBookReviewStatus>(
-            initialValue: _reviewStatus,
-            decoration: InputDecoration(
-              labelText: l10n.fieldbookReviewStatusLabel,
+          // Capped and scrollable so the open panel never pushes the table
+          // and the summary off a small screen.
+          ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.sizeOf(context).height * 0.3,
             ),
-            items: [
-              for (final status in FieldBookReviewStatus.values)
-                DropdownMenuItem(
-                  value: status,
-                  child: Text(status.localizedLabel(l10n)),
-                ),
-            ],
-            onChanged: (value) {
-              if (value == null) return;
-              setState(() => _reviewStatus = value);
-            },
-          ),
-          const SizedBox(height: 8),
-          TextField(
-            controller: _reviewMemoController,
-            decoration: InputDecoration(
-              labelText: l10n.fieldbookReviewMemoLabel,
-              hintText: l10n.fieldbookReviewMemoHint,
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: _reviewPanelFields(reviewedAt),
+              ),
             ),
-            minLines: 1,
-            maxLines: 3,
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () {
-                    final now = DateTime.now();
-                    setState(() {
-                      _reviewedAt = DateTime(now.year, now.month, now.day);
-                    });
-                  },
-                  icon: const Icon(Icons.today_outlined),
-                  label: Text(
-                    reviewedAt == null
-                        ? l10n.fieldbookReviewTodayButton
-                        : l10n.fieldbookReviewedOn(_formatDate(reviewedAt)),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              FilledButton.icon(
-                onPressed: _saveReviewMetadata,
-                icon: const Icon(Icons.save_outlined),
-                label: Text(l10n.fieldbookReviewSaveButton),
-              ),
-            ],
           ),
         ],
       ),
     );
+  }
+
+  List<Widget> _reviewPanelFields(DateTime? reviewedAt) {
+    final l10n = context.l10n;
+    return [
+      DropdownButtonFormField<FieldBookReviewStatus>(
+        initialValue: _reviewStatus,
+        decoration: InputDecoration(labelText: l10n.fieldbookReviewStatusLabel),
+        items: [
+          for (final status in FieldBookReviewStatus.values)
+            DropdownMenuItem(
+              value: status,
+              child: Text(status.localizedLabel(l10n)),
+            ),
+        ],
+        onChanged: (value) {
+          if (value == null) return;
+          setState(() => _reviewStatus = value);
+        },
+      ),
+      const SizedBox(height: 8),
+      TextField(
+        controller: _reviewMemoController,
+        decoration: InputDecoration(
+          labelText: l10n.fieldbookReviewMemoLabel,
+          hintText: l10n.fieldbookReviewMemoHint,
+        ),
+        minLines: 1,
+        maxLines: 3,
+      ),
+      const SizedBox(height: 8),
+      Row(
+        children: [
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: () {
+                final now = DateTime.now();
+                setState(() {
+                  _reviewedAt = DateTime(now.year, now.month, now.day);
+                });
+              },
+              icon: const Icon(Icons.today_outlined),
+              label: Text(
+                reviewedAt == null
+                    ? l10n.fieldbookReviewTodayButton
+                    : l10n.fieldbookReviewedOn(_formatDate(reviewedAt)),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          FilledButton.icon(
+            onPressed: _saveReviewMetadata,
+            icon: const Icon(Icons.save_outlined),
+            label: Text(l10n.fieldbookReviewSaveButton),
+          ),
+        ],
+      ),
+      // Set once per book; changing it only changes the presentation.
+      const SizedBox(height: 12),
+      ReductionMethodSelector(
+        value: _reductionMethod,
+        onChanged: _applyReductionMethod,
+        showHelp: true,
+      ),
+    ];
   }
 
   Widget _buildTableHeader() {
@@ -978,7 +1047,10 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
           _headerCell(l10n.fieldbookColumnNo, flex: _flexNo),
           _headerCell('BS', flex: _flexValue),
           _headerCell('FS', flex: _flexValue),
-          _headerCell(l10n.fieldbookColumnHi, flex: _flexValue),
+          _headerCell(
+            _isRiseFall ? l10n.fieldbookColumnRiseFall : l10n.fieldbookColumnHi,
+            flex: _flexValue,
+          ),
           _headerCell(l10n.fieldbookColumnRl, flex: _flexValue),
           _headerCell('', flex: _flexAction), // TP/비고
         ],
@@ -993,13 +1065,19 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
       child: Container(
         height: 40,
         alignment: Alignment.center,
-        child: Text(
-          text,
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-            fontSize: 12.5,
-            color: colors.subtext,
-            letterSpacing: 0.2,
+        padding: const EdgeInsets.symmetric(horizontal: 2),
+        // Scales down instead of overflowing with large text settings.
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            text,
+            maxLines: 1,
+            style: TextStyle(
+              fontWeight: FontWeight.w700,
+              fontSize: 12.5,
+              color: colors.subtext,
+              letterSpacing: 0.2,
+            ),
           ),
         ),
       ),
@@ -1072,7 +1150,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
             Expanded(flex: _flexValue, child: _editableCell(index, 'bs')),
             // FS
             Expanded(flex: _flexValue, child: _editableCell(index, 'fs')),
-            // IH (read-only) — column-wide blue tint
+            // IH or rise(+)/fall(−) (read-only) — column-wide blue tint
             Expanded(
               flex: _flexValue,
               child: Container(
@@ -1082,14 +1160,28 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
                   alignment: Alignment.centerRight,
-                  child: Text(
-                    row.ih?.toStringAsFixed(3) ?? '',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: colors.blue,
-                      fontFeatures: AppTypography.tabularFeatures,
-                    ),
-                  ),
+                  child: _isRiseFall
+                      ? Text(
+                          row.riseFall == null
+                              ? ''
+                              : formatRiseFall(row.riseFall!),
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: (row.riseFall ?? 0) > 0
+                                ? colors.green
+                                : colors.blue,
+                            fontFeatures: AppTypography.tabularFeatures,
+                          ),
+                        )
+                      : Text(
+                          row.ih?.toStringAsFixed(3) ?? '',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: colors.blue,
+                            fontFeatures: AppTypography.tabularFeatures,
+                          ),
+                        ),
                 ),
               ),
             ),
@@ -1207,6 +1299,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
       startElevation: _startElevation,
       closingElevation: _closingRl,
       tolerance: tolerance,
+      method: _reductionMethod,
     );
     final sums = closure.sums;
     final hasData = _rows.any((row) => row.gh != null);
@@ -1214,6 +1307,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
     final l10n = context.l10n;
     Color judged(bool ok) => hasData && ok ? colors.green : colors.err;
     final misclosure = closure.misclosure;
+    final riseFall = _isRiseFall ? closure.riseFall : null;
 
     // The dark panel runs to the screen edge; keep its text clear of the
     // home indicator / gesture bar.
@@ -1224,13 +1318,42 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
       color: colors.darkSurface,
       child: Column(
         children: [
+          // Rise and fall: ΣRise / ΣFall / ΣRise − ΣFall as captions, so
+          // the three-way check (ΣBS − ΣFS = ΣRise − ΣFall = Final − Start)
+          // reads down the Diff column without taking another line.
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _summaryItem('ΣBS', sums.sumBs.toStringAsFixed(3)),
-              _summaryItem('ΣFS', sums.sumFs.toStringAsFixed(3)),
+              _summaryItem(
+                'ΣBS',
+                sums.sumBs.toStringAsFixed(3),
+                caption: riseFall == null
+                    ? null
+                    : l10n.fieldbookSummarySumRise(
+                        riseFall.sumRise.toStringAsFixed(3),
+                      ),
+              ),
+              _summaryItem(
+                'ΣFS',
+                sums.sumFs.toStringAsFixed(3),
+                caption: riseFall == null
+                    ? null
+                    : l10n.fieldbookSummarySumFall(
+                        riseFall.sumFall.toStringAsFixed(3),
+                      ),
+              ),
               _summaryItem(
                 l10n.fieldbookSummaryDiff,
                 sums.difference.toStringAsFixed(3),
+                caption: riseFall == null
+                    ? null
+                    : l10n.fieldbookSummaryRiseMinusFall(
+                        riseFall.difference.toStringAsFixed(3),
+                      ),
+                captionColor: riseFall == null
+                    ? null
+                    : judged(closure.riseFallOk),
+                captionKey: const ValueKey('rise-fall-summary'),
               ),
             ],
           ),
@@ -1326,19 +1449,28 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
             ],
           ),
           const SizedBox(height: 8),
-          Wrap(
-            spacing: 6,
-            runSpacing: 6,
-            children: [
-              for (final item in validation.checklist)
-                SemanticPill(
-                  label:
-                      '${item.passed ? '✓' : '!'} ${item.check.localizedLabel(l10n)}',
-                  variant: item.passed
-                      ? SemanticPillVariant.green
-                      : SemanticPillVariant.err,
-                ),
-            ],
+          // One scrollable line (items needing attention first), so more
+          // checks or large text never take rows away from the table.
+          SingleChildScrollView(
+            key: const ValueKey('validation-checklist'),
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                for (final item in [
+                  ...validation.checklist.where((item) => !item.passed),
+                  ...validation.checklist.where((item) => item.passed),
+                ]) ...[
+                  SemanticPill(
+                    label:
+                        '${item.passed ? '✓' : '!'} ${item.check.localizedLabel(l10n)}',
+                    variant: item.passed
+                        ? SemanticPillVariant.green
+                        : SemanticPillVariant.err,
+                  ),
+                  const SizedBox(width: 6),
+                ],
+              ],
+            ),
           ),
         ],
       ),
@@ -1393,6 +1525,8 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
     String value, {
     Color? valueColor,
     String? caption,
+    Color? captionColor,
+    Key? captionKey,
   }) {
     return Expanded(
       child: Column(
@@ -1420,12 +1554,14 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
           if (caption != null)
             Text(
               caption,
+              key: captionKey,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 10.5,
                 height: 1.1,
-                color: Colors.white.withValues(alpha: 0.55),
+                fontWeight: captionColor == null ? null : FontWeight.w700,
+                color: captionColor ?? Colors.white.withValues(alpha: 0.55),
                 fontFeatures: AppTypography.tabularFeatures,
               ),
             ),
@@ -1510,12 +1646,14 @@ class _ClosingReferenceSheet extends StatefulWidget {
   final int? initialBmId;
   final double? initialElevation;
   final List<BenchMark> benchmarks;
+  final LengthUnit unit;
 
   const _ClosingReferenceSheet({
     required this.initialMode,
     required this.initialBmId,
     required this.initialElevation,
     required this.benchmarks,
+    required this.unit,
   });
 
   @override
@@ -1651,7 +1789,7 @@ class _ClosingReferenceSheetState extends State<_ClosingReferenceSheet> {
                           DropdownMenuItem(
                             value: bm,
                             child: Text(
-                              '${bm.name} (${bm.elevation.toStringAsFixed(3)}m)',
+                              '${bm.name} (${bm.elevation.toStringAsFixed(3)}${widget.unit.symbol})',
                             ),
                           ),
                       ],
@@ -1666,7 +1804,9 @@ class _ClosingReferenceSheetState extends State<_ClosingReferenceSheet> {
                   signed: true,
                 ),
                 decoration: InputDecoration(
-                  labelText: l10n.fieldbookClosingElevationLabel,
+                  labelText: l10n.fieldbookClosingElevationLabel(
+                    widget.unit.symbol,
+                  ),
                   errorText: _showError && _manualElevation == null
                       ? l10n.fieldbookClosingInvalid
                       : null,

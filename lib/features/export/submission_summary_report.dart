@@ -134,6 +134,7 @@ class SubmissionSummaryReport {
         input.startElevation,
       ),
       tolerance: tolerance,
+      method: input.fieldBook.reductionMethod,
     );
     return SubmissionSummaryRow(
       title: input.fieldBook.title,

@@ -86,15 +86,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get benchmarkElevationHint => 'e.g. 100.000';
 
   @override
-  String get benchmarkElevationInvalidError =>
-      'Enter the elevation as a number (m)';
+  String benchmarkElevationInvalidError(String unit) {
+    return 'Enter the elevation as a number ($unit)';
+  }
 
   @override
-  String get benchmarkElevationLabel => 'Elevation (m) *';
+  String benchmarkElevationLabel(String unit) {
+    return 'Elevation ($unit) *';
+  }
 
   @override
-  String benchmarkElevationLine(String elevation) {
-    return 'Elevation $elevation m';
+  String benchmarkElevationLine(String elevation, String unit) {
+    return 'Elevation $elevation $unit';
   }
 
   @override
@@ -391,10 +394,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exportCheckResult => 'Result';
 
   @override
+  String get exportCheckRiseFallDifference => 'ΣRise − ΣFall';
+
+  @override
   String get exportCheckRlDifference => 'Final - Start';
 
   @override
   String get exportCheckStartRl => 'Start RL';
+
+  @override
+  String get exportCheckSumFall => 'ΣFall';
+
+  @override
+  String get exportCheckSumRise => 'ΣRise';
 
   @override
   String get exportCheckTitle => 'Arithmetic check';
@@ -416,16 +428,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exportColumnBs => 'BS';
 
   @override
+  String get exportColumnFall => 'Fall';
+
+  @override
   String get exportColumnFs => 'FS';
 
   @override
   String get exportColumnHi => 'HI';
 
   @override
+  String get exportColumnIs => 'IS';
+
+  @override
   String get exportColumnNo => 'No.';
 
   @override
   String get exportColumnRemarks => 'Remarks';
+
+  @override
+  String get exportColumnRise => 'Rise';
 
   @override
   String get exportColumnRl => 'RL';
@@ -480,6 +501,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exportFieldMemo => 'Memo';
 
   @override
+  String get exportFieldReductionMethod => 'Reduction method';
+
+  @override
   String get exportFieldReviewDate => 'Review date';
 
   @override
@@ -499,6 +523,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exportFieldTitle => 'Level book';
+
+  @override
+  String get exportFieldUnit => 'Unit';
 
   @override
   String get exportFieldWeather => 'Weather';
@@ -523,6 +550,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String exportImportInvalidNumber(int row, String column) {
     return 'Row $row: $column is not a valid number.';
+  }
+
+  @override
+  String exportImportUnitMismatch(String fileUnit, String appUnit) {
+    return 'The file is in $fileUnit but the app is set to $appUnit. Numbers were imported unchanged.';
   }
 
   @override
@@ -579,6 +611,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String exportPdfError(String error) {
     return 'Couldn\'t create the PDF: $error';
   }
+
+  @override
+  String get exportReductionHi => 'Height of instrument';
+
+  @override
+  String get exportReductionRiseFall => 'Rise and fall';
 
   @override
   String get exportReviewStatusDraft => 'Draft';
@@ -651,6 +689,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fieldbookCheckLastFs => 'Last FS';
 
   @override
+  String get fieldbookCheckRiseFall => 'Rise/Fall check';
+
+  @override
   String get fieldbookCheckStationRows => 'Station rows';
 
   @override
@@ -675,7 +716,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fieldbookClosingBmLabel => 'Closing BM';
 
   @override
-  String get fieldbookClosingElevationLabel => 'Closing RL (m)';
+  String fieldbookClosingElevationLabel(String unit) {
+    return 'Closing RL ($unit)';
+  }
 
   @override
   String get fieldbookClosingInvalid => 'Enter a valid RL.';
@@ -724,6 +767,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get fieldbookColumnNo => 'Stn';
+
+  @override
+  String get fieldbookColumnRiseFall => 'Rise/Fall';
 
   @override
   String get fieldbookColumnRl => 'RL';
@@ -836,6 +882,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fieldbookIssueNoStationRows => 'Add at least one station row.';
 
   @override
+  String get fieldbookIssueRiseFallMismatch =>
+      'ΣRise − ΣFall does not match ΣBS − ΣFS. Check the readings.';
+
+  @override
   String get fieldbookIssueTpIncomplete => 'TP rows need both BS and FS.';
 
   @override
@@ -854,6 +904,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get fieldbookNoSearchResults => 'No results';
+
+  @override
+  String get fieldbookReductionHelp =>
+      'Rise & Fall shows the rise/fall of each reading and adds the ΣRise − ΣFall check. RLs are the same.';
+
+  @override
+  String get fieldbookReductionHi => 'HI';
+
+  @override
+  String get fieldbookReductionMethodLabel => 'Reduction method';
+
+  @override
+  String get fieldbookReductionRiseFall => 'Rise & Fall';
 
   @override
   String fieldbookRestoreBackupError(String error) {
@@ -952,7 +1015,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fieldbookStartElevationHint => 'e.g. 100.000';
 
   @override
-  String get fieldbookStartElevationLabel => 'Start RL (m) *';
+  String fieldbookStartElevationLabel(String unit) {
+    return 'Start RL ($unit) *';
+  }
 
   @override
   String get fieldbookStartRlLabel => 'Start RL';
@@ -998,7 +1063,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fieldbookSummaryNoClosing => 'No closing RL';
 
   @override
+  String fieldbookSummaryRiseMinusFall(String value) {
+    return 'R − F $value';
+  }
+
+  @override
   String get fieldbookSummaryStart => 'Start RL';
+
+  @override
+  String fieldbookSummarySumFall(String value) {
+    return 'ΣFall $value';
+  }
+
+  @override
+  String fieldbookSummarySumRise(String value) {
+    return 'ΣRise $value';
+  }
 
   @override
   String get fieldbookSurveyorLabel => 'Surveyor';
@@ -1581,23 +1661,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsTitle => 'Settings';
 
   @override
-  String get settingsToleranceCoefficientLabel => 'c (mm)';
+  String settingsToleranceCoefficientLabel(String unit) {
+    return 'c ($unit)';
+  }
 
   @override
   String get settingsToleranceFixedHelper =>
       'Allowed |misclosure| for every level book.';
 
   @override
-  String get settingsToleranceFixedLabel => 'Allowance (mm)';
-
-  @override
-  String settingsToleranceFixedSummary(String mm) {
-    return 'Fixed ±$mm mm';
+  String settingsToleranceFixedLabel(String unit) {
+    return 'Allowance ($unit)';
   }
 
   @override
-  String settingsToleranceInvalid(String min, String max) {
-    return 'Enter $min–$max mm.';
+  String settingsToleranceFixedSummary(String value, String unit) {
+    return 'Fixed ±$value $unit';
+  }
+
+  @override
+  String settingsToleranceInvalid(String min, String max, String unit) {
+    return 'Enter $min–$max $unit.';
   }
 
   @override
@@ -1611,14 +1695,28 @@ class AppLocalizationsEn extends AppLocalizations {
       'Exceeding it is a warning; export is still allowed.';
 
   @override
-  String get settingsToleranceSqrtHelper =>
-      'Allowed = c × √n mm, n = instrument setups (BS rows).';
+  String settingsToleranceSqrtHelper(String unit) {
+    return 'Allowed = c × √n $unit, n = instrument setups (BS rows).';
+  }
 
   @override
-  String settingsToleranceSqrtSummary(String mm) {
-    return '$mm mm × √n (n = setups)';
+  String settingsToleranceSqrtSummary(String value, String unit) {
+    return '$value $unit × √n (n = setups)';
   }
 
   @override
   String get settingsToleranceTitle => 'Misclosure tolerance';
+
+  @override
+  String get settingsUnitFeet => 'Feet (ft)';
+
+  @override
+  String get settingsUnitMetres => 'Metres (m)';
+
+  @override
+  String get settingsUnitNote =>
+      'Only labels change; existing numbers are not converted.';
+
+  @override
+  String get settingsUnitTitle => 'Units';
 }

@@ -1,4 +1,5 @@
 import 'misclosure.dart';
+import 'reduction.dart';
 
 enum FieldBookReviewStatus { draft, reviewed, needsCheck }
 
@@ -49,6 +50,9 @@ class FieldBook {
   /// Known closing RL for [ClosingReferenceMode.benchmark] (snapshot of the
   /// BM elevation at selection time) and [ClosingReferenceMode.manual].
   final double? closingElevation;
+
+  /// HI (default) or rise and fall; presentation and checks only.
+  final ReductionMethod reductionMethod;
   final String? memo;
   final String? surveyor;
   final String? checker;
@@ -71,6 +75,7 @@ class FieldBook {
     this.closingMode = ClosingReferenceMode.none,
     this.closingBmId,
     this.closingElevation,
+    this.reductionMethod = ReductionMethod.heightOfInstrument,
     this.memo,
     this.surveyor,
     this.checker,
@@ -95,6 +100,7 @@ class FieldBook {
       'closing_mode': closingMode.name,
       'closing_bm_id': closingBmId,
       'closing_elevation': closingElevation,
+      'reduction_method': reductionMethod.name,
       'memo': memo,
       'surveyor': surveyor,
       'checker': checker,
@@ -121,6 +127,8 @@ class FieldBook {
       closingMode: ClosingReferenceMode.parse(map['closing_mode']),
       closingBmId: map['closing_bm_id'] as int?,
       closingElevation: (map['closing_elevation'] as num?)?.toDouble(),
+      // Absent in rows/backups written before rise and fall existed: HI.
+      reductionMethod: ReductionMethod.parse(map['reduction_method']),
       memo: map['memo'] as String?,
       surveyor: map['surveyor'] as String?,
       checker: map['checker'] as String?,
@@ -156,6 +164,7 @@ class FieldBook {
     ClosingReferenceMode? closingMode,
     Object? closingBmId = _unset,
     Object? closingElevation = _unset,
+    ReductionMethod? reductionMethod,
     String? memo,
     String? surveyor,
     String? checker,
@@ -182,6 +191,7 @@ class FieldBook {
       closingElevation: identical(closingElevation, _unset)
           ? this.closingElevation
           : closingElevation as double?,
+      reductionMethod: reductionMethod ?? this.reductionMethod,
       memo: memo ?? this.memo,
       surveyor: surveyor ?? this.surveyor,
       checker: checker ?? this.checker,

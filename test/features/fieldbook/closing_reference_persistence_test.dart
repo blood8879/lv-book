@@ -46,7 +46,7 @@ void main() {
   });
 
   test('v8 → v9 migration adds the closing columns and keeps data', () async {
-    expect(AppConstants.dbVersion, 9);
+    expect(AppConstants.dbVersion, greaterThanOrEqualTo(9));
     final dir = await Directory.systemTemp.createTemp('lvbook_v8');
     final path = '${dir.path}/v8.db';
     try {
@@ -127,7 +127,7 @@ void main() {
         options: helper.openDatabaseOptions(),
       );
       helper.setDatabaseForTesting(legacy);
-      expect(await legacy.getVersion(), 9);
+      expect(await legacy.getVersion(), AppConstants.dbVersion);
 
       final book = (await FieldBookRepository().getById(bookId))!;
       expect(book.title, 'Old book');
@@ -216,7 +216,7 @@ void main() {
       final loaded = await repo.load();
       expect(loaded.mode, MisclosureToleranceMode.sqrtSetups);
       expect(loaded.coefficientMm, 5);
-      expect(loaded.allowedMeters(4), closeTo(0.010, 1e-12));
+      expect(loaded.allowed(4), closeTo(0.010, 1e-12));
 
       await repo.save(
         const MisclosureTolerance(
@@ -225,7 +225,7 @@ void main() {
           coefficientMm: 5,
         ),
       );
-      expect((await repo.load()).allowedMeters(9), closeTo(0.0025, 1e-12));
+      expect((await repo.load()).allowed(9), closeTo(0.0025, 1e-12));
     });
 
     test('rejects invalid values and ignores corrupt stored ones', () async {

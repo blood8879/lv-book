@@ -1,9 +1,12 @@
 import 'package:csv/csv.dart';
+import 'package:flutter/widgets.dart' show Locale;
 
 import '../../l10n/l10n.dart';
+import '../export/export_labels.dart';
 import '../fieldbook/domain/fieldbook.dart';
 import '../fieldbook/domain/measurement.dart';
 import '../fieldbook/domain/misclosure.dart';
+import '../fieldbook/domain/reduction.dart';
 
 class CsvImportResult {
   final FieldBook? fieldBook;
@@ -35,6 +38,8 @@ enum _CsvField {
   startBm,
   closingBm,
   closingRl,
+  reductionMethod,
+  unit,
 }
 
 /// Imports CSV files exported by Lv Book in either language.
@@ -78,7 +83,89 @@ class CsvImporter {
     '폐합 표고': _CsvField.closingRl,
     'closing rl': _CsvField.closingRl,
     'closing elevation': _CsvField.closingRl,
+    '기입 방식': _CsvField.reductionMethod,
+    'reduction method': _CsvField.reductionMethod,
+    'reduction': _CsvField.reductionMethod,
+    'booking method': _CsvField.reductionMethod,
+    '단위': _CsvField.unit,
+    'unit': _CsvField.unit,
+    'units': _CsvField.unit,
   };
+
+  /// Reduction method values (lowercased) meaning rise and fall; anything
+  /// else (including '기고식' / 'Height of instrument') is HI.
+  static const _riseFallValues = {
+    'rise and fall',
+    'rise & fall',
+    'rise/fall',
+    'r&f',
+    'riseandfall',
+    '승강식',
+    '승강',
+  };
+
+  static const _unitValues = {
+    'm': LengthUnit.metres,
+    'metre': LengthUnit.metres,
+    'metres': LengthUnit.metres,
+    'meter': LengthUnit.metres,
+    'meters': LengthUnit.metres,
+    '미터': LengthUnit.metres,
+    'ft': LengthUnit.feet,
+    'foot': LengthUnit.feet,
+    'feet': LengthUnit.feet,
+    '피트': LengthUnit.feet,
+  };
+
+  /// Table header labels (lowercased) per column: every label either
+  /// language exports, plus common spellings. Files without recognisable
+  /// BS/FS headers use the legacy fixed layout ([_legacyColumns]).
+  static final Map<String, ExportColumn> _columnAliases = () {
+    final map = <String, ExportColumn>{
+      'backsight': ExportColumn.bs,
+      'backsight (bs)': ExportColumn.bs,
+      'foresight': ExportColumn.fs,
+      'foresight (fs)': ExportColumn.fs,
+      'intermediate sight': ExportColumn.intermediate,
+      'intermediate': ExportColumn.intermediate,
+      'is': ExportColumn.intermediate,
+      'ih': ExportColumn.hi,
+      'gh': ExportColumn.rl,
+      'reduced level': ExportColumn.rl,
+      'no': ExportColumn.no,
+    };
+    for (final strings in [l10nKo, l10nFor(const Locale('en'))]) {
+      for (final column in ExportColumn.values) {
+        map[_normalize(exportColumnHeader(strings, column))] = column;
+      }
+    }
+    return map;
+  }();
+
+  /// Column positions of files exported before the header was mapped:
+  /// No. / Station / BS / FS / HI / RL / Remarks.
+  static const _legacyColumns = {
+    ExportColumn.no: 0,
+    ExportColumn.station: 1,
+    ExportColumn.bs: 2,
+    ExportColumn.fs: 3,
+    ExportColumn.hi: 4,
+    ExportColumn.rl: 5,
+    ExportColumn.remarks: 6,
+  };
+
+  static Map<ExportColumn, int> _columnsOf(List<dynamic> header) {
+    final columns = <ExportColumn, int>{};
+    for (var i = 0; i < header.length; i++) {
+      final column = _columnAliases[_normalize(header[i])];
+      if (column != null) columns.putIfAbsent(column, () => i);
+    }
+    final mapped =
+        columns.containsKey(ExportColumn.bs) &&
+        columns.containsKey(ExportColumn.fs) &&
+        columns.containsKey(ExportColumn.station);
+    return mapped ? columns : _legacyColumns;
+  }
 
   /// Table header cells that mark the start of the measurement table.
   static const _rowNumberHeaders = {'no.', 'no'};
@@ -90,11 +177,14 @@ class CsvImporter {
   static String _normalize(Object? cell) =>
       cell.toString().replaceAll('\ufeff', '').trim().toLowerCase();
 
+  /// [appUnit] (the app's length unit) adds a warning when the file states
+  /// another unit; numbers are never converted.
   static CsvImportResult parse(
     String csv, {
     required int projectId,
     required DateTime fallbackDate,
     required AppLocalizations l10n,
+    LengthUnit? appUnit,
   }) {
     if (csv.contains('\uFFFD')) {
       return CsvImportResult(
@@ -118,6 +208,8 @@ class CsvImporter {
     var dateFound = false;
     double? startElevation;
     double? closingElevation;
+    ReductionMethod? reductionMethod;
+    LengthUnit? fileUnit;
     final metadata = <_CsvField, String>{};
     var tableHeaderIndex = -1;
 
@@ -154,6 +246,12 @@ class CsvImporter {
           startElevation = double.tryParse(value);
         case _CsvField.closingRl:
           closingElevation = double.tryParse(value);
+        case _CsvField.reductionMethod:
+          reductionMethod = _riseFallValues.contains(value.toLowerCase())
+              ? ReductionMethod.riseAndFall
+              : ReductionMethod.heightOfInstrument;
+        case _CsvField.unit:
+          fileUnit = _unitValues[value.toLowerCase()];
         case _CsvField.startBm || _CsvField.closingBm:
           if (value.isNotEmpty) metadata[field] = value;
         case _CsvField.surveyor ||
@@ -177,6 +275,12 @@ class CsvImporter {
       );
     }
 
+    final columns = _columnsOf(rows[tableHeaderIndex]);
+    if (appUnit != null && fileUnit != null && fileUnit != appUnit) {
+      warnings.add(
+        l10n.exportImportUnitMismatch(fileUnit.symbol, appUnit.symbol),
+      );
+    }
     final measurements = <Measurement>[];
     for (var i = tableHeaderIndex + 1; i < rows.length; i++) {
       final row = rows[i];
@@ -184,11 +288,12 @@ class CsvImporter {
         break;
       }
       if (row.first.toString().startsWith('Σ')) break;
-      final stationName = _cell(row, 1);
+      final stationName = _cell(row, columns[ExportColumn.station]);
       if (stationName.isEmpty) continue;
 
       final parsed = _parseMeasurementRow(
         row,
+        columns: columns,
         rowNumber: i + 1,
         orderIndex: measurements.length,
         fieldBookId: 0,
@@ -231,6 +336,13 @@ class CsvImporter {
         closingElevation: closingMode == ClosingReferenceMode.manual
             ? closingElevation
             : null,
+        // Files without the method row: rise/fall columns imply rise and
+        // fall, otherwise HI (every file exported before it existed).
+        reductionMethod:
+            reductionMethod ??
+            (columns.containsKey(ExportColumn.rise)
+                ? ReductionMethod.riseAndFall
+                : ReductionMethod.heightOfInstrument),
         surveyor: metadata[_CsvField.surveyor],
         checker: metadata[_CsvField.checker],
         instrument: metadata[_CsvField.instrument],
@@ -289,59 +401,49 @@ class CsvImporter {
 
   static _ParsedMeasurement _parseMeasurementRow(
     List<dynamic> row, {
+    required Map<ExportColumn, int> columns,
     required int rowNumber,
     required int orderIndex,
     required int fieldBookId,
     required AppLocalizations l10n,
   }) {
-    final bs = _parseDouble(
-      _cell(row, 2),
-      rowNumber,
-      l10n.exportColumnBs,
-      l10n,
-    );
+    _ParsedDouble number(ExportColumn column, String label) =>
+        _parseDouble(_cell(row, columns[column]), rowNumber, label, l10n);
+
+    final bs = number(ExportColumn.bs, l10n.exportColumnBs);
     if (bs.error != null) return _ParsedMeasurement.error(bs.error!);
-    final fs = _parseDouble(
-      _cell(row, 3),
-      rowNumber,
-      l10n.exportColumnFs,
-      l10n,
-    );
+    final fs = number(ExportColumn.fs, l10n.exportColumnFs);
     if (fs.error != null) return _ParsedMeasurement.error(fs.error!);
-    final ih = _parseDouble(
-      _cell(row, 4),
-      rowNumber,
-      l10n.exportColumnHi,
-      l10n,
-    );
+    // English exports print intermediate sights under IS; they are FS
+    // readings on FS-only rows.
+    final intermediate = number(ExportColumn.intermediate, l10n.exportColumnIs);
+    if (intermediate.error != null) {
+      return _ParsedMeasurement.error(intermediate.error!);
+    }
+    final ih = number(ExportColumn.hi, l10n.exportColumnHi);
     if (ih.error != null) return _ParsedMeasurement.error(ih.error!);
-    final gh = _parseDouble(
-      _cell(row, 5),
-      rowNumber,
-      l10n.exportColumnRl,
-      l10n,
-    );
+    final gh = number(ExportColumn.rl, l10n.exportColumnRl);
     if (gh.error != null) return _ParsedMeasurement.error(gh.error!);
-    final note = _cell(row, 6);
+    final note = _cell(row, columns[ExportColumn.remarks]);
 
     return _ParsedMeasurement.value(
       Measurement(
         fieldBookId: fieldBookId,
         orderIndex: orderIndex,
-        stationName: _cell(row, 1),
+        stationName: _cell(row, columns[ExportColumn.station]),
         type: _turningPointMarkers.contains(note.toLowerCase())
             ? MeasurementType.tp
             : MeasurementType.normal,
         bs: bs.value,
-        fs: fs.value,
+        fs: fs.value ?? intermediate.value,
         ih: ih.value,
         gh: gh.value,
       ),
     );
   }
 
-  static String _cell(List<dynamic> row, int index) {
-    if (index >= row.length) return '';
+  static String _cell(List<dynamic> row, int? index) {
+    if (index == null || index >= row.length) return '';
     return row[index].toString().trim();
   }
 

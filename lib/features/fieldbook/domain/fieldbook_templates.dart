@@ -28,6 +28,7 @@ class FieldBookTemplates {
       closingMode: source.closingMode,
       closingBmId: source.closingBmId,
       closingElevation: source.closingElevation,
+      reductionMethod: source.reductionMethod,
       memo: source.memo,
       surveyor: source.surveyor,
       checker: source.checker,
