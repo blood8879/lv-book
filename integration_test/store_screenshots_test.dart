@@ -32,6 +32,14 @@ void main() {
     final l10n = l10nForPlatform();
 
     final sample = find.text(l10n.projectEmptySampleButton);
+    // Cold starts on emulators can take a while; wait for the home screen.
+    for (var i = 0; i < 30; i++) {
+      if (sample.evaluate().isNotEmpty ||
+          find.byType(Card).evaluate().isNotEmpty) {
+        break;
+      }
+      await tester.pump(const Duration(milliseconds: 500));
+    }
     if (sample.evaluate().isNotEmpty) {
       await tester.tap(sample);
       await tester.pumpAndSettle(const Duration(seconds: 2));
@@ -56,13 +64,15 @@ void main() {
     await tester.pumpAndSettle(const Duration(seconds: 2));
     await Future<void>.delayed(const Duration(seconds: 4)); // PDF raster
     await shot(tester, 'export');
+    if (_only.isNotEmpty) return;
 
-    await tester.pageBack();
-    await tester.pumpAndSettle();
-    await tester.pageBack();
-    await tester.pumpAndSettle();
-    await tester.pageBack();
-    await tester.pumpAndSettle();
+    // Pop via the root navigator: back-button finders depend on platform
+    // styling and on which app bar is visible.
+    for (var i = 0; i < 3; i++) {
+      final nav = tester.state<NavigatorState>(find.byType(Navigator).first);
+      nav.pop();
+      await tester.pumpAndSettle();
+    }
     await shot(tester, 'home');
 
     await tester.tap(find.byIcon(Icons.settings));

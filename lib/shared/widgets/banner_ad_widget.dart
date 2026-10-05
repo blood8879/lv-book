@@ -5,6 +5,23 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../../features/ads/ad_manager.dart';
 import '../../features/ads/ad_providers.dart';
 
+/// Banner ad for [Scaffold.bottomNavigationBar].
+///
+/// Keeps the ad above the system navigation / gesture bar (the app draws
+/// edge-to-edge) and, as a Scaffold bottom bar, makes the Scaffold lift its
+/// FAB and snack bars above the ad instead of overlapping it. With no ad it
+/// collapses to just the bottom inset.
+class BottomBannerAd extends StatelessWidget {
+  final String adUnitId;
+
+  const BottomBannerAd({super.key, required this.adUnitId});
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(top: false, child: BannerAdWidget(adUnitId: adUnitId));
+  }
+}
+
 class BannerAdWidget extends ConsumerStatefulWidget {
   final String adUnitId;
 
@@ -120,7 +137,11 @@ class _BannerAdWidgetState extends ConsumerState<BannerAdWidget> {
 
         final ad = _bannerAd;
         if (!_isLoaded || ad == null) return const SizedBox.shrink();
-        return Center(
+        // heightFactor: 1 sizes this to the ad. A plain Center would take all
+        // available height when used as Scaffold.bottomNavigationBar and push
+        // the body off screen.
+        return Align(
+          heightFactor: 1,
           child: SizedBox(
             width: ad.size.width.toDouble(),
             height: ad.size.height.toDouble(),

@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
 import 'features/project/presentation/project_list_screen.dart';
@@ -52,7 +54,7 @@ class _LvBookAppState extends ConsumerState<LvBookApp> {
       navigatorObservers: [_quickMemoFabController],
       // Overlay a single app-wide quick-memo FAB above every route.
       builder: (context, child) {
-        return QuickMemoFabScope(
+        final content = QuickMemoFabScope(
           controller: _quickMemoFabController,
           child: Stack(
             children: [
@@ -64,7 +66,32 @@ class _LvBookAppState extends ConsumerState<LvBookApp> {
             ],
           ),
         );
+        // iOS keeps its existing status bar handling.
+        if (defaultTargetPlatform != TargetPlatform.android) return content;
+        // Edge-to-edge fallback for every screen: transparent status bar
+        // where there is no AppBar (AppBars set their own style on top) and
+        // nav bar icons that match the theme.
+        return AnnotatedRegion<SystemUiOverlayStyle>(
+          value: edgeToEdgeOverlayStyle(Theme.of(context).brightness),
+          child: content,
+        );
       },
     );
   }
+}
+
+/// System bar style for edge-to-edge Android: transparent status bar and icon
+/// brightness matching [brightness]. The navigation bar colour is left to
+/// MainActivity (transparent with the system contrast scrim on API 29+, a
+/// translucent scrim below that, where light nav icons may be unavailable).
+SystemUiOverlayStyle edgeToEdgeOverlayStyle(Brightness brightness) {
+  final icons = brightness == Brightness.dark
+      ? Brightness.light
+      : Brightness.dark;
+  return SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: icons,
+    statusBarBrightness: brightness,
+    systemNavigationBarIconBrightness: icons,
+  );
 }

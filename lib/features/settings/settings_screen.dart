@@ -43,11 +43,11 @@ class SettingsScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: Text(l10n.settingsTitle)),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(
+        padding: EdgeInsets.fromLTRB(
           12,
           12,
           12,
-          AppConstants.quickMemoFabClearance,
+          AppConstants.quickMemoFabListBottomPadding(context),
         ),
         children: [
           _ProPurchasePanel(

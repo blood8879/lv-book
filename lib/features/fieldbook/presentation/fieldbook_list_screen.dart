@@ -243,8 +243,12 @@ class FieldBookListScreen extends ConsumerWidget {
       builder: (sheetContext) {
         final colors = sheetContext.appColors;
         return Padding(
+          // Keyboard height when it is up, otherwise the navigation-bar
+          // inset (padding drops to 0 while the keyboard covers it).
           padding: EdgeInsets.only(
-            bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
+            bottom:
+                MediaQuery.viewInsetsOf(sheetContext).bottom +
+                MediaQuery.paddingOf(sheetContext).bottom,
           ),
           child: StatefulBuilder(
             builder: (sheetContext, setState) => SingleChildScrollView(
@@ -775,11 +779,11 @@ class _FieldBookListContentState extends State<_FieldBookListContent> {
     // when ads are removed/unsupported/not yet loaded.)
     final adPosition = filtered.length >= 3 ? 3 : filtered.length;
     return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(
+      padding: EdgeInsets.fromLTRB(
         8,
         4,
         8,
-        AppConstants.quickMemoFabClearance,
+        AppConstants.quickMemoFabListBottomPadding(context),
       ),
       itemCount: filtered.length + 1,
       itemBuilder: (context, index) {

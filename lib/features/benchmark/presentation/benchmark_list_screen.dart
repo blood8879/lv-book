@@ -50,11 +50,11 @@ class BenchmarkListScreen extends ConsumerWidget {
                   );
                 }
                 return ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(
+                  padding: EdgeInsets.fromLTRB(
                     8,
                     8,
                     8,
-                    AppConstants.quickMemoFabClearance,
+                    AppConstants.quickMemoFabListBottomPadding(context),
                   ),
                   itemCount: benchmarks.length,
                   itemBuilder: (context, index) {
@@ -69,9 +69,9 @@ class BenchmarkListScreen extends ConsumerWidget {
               },
             ),
           ),
-          BannerAdWidget(adUnitId: AdManager.banner2Id),
         ],
       ),
+      bottomNavigationBar: BottomBannerAd(adUnitId: AdManager.banner2Id),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddDialog(context, ref),
         child: const Icon(Icons.add),

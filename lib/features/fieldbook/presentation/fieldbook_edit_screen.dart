@@ -1309,8 +1309,10 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
     final misclosure = closure.misclosure;
     final riseFall = _isRiseFall ? closure.riseFall : null;
 
-    // The dark panel runs to the screen edge; keep its text clear of the
-    // home indicator / gesture bar.
+    // The dark panel runs to the screen edge (edge-to-edge); keep its text
+    // clear of the navigation / gesture bar. paddingOf (not viewPadding) is
+    // 0 while the keyboard is up, so the summary sitting on the keyboard gets
+    // no extra gap.
     final bottomInset = MediaQuery.paddingOf(context).bottom;
     return Container(
       width: double.infinity,
@@ -1730,8 +1732,12 @@ class _ClosingReferenceSheetState extends State<_ClosingReferenceSheet> {
       (ClosingReferenceMode.manual, l10n.fieldbookClosingManual),
     ];
     return Padding(
+      // Keyboard height when it is up, otherwise the navigation-bar inset
+      // (padding drops to 0 while the keyboard covers it).
       padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
+        bottom:
+            MediaQuery.viewInsetsOf(context).bottom +
+            MediaQuery.paddingOf(context).bottom,
       ),
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),

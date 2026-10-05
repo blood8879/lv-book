@@ -68,9 +68,9 @@ class ProjectListScreen extends ConsumerWidget {
               data: (projects) => _ProjectOverview(projects: projects),
             ),
           ),
-          BannerAdWidget(adUnitId: AdManager.banner1Id),
         ],
       ),
+      bottomNavigationBar: BottomBannerAd(adUnitId: AdManager.banner1Id),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddProjectDialog(context, ref),
         child: const Icon(Icons.add),
@@ -262,11 +262,11 @@ class _ProjectOverview extends StatelessWidget {
     }
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(
+      padding: EdgeInsets.fromLTRB(
         12,
         6,
         12,
-        AppConstants.quickMemoFabClearance,
+        AppConstants.quickMemoFabListBottomPadding(context),
       ),
       children: children,
     );

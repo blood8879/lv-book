@@ -21,17 +21,18 @@ Digital level book for surveyors: auto HI/RL, checks, PDF & CSV export.
 Lv Book replaces the paper level book for differential leveling on construction and civil sites. Enter backsights and foresights; Lv Book reduces the levels, checks the arithmetic and gives you a clean report to submit — fully offline.
 
 AUTOMATIC REDUCTION
-• Height of instrument (HI) method: HI and reduced levels (RL) are calculated as you type BS and FS
+• Height of instrument (HI) or Rise & Fall method: levels are reduced as you type BS and FS
 • Turning points (TP) are detected automatically; mark one manually when needed
 • Intermediate sights handled correctly in the arithmetic check
 
 BUILT-IN CHECKS
-• Arithmetic check: ΣBS − ΣFS = Final RL − Start RL
-• Misclosure shown to 4 decimals, with a clear "Within tolerance" / "Check required" result
-• Five validation checks before export (first BS, last FS, TP complete, empty rows, tolerance)
+• Arithmetic check: ΣBS − ΣFS = (ΣRise − ΣFall) = Final RL − Start RL
+• Real misclosure against your closing BM (loop, another BM or a known RL)
+• Tolerance you choose: fixed or c·√n, with a clear "Within tolerance" / "Check required" result
+• Validation before export: first BS, last FS, TP complete, empty rows, arithmetic check, tolerance
 
 SUBMISSION-READY EXPORT (FREE)
-• PDF level book with company name, surveyor, arithmetic check box and signature fields
+• Standard BS | IS | FS level book PDF with company name, surveyor, check box and signature fields
 • Hand-drawn signature, watermark, document templates and file-naming rules
 • CSV export that opens cleanly in Excel, and CSV import to restore or move records
 
@@ -43,7 +44,7 @@ BENCHMARKS (BM / TBM)
 BUILT FOR THE FIELD
 • Works offline, no account or login
 • Spreadsheet-style entry with large cells for gloves and sunlight
-• Autosave, light and dark mode
+• Metres or feet, autosave, light and dark mode
 • Project → level book → benchmark organisation, search and quick reuse of surveyor/instrument/weather
 
 TRY IT IN SECONDS

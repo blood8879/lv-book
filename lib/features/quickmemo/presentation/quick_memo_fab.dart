@@ -376,7 +376,11 @@ class _QuickMemoComposerState extends ConsumerState<QuickMemoComposer> {
   @override
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
-    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    // Keyboard height when it is up, otherwise the navigation-bar inset
+    // (padding drops to 0 while the keyboard covers it).
+    final bottomInset =
+        MediaQuery.viewInsetsOf(context).bottom +
+        MediaQuery.paddingOf(context).bottom;
     final hasRecording = _recordedPath != null;
     final l10n = context.l10n;
 

@@ -40,11 +40,11 @@ class QuickMemoListScreen extends ConsumerWidget {
             );
           }
           return ListView.builder(
-            padding: const EdgeInsets.fromLTRB(
+            padding: EdgeInsets.fromLTRB(
               12,
               8,
               12,
-              AppConstants.quickMemoFabClearance,
+              AppConstants.quickMemoFabListBottomPadding(context),
             ),
             itemCount: memos.length,
             itemBuilder: (context, index) => _QuickMemoCard(memo: memos[index]),

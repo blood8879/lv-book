@@ -79,11 +79,11 @@ class EmptyState extends StatelessWidget {
               : const BoxConstraints(),
           // Extra bottom margin keeps the card clear of the app-wide
           // quick-memo FAB (bottom-left overlay).
-          margin: const EdgeInsets.fromLTRB(
+          margin: EdgeInsets.fromLTRB(
             24,
             24,
             24,
-            AppConstants.quickMemoFabClearance,
+            AppConstants.quickMemoFabListBottomPadding(context),
           ),
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
