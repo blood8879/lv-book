@@ -55,3 +55,4 @@ android/app/keystore/
 
 # Local SDK paths and generated Android build settings
 android/local.properties
+android/.kotlin/
