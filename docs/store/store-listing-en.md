@@ -6,19 +6,19 @@ Terminology follows docs/i18n-guide.md (HI = height of instrument, RL = reduced 
 ## App name (≤ 30 chars)
 
 ```
-Lv Book: Leveling Field Book
+Lv Book: Surveying Level Book
 ```
 
 ## Short description (≤ 80 chars)
 
 ```
-Digital level book for surveyors: auto HI/RL, checks, PDF & CSV export.
+Level book for surveyors: HI or Rise & Fall, RL, misclosure, PDF & CSV export.
 ```
 
 ## Full description (≤ 4000 chars)
 
 ```
-Lv Book replaces the paper level book for differential leveling on construction and civil sites. Enter backsights and foresights; Lv Book reduces the levels, checks the arithmetic and gives you a clean report to submit — fully offline.
+Lv Book replaces the paper level book for differential leveling with an auto level, dumpy level or digital level on construction and civil engineering sites. It works as a reduced level (RL) calculator and a field book in one. Enter backsights and foresights; Lv Book reduces the levels, checks the arithmetic and gives you a clean report to submit — fully offline.
 
 AUTOMATIC REDUCTION
 • Height of instrument (HI) or Rise & Fall method: levels are reduced as you type BS and FS
