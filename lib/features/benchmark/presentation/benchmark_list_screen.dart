@@ -803,6 +803,14 @@ class BenchmarkListScreen extends ConsumerWidget {
                                 height: 120,
                                 width: double.infinity,
                                 fit: BoxFit.cover,
+                                // Decode at screen width instead of the full
+                                // stored photo (up to 1600 px).
+                                cacheWidth:
+                                    (MediaQuery.sizeOf(context).width *
+                                            MediaQuery.devicePixelRatioOf(
+                                              context,
+                                            ))
+                                        .round(),
                               ),
                             );
                           },

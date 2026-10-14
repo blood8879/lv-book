@@ -1970,6 +1970,216 @@ abstract class AppLocalizations {
   /// **'Section'**
   String get fieldbookWorkSectionLabel;
 
+  /// Shown when adjustment is required. reading: 3 decimals; unit: m or ft.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust the reticle until the B staff reads {reading} {unit}.'**
+  String pegTestAdjustInstruction(String reading, String unit);
+
+  /// Verdict when the collimation error exceeds the tolerance. A warning, never 'Fail'.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjustment required'**
+  String get pegTestAdjustmentRequired;
+
+  /// No description provided for @pegTestAngle.
+  ///
+  /// In en, this message translates to:
+  /// **'Line of sight angle'**
+  String get pegTestAngle;
+
+  /// No description provided for @pegTestCollimationError.
+  ///
+  /// In en, this message translates to:
+  /// **'Collimation error over A–B'**
+  String get pegTestCollimationError;
+
+  /// No description provided for @pegTestCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Result copied'**
+  String get pegTestCopied;
+
+  /// No description provided for @pegTestCopyResult.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy result'**
+  String get pegTestCopyResult;
+
+  /// Expected staff reading on B from setup 2 (a2 − true difference).
+  ///
+  /// In en, this message translates to:
+  /// **'Correct B reading'**
+  String get pegTestCorrectReading;
+
+  /// No description provided for @pegTestDistanceInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a distance greater than 0.'**
+  String get pegTestDistanceInvalid;
+
+  /// Input label: horizontal distance between the pegs. unit: m or ft.
+  ///
+  /// In en, this message translates to:
+  /// **'Peg distance A–B ({unit})'**
+  String pegTestDistanceLabel(String unit);
+
+  /// Result row label. unit: m or ft.
+  ///
+  /// In en, this message translates to:
+  /// **'Error per 100 {unit}'**
+  String pegTestErrorPer100(String unit);
+
+  /// No description provided for @pegTestHowToStep1.
+  ///
+  /// In en, this message translates to:
+  /// **'Set pegs A and B on firm ground and set up the level exactly midway between them.'**
+  String get pegTestHowToStep1;
+
+  /// No description provided for @pegTestHowToStep2.
+  ///
+  /// In en, this message translates to:
+  /// **'Read the staff on A, then on B (Setup 1). Equal sight lengths cancel the collimation error.'**
+  String get pegTestHowToStep2;
+
+  /// No description provided for @pegTestHowToStep3.
+  ///
+  /// In en, this message translates to:
+  /// **'Move the level close to A, just behind or beside it, and level it again.'**
+  String get pegTestHowToStep3;
+
+  /// No description provided for @pegTestHowToStep4.
+  ///
+  /// In en, this message translates to:
+  /// **'Read A, then B again (Setup 2) and enter the peg distance.'**
+  String get pegTestHowToStep4;
+
+  /// No description provided for @pegTestHowToTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How to do the test'**
+  String get pegTestHowToTitle;
+
+  /// No description provided for @pegTestInclinedDown.
+  ///
+  /// In en, this message translates to:
+  /// **'Line of sight points downward'**
+  String get pegTestInclinedDown;
+
+  /// No description provided for @pegTestInclinedUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Line of sight points upward'**
+  String get pegTestInclinedUp;
+
+  /// Input label: staff reading on peg A. unit: m or ft.
+  ///
+  /// In en, this message translates to:
+  /// **'Staff on A ({unit})'**
+  String pegTestReadingALabel(String unit);
+
+  /// Input label: staff reading on peg B. unit: m or ft.
+  ///
+  /// In en, this message translates to:
+  /// **'Staff on B ({unit})'**
+  String pegTestReadingBLabel(String unit);
+
+  /// No description provided for @pegTestResultEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter all four readings and the peg distance to see the result.'**
+  String get pegTestResultEmpty;
+
+  /// No description provided for @pegTestResultTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Result'**
+  String get pegTestResultTitle;
+
+  /// Input group: level set up exactly midway between pegs A and B.
+  ///
+  /// In en, this message translates to:
+  /// **'Setup 1 · midway between A and B'**
+  String get pegTestSetup1Title;
+
+  /// Input group: level moved close to peg A.
+  ///
+  /// In en, this message translates to:
+  /// **'Setup 2 · close to A'**
+  String get pegTestSetup2Title;
+
+  /// Settings tile subtitle / screen subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Level collimation check'**
+  String get pegTestSubtitle;
+
+  /// One 'label: value' line of the copied summary.
+  ///
+  /// In en, this message translates to:
+  /// **'{label}: {value}'**
+  String pegTestSummaryLine(String label, String value);
+
+  /// No description provided for @pegTestSummaryResult.
+  ///
+  /// In en, this message translates to:
+  /// **'Result'**
+  String get pegTestSummaryResult;
+
+  /// Copied text line; a/b are readings with unit.
+  ///
+  /// In en, this message translates to:
+  /// **'Setup 1 (midway): A {a}, B {b}'**
+  String pegTestSummarySetup1(String a, String b);
+
+  /// Copied text line; a/b are readings with unit.
+  ///
+  /// In en, this message translates to:
+  /// **'Setup 2 (near A): A {a}, B {b}'**
+  String pegTestSummarySetup2(String a, String b);
+
+  /// Screen and settings tile title for the level collimation check (Korean 2점법 시준 검사).
+  ///
+  /// In en, this message translates to:
+  /// **'Two-peg test'**
+  String get pegTestTitle;
+
+  /// No description provided for @pegTestToleranceDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Two-peg tolerance'**
+  String get pegTestToleranceDialogTitle;
+
+  /// No description provided for @pegTestToleranceEditTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit tolerance'**
+  String get pegTestToleranceEditTooltip;
+
+  /// Tolerance dialog input label. unit: mm or ft.
+  ///
+  /// In en, this message translates to:
+  /// **'Allowed error over A–B ({unit})'**
+  String pegTestToleranceFieldLabel(String unit);
+
+  /// Allowed collimation error over the peg distance.
+  ///
+  /// In en, this message translates to:
+  /// **'Tolerance'**
+  String get pegTestToleranceLabel;
+
+  /// Tolerance row value. unit: mm (metres) or ft (feet).
+  ///
+  /// In en, this message translates to:
+  /// **'±{value} {unit} over A–B'**
+  String pegTestToleranceValue(String value, String unit);
+
+  /// No description provided for @pegTestTrueDifference.
+  ///
+  /// In en, this message translates to:
+  /// **'True difference (A − B)'**
+  String get pegTestTrueDifference;
+
   /// No description provided for @proActiveSubtitle.
   ///
   /// In en, this message translates to:
@@ -2947,6 +3157,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Misclosure tolerance'**
   String get settingsToleranceTitle;
+
+  /// Settings section header for field tools (e.g. the two-peg test).
+  ///
+  /// In en, this message translates to:
+  /// **'Tools'**
+  String get settingsToolsSection;
 
   /// Length unit option.
   ///

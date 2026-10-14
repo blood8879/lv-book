@@ -27,6 +27,7 @@ const Map<String, List<String>> kAreaPrefixes = {
   'export': ['export'],
   'benchmark_project': ['project', 'benchmark'],
   'settings_pro': ['settings', 'pro', 'purchase', 'ads', 'backup'],
+  'peg_test': ['pegTest'],
 };
 
 const String kSrcDir = 'lib/l10n/src';

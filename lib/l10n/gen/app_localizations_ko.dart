@@ -1058,6 +1058,132 @@ class AppLocalizationsKo extends AppLocalizations {
   String get fieldbookWorkSectionLabel => '작업구간';
 
   @override
+  String pegTestAdjustInstruction(String reading, String unit) {
+    return 'B 표척 읽음값이 $reading $unit이 되도록 십자선을 조정하세요.';
+  }
+
+  @override
+  String get pegTestAdjustmentRequired => '조정 필요';
+
+  @override
+  String get pegTestAngle => '시준선 경사각';
+
+  @override
+  String get pegTestCollimationError => 'A–B 시준오차';
+
+  @override
+  String get pegTestCopied => '결과를 복사했습니다';
+
+  @override
+  String get pegTestCopyResult => '결과 복사';
+
+  @override
+  String get pegTestCorrectReading => 'B 정답 읽음값';
+
+  @override
+  String get pegTestDistanceInvalid => '0보다 큰 거리를 입력하세요.';
+
+  @override
+  String pegTestDistanceLabel(String unit) {
+    return 'A–B 거리 ($unit)';
+  }
+
+  @override
+  String pegTestErrorPer100(String unit) {
+    return '100 $unit당 오차';
+  }
+
+  @override
+  String get pegTestHowToStep1 => '단단한 지반에 말뚝 A, B를 박고 두 점의 정중앙에 레벨을 세웁니다.';
+
+  @override
+  String get pegTestHowToStep2 =>
+      'A, B 표척을 차례로 읽습니다(1차 설치). 시준거리가 같아 시준오차가 상쇄됩니다.';
+
+  @override
+  String get pegTestHowToStep3 => '레벨을 A 바로 뒤나 옆으로 옮겨 다시 정준합니다.';
+
+  @override
+  String get pegTestHowToStep4 => 'A, B 표척을 다시 읽고(2차 설치) A–B 거리를 입력합니다.';
+
+  @override
+  String get pegTestHowToTitle => '검사 방법';
+
+  @override
+  String get pegTestInclinedDown => '시준선이 아래로 향함';
+
+  @override
+  String get pegTestInclinedUp => '시준선이 위로 향함';
+
+  @override
+  String pegTestReadingALabel(String unit) {
+    return 'A 표척 ($unit)';
+  }
+
+  @override
+  String pegTestReadingBLabel(String unit) {
+    return 'B 표척 ($unit)';
+  }
+
+  @override
+  String get pegTestResultEmpty => '읽음값 4개와 A–B 거리를 입력하면 결과가 표시됩니다.';
+
+  @override
+  String get pegTestResultTitle => '판정';
+
+  @override
+  String get pegTestSetup1Title => '1차 설치 · A·B 중간';
+
+  @override
+  String get pegTestSetup2Title => '2차 설치 · A 근처';
+
+  @override
+  String get pegTestSubtitle => '레벨 시준선 오차 점검';
+
+  @override
+  String pegTestSummaryLine(String label, String value) {
+    return '$label: $value';
+  }
+
+  @override
+  String get pegTestSummaryResult => '판정';
+
+  @override
+  String pegTestSummarySetup1(String a, String b) {
+    return '1차 설치(중간): A $a, B $b';
+  }
+
+  @override
+  String pegTestSummarySetup2(String a, String b) {
+    return '2차 설치(A 근처): A $a, B $b';
+  }
+
+  @override
+  String get pegTestTitle => '2점법 시준 검사';
+
+  @override
+  String get pegTestToleranceDialogTitle => '2점법 허용오차';
+
+  @override
+  String get pegTestToleranceEditTooltip => '허용오차 수정';
+
+  @override
+  String pegTestToleranceFieldLabel(String unit) {
+    return 'A–B 거리 기준 허용오차 ($unit)';
+  }
+
+  @override
+  String get pegTestToleranceLabel => '허용오차';
+
+  @override
+  String pegTestToleranceValue(String value, String unit) {
+    return 'A–B 거리 기준 ±$value $unit';
+  }
+
+  @override
+  String get pegTestTrueDifference => '참 고저차 (A − B)';
+
+  @override
   String get proActiveSubtitle => '광고 없이 제출용 문서를 만들 수 있습니다.';
 
   @override
@@ -1609,6 +1735,9 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get settingsToleranceTitle => '폐합 허용오차';
+
+  @override
+  String get settingsToolsSection => '도구';
 
   @override
   String get settingsUnitFeet => '피트 (ft)';

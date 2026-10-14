@@ -1104,6 +1104,136 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fieldbookWorkSectionLabel => 'Section';
 
   @override
+  String pegTestAdjustInstruction(String reading, String unit) {
+    return 'Adjust the reticle until the B staff reads $reading $unit.';
+  }
+
+  @override
+  String get pegTestAdjustmentRequired => 'Adjustment required';
+
+  @override
+  String get pegTestAngle => 'Line of sight angle';
+
+  @override
+  String get pegTestCollimationError => 'Collimation error over A–B';
+
+  @override
+  String get pegTestCopied => 'Result copied';
+
+  @override
+  String get pegTestCopyResult => 'Copy result';
+
+  @override
+  String get pegTestCorrectReading => 'Correct B reading';
+
+  @override
+  String get pegTestDistanceInvalid => 'Enter a distance greater than 0.';
+
+  @override
+  String pegTestDistanceLabel(String unit) {
+    return 'Peg distance A–B ($unit)';
+  }
+
+  @override
+  String pegTestErrorPer100(String unit) {
+    return 'Error per 100 $unit';
+  }
+
+  @override
+  String get pegTestHowToStep1 =>
+      'Set pegs A and B on firm ground and set up the level exactly midway between them.';
+
+  @override
+  String get pegTestHowToStep2 =>
+      'Read the staff on A, then on B (Setup 1). Equal sight lengths cancel the collimation error.';
+
+  @override
+  String get pegTestHowToStep3 =>
+      'Move the level close to A, just behind or beside it, and level it again.';
+
+  @override
+  String get pegTestHowToStep4 =>
+      'Read A, then B again (Setup 2) and enter the peg distance.';
+
+  @override
+  String get pegTestHowToTitle => 'How to do the test';
+
+  @override
+  String get pegTestInclinedDown => 'Line of sight points downward';
+
+  @override
+  String get pegTestInclinedUp => 'Line of sight points upward';
+
+  @override
+  String pegTestReadingALabel(String unit) {
+    return 'Staff on A ($unit)';
+  }
+
+  @override
+  String pegTestReadingBLabel(String unit) {
+    return 'Staff on B ($unit)';
+  }
+
+  @override
+  String get pegTestResultEmpty =>
+      'Enter all four readings and the peg distance to see the result.';
+
+  @override
+  String get pegTestResultTitle => 'Result';
+
+  @override
+  String get pegTestSetup1Title => 'Setup 1 · midway between A and B';
+
+  @override
+  String get pegTestSetup2Title => 'Setup 2 · close to A';
+
+  @override
+  String get pegTestSubtitle => 'Level collimation check';
+
+  @override
+  String pegTestSummaryLine(String label, String value) {
+    return '$label: $value';
+  }
+
+  @override
+  String get pegTestSummaryResult => 'Result';
+
+  @override
+  String pegTestSummarySetup1(String a, String b) {
+    return 'Setup 1 (midway): A $a, B $b';
+  }
+
+  @override
+  String pegTestSummarySetup2(String a, String b) {
+    return 'Setup 2 (near A): A $a, B $b';
+  }
+
+  @override
+  String get pegTestTitle => 'Two-peg test';
+
+  @override
+  String get pegTestToleranceDialogTitle => 'Two-peg tolerance';
+
+  @override
+  String get pegTestToleranceEditTooltip => 'Edit tolerance';
+
+  @override
+  String pegTestToleranceFieldLabel(String unit) {
+    return 'Allowed error over A–B ($unit)';
+  }
+
+  @override
+  String get pegTestToleranceLabel => 'Tolerance';
+
+  @override
+  String pegTestToleranceValue(String value, String unit) {
+    return '±$value $unit over A–B';
+  }
+
+  @override
+  String get pegTestTrueDifference => 'True difference (A − B)';
+
+  @override
   String get proActiveSubtitle => 'Create submission documents without ads.';
 
   @override
@@ -1716,6 +1846,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsToleranceTitle => 'Misclosure tolerance';
+
+  @override
+  String get settingsToolsSection => 'Tools';
 
   @override
   String get settingsUnitFeet => 'Feet (ft)';

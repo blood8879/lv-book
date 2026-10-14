@@ -42,6 +42,7 @@ workers can never create the same key.
 | `export` | `features/export/**` | `export` |
 | `benchmark_project` | `features/benchmark/**`, `features/project/**` | `project`, `benchmark` |
 | `settings_pro` | `features/settings/**`, `pro/**`, `purchase/**`, `ads/**`, `backup/**`, `lib/shared/**` | `settings`, `pro`, `purchase`, `ads`, `backup` |
+| `peg_test` | `features/pegtest/**` | `pegTest` |
 
 - **Do not edit `core_*.arb`.** Reuse existing `core*` keys (below) when the
   Korean text is identical; otherwise add an area key, even if it duplicates

@@ -11,6 +11,7 @@ import '../purchase/purchase_controller.dart';
 import '../purchase/purchase_providers.dart';
 import '../../core/constants/app_constants.dart';
 import '../fieldbook/domain/misclosure.dart';
+import '../pegtest/presentation/peg_test_screen.dart';
 import '../review/review_providers.dart';
 import 'misclosure_tolerance_repository.dart';
 
@@ -134,6 +135,26 @@ class SettingsScreen extends ConsumerWidget {
           const _LengthUnitTile(),
           const SizedBox(height: 8),
           const _MisclosureToleranceTile(),
+          const SizedBox(height: 8),
+          _SectionHeader(title: l10n.settingsToolsSection),
+          ListTile(
+            key: const ValueKey('peg-test-tile'),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(color: colors.line),
+            ),
+            tileColor: colors.panel,
+            leading: const Icon(Icons.compare_arrows),
+            title: Text(l10n.pegTestTitle),
+            subtitle: Text(l10n.pegTestSubtitle),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const PegTestScreen()),
+              );
+            },
+          ),
           const SizedBox(height: 8),
           _SectionHeader(title: l10n.adsPolicySection),
           _StatusTile(

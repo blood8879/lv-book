@@ -251,5 +251,7 @@
   "settingsRateAppTitle": "Rate Lv Book",
   "@settingsRateAppTitle": {"description": "Settings tile that opens the Play Store listing (passive, no prompt)."},
   "settingsRateAppSubtitle": "Open the Google Play listing to leave a review.",
-  "@settingsRateAppSubtitle": {"description": "Subtitle of the rate-app tile."}
+  "@settingsRateAppSubtitle": {"description": "Subtitle of the rate-app tile."},
+  "settingsToolsSection": "Tools",
+  "@settingsToolsSection": {"description": "Settings section header for field tools (e.g. the two-peg test)."}
 }
