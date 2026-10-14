@@ -31,6 +31,11 @@ BUILT-IN CHECKS
 • Tolerance you choose: fixed or c·√n, with a clear "Within tolerance" / "Check required" result
 • Validation before export: first BS, last FS, TP complete, empty rows, arithmetic check, tolerance
 
+TWO-PEG TEST (COLLIMATION CHECK)
+• Check your level before the run: enter the four staff readings and the peg distance
+• Collimation error, error per 100 m, line-of-sight angle and pass/fail against your tolerance
+• Shows the correct staff reading on B to adjust the reticle
+
 SUBMISSION-READY EXPORT (FREE)
 • Standard BS | IS | FS level book PDF with company name, surveyor, check box and signature fields
 • Hand-drawn signature, watermark, document templates and file-naming rules
@@ -55,7 +60,7 @@ LV BOOK PRO — ONE-TIME PURCHASE (NOT A SUBSCRIPTION)
 • Benchmark photos and coordinates
 • Bulk export of many level books at once, with a submission package and summary CSV
 
-All calculations, checks, single PDF/CSV export, CSV import and document settings are free.
+All calculations, checks, the two-peg test, single PDF/CSV export, CSV import and document settings are free.
 
 Your data stays on your device. Back it up any time as a JSON file.
 ```
@@ -63,8 +68,7 @@ Your data stays on your device. Back it up any time as a JSON file.
 ## Release notes (en-US)
 
 ```
-• English language support
-• Sample project to try reduction and checks instantly
-• Correct arithmetic check with intermediate sights
-• Safer autosave and many fixes
+• New: Two-peg test (collimation check) under Settings → Tools
+• Rate Lv Book from Settings → Feedback
+• Faster benchmark photo preview
 ```
