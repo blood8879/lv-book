@@ -1127,6 +1127,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pegTestCorrectReading => 'Correct B reading';
 
   @override
+  String get pegTestDeleteConfirm =>
+      'The saved two-peg test will be removed. This cannot be undone.';
+
+  @override
+  String get pegTestDeleteTitle => 'Delete this record?';
+
+  @override
+  String get pegTestDeleted => 'Record deleted';
+
+  @override
   String get pegTestDistanceInvalid => 'Enter a distance greater than 0.';
 
   @override
@@ -1138,6 +1148,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String pegTestErrorPer100(String unit) {
     return 'Error per 100 $unit';
   }
+
+  @override
+  String get pegTestHistoryEmptyMessage =>
+      'Save a two-peg test result to keep a dated record of the instrument check.';
+
+  @override
+  String get pegTestHistoryEmptyTitle => 'No saved tests yet';
+
+  @override
+  String get pegTestHistoryTitle => 'Saved two-peg tests';
+
+  @override
+  String get pegTestHistoryTooltip => 'Saved tests';
 
   @override
   String get pegTestHowToStep1 =>
@@ -1165,6 +1188,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pegTestInclinedUp => 'Line of sight points upward';
 
   @override
+  String get pegTestInstrumentLabel => 'Instrument';
+
+  @override
+  String get pegTestNoInstrument => 'Instrument not entered';
+
+  @override
+  String get pegTestNoteLabel => 'Note';
+
+  @override
+  String get pegTestObserverLabel => 'Observer';
+
+  @override
+  String pegTestPdfError(String error) {
+    return 'Could not create the PDF: $error';
+  }
+
+  @override
   String pegTestReadingALabel(String unit) {
     return 'Staff on A ($unit)';
   }
@@ -1175,6 +1215,22 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get pegTestReadingsTitle => 'Readings';
+
+  @override
+  String get pegTestRecordDetailsHint =>
+      'Instrument, observer and note for the saved record';
+
+  @override
+  String get pegTestRecordDetailsTitle => 'Record details (optional)';
+
+  @override
+  String get pegTestRecordSaved => 'Record saved';
+
+  @override
+  String get pegTestRecordTitle => 'Two-peg test record';
+
+  @override
   String get pegTestResultEmpty =>
       'Enter all four readings and the peg distance to see the result.';
 
@@ -1182,10 +1238,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pegTestResultTitle => 'Result';
 
   @override
+  String get pegTestSaveRecord => 'Save record';
+
+  @override
   String get pegTestSetup1Title => 'Setup 1 · midway between A and B';
 
   @override
   String get pegTestSetup2Title => 'Setup 2 · close to A';
+
+  @override
+  String get pegTestSharePdfTooltip => 'Share PDF';
 
   @override
   String get pegTestSubtitle => 'Level collimation check';

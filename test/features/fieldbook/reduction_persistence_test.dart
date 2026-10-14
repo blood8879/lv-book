@@ -36,7 +36,7 @@ void main() {
   });
 
   test('v9 → v10 migration adds reduction_method (HI) and keeps data', () async {
-    expect(AppConstants.dbVersion, 10);
+    expect(AppConstants.dbVersion, greaterThanOrEqualTo(10));
     final dir = await Directory.systemTemp.createTemp('lvbook_v9');
     final path = '${dir.path}/v9.db';
     try {
@@ -97,7 +97,7 @@ void main() {
         options: helper.openDatabaseOptions(),
       );
       helper.setDatabaseForTesting(legacy);
-      expect(await legacy.getVersion(), 10);
+      expect(await legacy.getVersion(), AppConstants.dbVersion);
 
       final repo = FieldBookRepository();
       final book = (await repo.getById(bookId))!;

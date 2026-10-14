@@ -2012,6 +2012,24 @@ abstract class AppLocalizations {
   /// **'Correct B reading'**
   String get pegTestCorrectReading;
 
+  /// No description provided for @pegTestDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'The saved two-peg test will be removed. This cannot be undone.'**
+  String get pegTestDeleteConfirm;
+
+  /// No description provided for @pegTestDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this record?'**
+  String get pegTestDeleteTitle;
+
+  /// No description provided for @pegTestDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Record deleted'**
+  String get pegTestDeleted;
+
   /// No description provided for @pegTestDistanceInvalid.
   ///
   /// In en, this message translates to:
@@ -2029,6 +2047,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Error per 100 {unit}'**
   String pegTestErrorPer100(String unit);
+
+  /// No description provided for @pegTestHistoryEmptyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Save a two-peg test result to keep a dated record of the instrument check.'**
+  String get pegTestHistoryEmptyMessage;
+
+  /// No description provided for @pegTestHistoryEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No saved tests yet'**
+  String get pegTestHistoryEmptyTitle;
+
+  /// Title of the saved peg test list screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved two-peg tests'**
+  String get pegTestHistoryTitle;
+
+  /// App bar icon tooltip opening the list of saved peg tests.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved tests'**
+  String get pegTestHistoryTooltip;
 
   /// No description provided for @pegTestHowToStep1.
   ///
@@ -2072,6 +2114,36 @@ abstract class AppLocalizations {
   /// **'Line of sight points upward'**
   String get pegTestInclinedUp;
 
+  /// Level (instrument) name / serial number of the tested level.
+  ///
+  /// In en, this message translates to:
+  /// **'Instrument'**
+  String get pegTestInstrumentLabel;
+
+  /// List subtitle when a saved peg test has no instrument.
+  ///
+  /// In en, this message translates to:
+  /// **'Instrument not entered'**
+  String get pegTestNoInstrument;
+
+  /// Free note saved with a peg test record.
+  ///
+  /// In en, this message translates to:
+  /// **'Note'**
+  String get pegTestNoteLabel;
+
+  /// Person who carried out the two-peg test (Korean 관측자).
+  ///
+  /// In en, this message translates to:
+  /// **'Observer'**
+  String get pegTestObserverLabel;
+
+  /// Snackbar when the peg test PDF fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not create the PDF: {error}'**
+  String pegTestPdfError(String error);
+
   /// Input label: staff reading on peg A. unit: m or ft.
   ///
   /// In en, this message translates to:
@@ -2083,6 +2155,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Staff on B ({unit})'**
   String pegTestReadingBLabel(String unit);
+
+  /// Section title for the setup 1/2 staff readings.
+  ///
+  /// In en, this message translates to:
+  /// **'Readings'**
+  String get pegTestReadingsTitle;
+
+  /// Subtitle of the collapsed record details section when nothing is filled in.
+  ///
+  /// In en, this message translates to:
+  /// **'Instrument, observer and note for the saved record'**
+  String get pegTestRecordDetailsHint;
+
+  /// Collapsed section on the peg test screen with instrument, observer and note for a saved record.
+  ///
+  /// In en, this message translates to:
+  /// **'Record details (optional)'**
+  String get pegTestRecordDetailsTitle;
+
+  /// No description provided for @pegTestRecordSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Record saved'**
+  String get pegTestRecordSaved;
+
+  /// Saved record detail screen title and PDF document title.
+  ///
+  /// In en, this message translates to:
+  /// **'Two-peg test record'**
+  String get pegTestRecordTitle;
 
   /// No description provided for @pegTestResultEmpty.
   ///
@@ -2096,6 +2198,12 @@ abstract class AppLocalizations {
   /// **'Result'**
   String get pegTestResultTitle;
 
+  /// Button: save the current result as a peg test record.
+  ///
+  /// In en, this message translates to:
+  /// **'Save record'**
+  String get pegTestSaveRecord;
+
   /// Input group: level set up exactly midway between pegs A and B.
   ///
   /// In en, this message translates to:
@@ -2107,6 +2215,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Setup 2 · close to A'**
   String get pegTestSetup2Title;
+
+  /// No description provided for @pegTestSharePdfTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Share PDF'**
+  String get pegTestSharePdfTooltip;
 
   /// Settings tile subtitle / screen subtitle.
   ///

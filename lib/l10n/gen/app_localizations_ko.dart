@@ -1081,6 +1081,15 @@ class AppLocalizationsKo extends AppLocalizations {
   String get pegTestCorrectReading => 'B 정답 읽음값';
 
   @override
+  String get pegTestDeleteConfirm => '저장된 2점법 검사 기록이 삭제됩니다. 되돌릴 수 없습니다.';
+
+  @override
+  String get pegTestDeleteTitle => '이 기록을 삭제할까요?';
+
+  @override
+  String get pegTestDeleted => '기록을 삭제했습니다';
+
+  @override
   String get pegTestDistanceInvalid => '0보다 큰 거리를 입력하세요.';
 
   @override
@@ -1092,6 +1101,19 @@ class AppLocalizationsKo extends AppLocalizations {
   String pegTestErrorPer100(String unit) {
     return '100 $unit당 오차';
   }
+
+  @override
+  String get pegTestHistoryEmptyMessage =>
+      '2점법 검사 결과를 저장하면 날짜별 장비 점검 기록으로 남습니다.';
+
+  @override
+  String get pegTestHistoryEmptyTitle => '저장된 검사가 없습니다';
+
+  @override
+  String get pegTestHistoryTitle => '저장된 2점법 검사';
+
+  @override
+  String get pegTestHistoryTooltip => '저장된 검사';
 
   @override
   String get pegTestHowToStep1 => '단단한 지반에 말뚝 A, B를 박고 두 점의 정중앙에 레벨을 세웁니다.';
@@ -1116,6 +1138,23 @@ class AppLocalizationsKo extends AppLocalizations {
   String get pegTestInclinedUp => '시준선이 위로 향함';
 
   @override
+  String get pegTestInstrumentLabel => '장비';
+
+  @override
+  String get pegTestNoInstrument => '장비 미입력';
+
+  @override
+  String get pegTestNoteLabel => '비고';
+
+  @override
+  String get pegTestObserverLabel => '관측자';
+
+  @override
+  String pegTestPdfError(String error) {
+    return 'PDF를 만들지 못했습니다: $error';
+  }
+
+  @override
   String pegTestReadingALabel(String unit) {
     return 'A 표척 ($unit)';
   }
@@ -1126,16 +1165,37 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String get pegTestReadingsTitle => '관측값';
+
+  @override
+  String get pegTestRecordDetailsHint => '저장할 기록의 장비·관측자·비고';
+
+  @override
+  String get pegTestRecordDetailsTitle => '기록 정보 (선택)';
+
+  @override
+  String get pegTestRecordSaved => '기록을 저장했습니다';
+
+  @override
+  String get pegTestRecordTitle => '2점법 시준 검사 기록';
+
+  @override
   String get pegTestResultEmpty => '읽음값 4개와 A–B 거리를 입력하면 결과가 표시됩니다.';
 
   @override
   String get pegTestResultTitle => '판정';
 
   @override
+  String get pegTestSaveRecord => '기록 저장';
+
+  @override
   String get pegTestSetup1Title => '1차 설치 · A·B 중간';
 
   @override
   String get pegTestSetup2Title => '2차 설치 · A 근처';
+
+  @override
+  String get pegTestSharePdfTooltip => 'PDF 공유';
 
   @override
   String get pegTestSubtitle => '레벨 시준선 오차 점검';

@@ -13,6 +13,8 @@ import '../fieldbook/data/fieldbook_repository.dart';
 import '../fieldbook/data/measurement_repository.dart';
 import '../fieldbook/domain/fieldbook.dart';
 import '../fieldbook/domain/measurement.dart';
+import '../pegtest/data/peg_test_record_repository.dart';
+import '../pegtest/domain/peg_test_record.dart';
 import '../project/data/project_repository.dart';
 import '../project/domain/project.dart';
 
@@ -72,12 +74,18 @@ class ProjectBackupData {
   final List<Measurement> measurements;
   final List<ProjectBackupPhotoAsset> benchmarkPhotoAssets;
 
+  /// Saved two-peg tests. They are not project data, so every project backup
+  /// carries all of them and restore skips the ones already present.
+  /// Optional in the JSON: older backups simply have none.
+  final List<PegTestRecord> pegTests;
+
   const ProjectBackupData({
     required this.project,
     required this.benchmarks,
     required this.fieldBooks,
     required this.measurements,
     this.benchmarkPhotoAssets = const [],
+    this.pegTests = const [],
   });
 }
 
@@ -118,10 +126,14 @@ class ProjectBackupRestoreResult {
   final Map<int, int> benchmarkIdMap;
   final Map<int, int> fieldBookIdMap;
 
+  /// Peg tests inserted (identical ones already on the device are skipped).
+  final int restoredPegTestCount;
+
   const ProjectBackupRestoreResult({
     required this.projectId,
     required this.benchmarkIdMap,
     required this.fieldBookIdMap,
+    this.restoredPegTestCount = 0,
   });
 }
 
@@ -140,6 +152,18 @@ abstract class ProjectBackupRestoreStore {
   Future<int> insertBenchmark(BenchMark benchmark);
   Future<int> insertFieldBook(FieldBook fieldBook);
   Future<int> insertMeasurement(Measurement measurement);
+}
+
+/// Optional capability of a [ProjectBackupStore]: reads the saved peg tests
+/// for the backup. Stores without it back up no peg tests.
+abstract class ProjectBackupPegTestSource {
+  Future<List<PegTestRecord>> getPegTests();
+}
+
+/// Optional capability of a [ProjectBackupRestoreStore]: restores a peg test
+/// unless an identical one exists. Returns true when inserted.
+abstract class ProjectBackupPegTestSink {
+  Future<bool> insertPegTestIfAbsent(PegTestRecord record);
 }
 
 abstract class ProjectBackupPhotoAssetStore {
@@ -231,7 +255,8 @@ class ProjectBackupFilePhotoAssetStore implements ProjectBackupPhotoAssetStore {
   }
 }
 
-class DatabaseProjectBackupStore implements ProjectBackupStore {
+class DatabaseProjectBackupStore
+    implements ProjectBackupStore, ProjectBackupPegTestSource {
   final DatabaseHelper _dbHelper;
   final ProjectRepository _projectRepository;
   final BenchMarkRepository _benchMarkRepository;
@@ -270,6 +295,11 @@ class DatabaseProjectBackupStore implements ProjectBackupStore {
   }
 
   @override
+  Future<List<PegTestRecord>> getPegTests() async {
+    return PegTestRecordRepository.listWith(await _dbHelper.database);
+  }
+
+  @override
   Future<T> restoreTransaction<T>(
     Future<T> Function(ProjectBackupRestoreStore store) action,
   ) async {
@@ -280,7 +310,8 @@ class DatabaseProjectBackupStore implements ProjectBackupStore {
   }
 }
 
-class _DatabaseProjectBackupRestoreStore implements ProjectBackupRestoreStore {
+class _DatabaseProjectBackupRestoreStore
+    implements ProjectBackupRestoreStore, ProjectBackupPegTestSink {
   final Transaction _transaction;
 
   const _DatabaseProjectBackupRestoreStore(this._transaction);
@@ -308,6 +339,11 @@ class _DatabaseProjectBackupRestoreStore implements ProjectBackupRestoreStore {
     final map = Map<String, dynamic>.from(measurement.toMap())..remove('id');
     return _transaction.insert('measurements', map);
   }
+
+  @override
+  Future<bool> insertPegTestIfAbsent(PegTestRecord record) {
+    return PegTestRecordRepository.insertIfAbsent(_transaction, record);
+  }
 }
 
 class ProjectBackupService {
@@ -334,6 +370,8 @@ class ProjectBackupService {
         'benchmark_photo_assets': data.benchmarkPhotoAssets
             .map((item) => item.toMap())
             .toList(),
+      if (data.pegTests.isNotEmpty)
+        'peg_tests': data.pegTests.map((item) => item.toMap()).toList(),
     });
   }
 
@@ -351,6 +389,7 @@ class ProjectBackupService {
     final fieldBooks = decoded['field_books'];
     final measurements = decoded['measurements'];
     final benchmarkPhotoAssets = decoded['benchmark_photo_assets'];
+    final pegTests = decoded['peg_tests'];
     if (project is! Map<String, dynamic> ||
         benchmarks is! List ||
         fieldBooks is! List ||
@@ -390,7 +429,27 @@ class ProjectBackupService {
             ),
         ],
       ],
+      pegTests: _decodePegTests(pegTests),
     );
+  }
+
+  /// Older backups have no `peg_tests`; a malformed list or record makes the
+  /// backup corrupted like any other section.
+  static List<PegTestRecord> _decodePegTests(Object? source) {
+    if (source == null) return const [];
+    if (source is! List) {
+      throw const ProjectBackupException.of(ProjectBackupError.corrupted);
+    }
+    try {
+      return [
+        for (final item in source)
+          PegTestRecord.fromMap(
+            _asStringKeyMap(item, ProjectBackupError.corrupted),
+          ),
+      ];
+    } on FormatException {
+      throw const ProjectBackupException.of(ProjectBackupError.corrupted);
+    }
   }
 
   Future<ProjectBackupData> collectProject(int projectId) async {
@@ -422,12 +481,18 @@ class ProjectBackupService {
       }
     }
 
+    final store = _store;
+    final pegTests = store is ProjectBackupPegTestSource
+        ? await (store as ProjectBackupPegTestSource).getPegTests()
+        : const <PegTestRecord>[];
+
     return ProjectBackupData(
       project: project,
       benchmarks: benchmarks,
       fieldBooks: fieldBooks,
       measurements: measurements,
       benchmarkPhotoAssets: benchmarkPhotoAssets,
+      pegTests: pegTests,
     );
   }
 
@@ -494,10 +559,21 @@ class ProjectBackupService {
           );
         }
 
+        var restoredPegTestCount = 0;
+        if (store is ProjectBackupPegTestSink) {
+          final sink = store as ProjectBackupPegTestSink;
+          for (final record in data.pegTests) {
+            if (await sink.insertPegTestIfAbsent(record)) {
+              restoredPegTestCount++;
+            }
+          }
+        }
+
         return ProjectBackupRestoreResult(
           projectId: newProjectId,
           benchmarkIdMap: Map.unmodifiable(benchmarkIdMap),
           fieldBookIdMap: Map.unmodifiable(fieldBookIdMap),
+          restoredPegTestCount: restoredPegTestCount,
         );
       });
     } catch (_) {

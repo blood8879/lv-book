@@ -3,7 +3,7 @@ import 'package:flutter/widgets.dart';
 class AppConstants {
   // App name is localized: use context.l10n.coreAppName.
   static const String dbName = 'lv_book.db';
-  static const int dbVersion = 10;
+  static const int dbVersion = 11;
 
   /// Bottom space (from the bottom safe-area edge) a scrollable list should
   /// reserve so its last item can scroll clear of the app-wide quick-memo FAB

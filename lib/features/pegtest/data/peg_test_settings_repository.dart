@@ -31,6 +31,10 @@ class PegTestSettings {
 /// Input fields of the two-peg test; [name] is the persisted key.
 enum PegTestField { a1, b1, a2, b2, distance }
 
+/// Optional record fields (saved with a record), kept with the inputs like
+/// [PegTestField]; [name] is the persisted key.
+enum PegTestRecordField { instrument, observer, note }
+
 class PegTestSettingsRepository {
   static const toleranceMmKey = 'peg_test_tolerance_mm';
   static const toleranceFtKey = 'peg_test_tolerance_ft';

@@ -12,11 +12,15 @@ import '../../../core/widgets/semantic_pill.dart';
 import '../../../l10n/l10n.dart';
 import '../../fieldbook/domain/misclosure.dart';
 import '../../settings/misclosure_tolerance_repository.dart';
+import '../data/peg_test_record_repository.dart';
 import '../data/peg_test_settings_repository.dart';
+import '../domain/peg_test_record.dart';
 import '../domain/two_peg_test.dart';
+import 'peg_test_history_screen.dart';
 
 /// Two-peg test calculator: live result while typing, last inputs and the
-/// allowance persisted in `app_settings`.
+/// allowance persisted in `app_settings`. A result can be saved as a record
+/// (`peg_tests`) with optional instrument / observer / note.
 class PegTestScreen extends ConsumerStatefulWidget {
   const PegTestScreen({super.key});
 
@@ -30,7 +34,12 @@ class _PegTestScreenState extends ConsumerState<PegTestScreen> {
   final _controllers = {
     for (final field in PegTestField.values) field: TextEditingController(),
   };
+  final _recordControllers = {
+    for (final field in PegTestRecordField.values)
+      field: TextEditingController(),
+  };
   late final PegTestSettingsRepository _repository;
+  bool _saving = false;
   PegTestSettings _settings = const PegTestSettings();
   Timer? _saveTimer;
   bool _inputsDirty = false;
@@ -39,7 +48,10 @@ class _PegTestScreenState extends ConsumerState<PegTestScreen> {
   void initState() {
     super.initState();
     _repository = ref.read(pegTestSettingsRepositoryProvider);
-    for (final controller in _controllers.values) {
+    for (final controller in [
+      ..._controllers.values,
+      ..._recordControllers.values,
+    ]) {
       controller.addListener(_onInputChanged);
     }
     _restore();
@@ -60,6 +72,38 @@ class _PegTestScreenState extends ConsumerState<PegTestScreen> {
       final controller = _controllers[field]!;
       if (saved != null && controller.text.isEmpty) controller.text = saved;
     }
+    for (final field in PegTestRecordField.values) {
+      final saved = settings.inputs[field.name];
+      final controller = _recordControllers[field]!;
+      if (saved != null && controller.text.isEmpty) controller.text = saved;
+    }
+    _inputsDirty = false;
+    _saveTimer?.cancel();
+    await _prefillRecordDetails(settings);
+  }
+
+  /// Quick reuse: never-typed instrument / observer start from the latest
+  /// saved test or field book.
+  Future<void> _prefillRecordDetails(PegTestSettings settings) async {
+    final missing = [
+      PegTestRecordField.instrument,
+      PegTestRecordField.observer,
+    ].where((field) => settings.inputs[field.name] == null).toList();
+    if (missing.isEmpty) return;
+    final PegTestMetadata metadata;
+    try {
+      metadata = await ref.read(pegTestRecordRepositoryProvider).lastMetadata();
+    } catch (_) {
+      return;
+    }
+    if (!mounted) return;
+    for (final field in missing) {
+      final value = field == PegTestRecordField.instrument
+          ? metadata.instrument
+          : metadata.observer;
+      final controller = _recordControllers[field]!;
+      if (value != null && controller.text.isEmpty) controller.text = value;
+    }
     _inputsDirty = false;
     _saveTimer?.cancel();
   }
@@ -78,6 +122,8 @@ class _PegTestScreenState extends ConsumerState<PegTestScreen> {
         .saveInputs({
           for (final entry in _controllers.entries)
             entry.key.name: entry.value.text,
+          for (final entry in _recordControllers.entries)
+            entry.key.name: entry.value.text,
         })
         .catchError((_) {});
   }
@@ -86,13 +132,19 @@ class _PegTestScreenState extends ConsumerState<PegTestScreen> {
   void dispose() {
     _saveTimer?.cancel();
     _saveInputs();
-    for (final controller in _controllers.values) {
+    for (final controller in [
+      ..._controllers.values,
+      ..._recordControllers.values,
+    ]) {
       controller.dispose();
     }
     super.dispose();
   }
 
   String _text(PegTestField field) => _controllers[field]!.text;
+
+  String _recordText(PegTestRecordField field) =>
+      _recordControllers[field]!.text;
 
   TwoPegTest? _compute(LengthUnit unit) => TwoPegTest.tryParse(
     a1: _text(PegTestField.a1),
@@ -142,6 +194,41 @@ class _PegTestScreenState extends ConsumerState<PegTestScreen> {
     if (mounted) AppSnackbar.success(context, l10n.pegTestCopied);
   }
 
+  Future<void> _saveRecord(TwoPegTest test) async {
+    if (_saving) return;
+    final l10n = context.l10n;
+    setState(() => _saving = true);
+    try {
+      await ref
+          .read(pegTestRecordListProvider.notifier)
+          .add(
+            PegTestRecord.fromTest(
+              test,
+              instrument: _recordText(PegTestRecordField.instrument),
+              observer: _recordText(PegTestRecordField.observer),
+              note: _recordText(PegTestRecordField.note),
+            ),
+          );
+      if (!mounted) return;
+      // The note belongs to this record; instrument / observer carry over.
+      _recordControllers[PegTestRecordField.note]!.clear();
+      AppSnackbar.success(context, l10n.pegTestRecordSaved);
+    } catch (error) {
+      if (mounted) {
+        AppSnackbar.error(context, l10n.coreErrorWithDetail('$error'));
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  void _openHistory() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const PegTestHistoryScreen()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
@@ -151,7 +238,16 @@ class _PegTestScreenState extends ConsumerState<PegTestScreen> {
     final distance = TwoPegTest.parseNumber(_text(PegTestField.distance));
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.pegTestTitle)),
+      appBar: AppBar(
+        title: Text(l10n.pegTestTitle),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.history),
+            tooltip: l10n.pegTestHistoryTooltip,
+            onPressed: _openHistory,
+          ),
+        ],
+      ),
       body: ListView(
         padding: EdgeInsets.fromLTRB(
           12,
@@ -238,10 +334,14 @@ class _PegTestScreenState extends ConsumerState<PegTestScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          _ResultCard(
+          _RecordDetailsCard(controllers: _recordControllers),
+          const SizedBox(height: 12),
+          PegTestResultCard(
             test: test,
             unit: unit,
             onCopy: test == null ? null : () => _copyResult(test),
+            showSave: true,
+            onSave: test == null || _saving ? null : () => _saveRecord(test),
           ),
         ],
       ),
@@ -450,6 +550,67 @@ class _HowToCard extends StatelessWidget {
   }
 }
 
+/// Collapsed instrument / observer / note fields for a saved record.
+class _RecordDetailsCard extends StatelessWidget {
+  final Map<PegTestRecordField, TextEditingController> controllers;
+
+  const _RecordDetailsCard({required this.controllers});
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    final l10n = context.l10n;
+    final filled = [PegTestRecordField.instrument, PegTestRecordField.observer]
+        .map((field) => controllers[field]!.text.trim())
+        .where((t) => t.isNotEmpty);
+    Widget field(PegTestRecordField field, String label, {bool last = false}) =>
+        Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: TextField(
+            key: ValueKey('peg-test-${field.name}'),
+            controller: controllers[field],
+            textInputAction: last ? TextInputAction.done : TextInputAction.next,
+            textCapitalization: TextCapitalization.sentences,
+            decoration: InputDecoration(
+              labelText: label,
+              border: const OutlineInputBorder(),
+              isDense: true,
+            ),
+          ),
+        );
+    return Material(
+      color: colors.panel,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: colors.line),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: ExpansionTile(
+        key: const ValueKey('peg-test-record-details'),
+        leading: const Icon(Icons.badge_outlined),
+        shape: const Border(),
+        collapsedShape: const Border(),
+        title: Text(
+          l10n.pegTestRecordDetailsTitle,
+          style: Theme.of(context).textTheme.titleSmall,
+        ),
+        subtitle: Text(
+          filled.isEmpty ? l10n.pegTestRecordDetailsHint : filled.join(' · '),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(fontSize: 12.5, color: colors.subtext),
+        ),
+        childrenPadding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
+        children: [
+          field(PegTestRecordField.instrument, l10n.pegTestInstrumentLabel),
+          field(PegTestRecordField.observer, l10n.pegTestObserverLabel),
+          field(PegTestRecordField.note, l10n.pegTestNoteLabel, last: true),
+        ],
+      ),
+    );
+  }
+}
+
 class _InputGroup extends StatelessWidget {
   final String? title;
   final List<Widget> children;
@@ -552,15 +713,22 @@ class _NumberField extends StatelessWidget {
   }
 }
 
-class _ResultCard extends StatelessWidget {
+/// Result of a two-peg test (live on the calculator, read-only on a saved
+/// record). [showSave] adds the "Save record" button, enabled by [onSave].
+class PegTestResultCard extends StatelessWidget {
   final TwoPegTest? test;
   final LengthUnit unit;
   final VoidCallback? onCopy;
+  final bool showSave;
+  final VoidCallback? onSave;
 
-  const _ResultCard({
+  const PegTestResultCard({
+    super.key,
     required this.test,
     required this.unit,
     required this.onCopy,
+    this.showSave = false,
+    this.onSave,
   });
 
   @override
@@ -681,11 +849,33 @@ class _ResultCard extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 12),
-          OutlinedButton.icon(
-            onPressed: onCopy,
-            icon: const Icon(Icons.copy),
-            label: Text(l10n.pegTestCopyResult),
-          ),
+          if (showSave)
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: onCopy,
+                    icon: const Icon(Icons.copy),
+                    label: Text(l10n.pegTestCopyResult),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: FilledButton.icon(
+                    key: const ValueKey('peg-test-save-record'),
+                    onPressed: onSave,
+                    icon: const Icon(Icons.save_outlined),
+                    label: Text(l10n.pegTestSaveRecord),
+                  ),
+                ),
+              ],
+            )
+          else
+            OutlinedButton.icon(
+              onPressed: onCopy,
+              icon: const Icon(Icons.copy),
+              label: Text(l10n.pegTestCopyResult),
+            ),
         ],
       ),
     );

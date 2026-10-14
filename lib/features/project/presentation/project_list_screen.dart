@@ -15,6 +15,7 @@ import '../../../shared/widgets/native_ad_card.dart';
 import '../../ads/ad_manager.dart';
 import '../../ads/ad_providers.dart';
 import '../../backup/project_backup_providers.dart';
+import '../../pegtest/presentation/peg_test_screen.dart';
 import '../../settings/settings_screen.dart';
 import '../../quickmemo/presentation/quick_memo_list_screen.dart';
 import '../../../core/constants/app_constants.dart';
@@ -39,6 +40,16 @@ class ProjectListScreen extends ConsumerWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const QuickMemoListScreen()),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.straighten),
+            tooltip: l10n.pegTestTitle,
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const PegTestScreen()),
               );
             },
           ),

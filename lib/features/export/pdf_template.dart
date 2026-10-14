@@ -25,7 +25,7 @@ class PdfExporter {
     ProPdfSettings? proSettings,
     required AppLocalizations l10n,
   }) async {
-    final ttf = await _loadKoreanFont();
+    final ttf = await loadDocumentFont();
     final closingElevation = fieldBook.closingElevationFor(startElevation);
     final closure = LevelClosureCheck.compute(
       measurements,
@@ -79,7 +79,7 @@ class PdfExporter {
           _buildSummary(closure, ttf, proSettings, l10n),
           if (proSettings?.includeSignatureLines == true) ...[
             pw.SizedBox(height: 20),
-            _buildSignatureLines(ttf, proSettings, l10n),
+            buildSignatureLines(ttf, proSettings, l10n),
           ],
         ],
       ),
@@ -88,7 +88,8 @@ class PdfExporter {
     return pdf.save();
   }
 
-  static Future<pw.Font> _loadKoreanFont() async {
+  /// NotoSansKR (covers Latin and Korean); shared by every app PDF.
+  static Future<pw.Font> loadDocumentFont() async {
     try {
       final bytes = await rootBundle.load(
         'assets/fonts/NotoSansKR-Regular.ttf',
@@ -489,7 +490,9 @@ class PdfExporter {
     );
   }
 
-  static pw.Widget _buildSignatureLines(
+  /// Prepared / Checked / Approved boxes; the registered signature image
+  /// (if any) goes into "Prepared".
+  static pw.Widget buildSignatureLines(
     pw.Font ttf,
     ProPdfSettings? proSettings,
     AppLocalizations l10n,

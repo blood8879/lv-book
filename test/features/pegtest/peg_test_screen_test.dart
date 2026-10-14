@@ -3,7 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lv_book/features/fieldbook/domain/misclosure.dart';
+import 'package:lv_book/features/pegtest/data/peg_test_record_repository.dart';
 import 'package:lv_book/features/pegtest/data/peg_test_settings_repository.dart';
+import 'package:lv_book/features/pegtest/domain/peg_test_record.dart';
 import 'package:lv_book/features/pegtest/presentation/peg_test_screen.dart';
 import 'package:lv_book/features/settings/misclosure_tolerance_repository.dart';
 import 'package:lv_book/l10n/l10n.dart';
@@ -14,7 +16,14 @@ void main() {
     Locale locale = const Locale('en'),
     LengthUnit unit = LengthUnit.metres,
     PegTestSettings initial = const PegTestSettings(),
+    _MemoryPegTestRecordRepository? records,
   }) async {
+    // Tall view so the result card (below the record details) is built.
+    if (tester.view.physicalSize.height / tester.view.devicePixelRatio < 1600) {
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+    }
     final repository = _MemoryPegTestRepository(initial);
     await tester.pumpWidget(
       ProviderScope(
@@ -23,6 +32,9 @@ void main() {
             (ref) async => MisclosureTolerance.defaults.copyWith(unit: unit),
           ),
           pegTestSettingsRepositoryProvider.overrideWithValue(repository),
+          pegTestRecordRepositoryProvider.overrideWithValue(
+            records ?? _MemoryPegTestRecordRepository(),
+          ),
         ],
         child: MaterialApp(
           locale: locale,
@@ -126,6 +138,67 @@ void main() {
     expect(find.text('Result copied'), findsOneWidget);
   });
 
+  testWidgets('save record → appears in history → delete', (tester) async {
+    tester.view.physicalSize = const Size(800, 3000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    final records = _MemoryPegTestRecordRepository(
+      metadata: (instrument: 'DL-500 #1234', observer: 'Kim'),
+    );
+    await pumpScreen(tester, records: records);
+
+    // Save is disabled until there is a result.
+    final save = find.byKey(const ValueKey('peg-test-save-record'));
+    expect(tester.widget<FilledButton>(save).onPressed, isNull);
+    // Instrument / observer are prefilled from the last record / field book.
+    expect(find.text('DL-500 #1234 · Kim'), findsOneWidget);
+
+    await enterReadings(tester);
+    await tester.tap(find.text('Record details (optional)'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey('peg-test-note')),
+      'Before section 3',
+    );
+    await tester.tap(save);
+    await tester.pumpAndSettle();
+    expect(find.text('Record saved'), findsOneWidget);
+    expect(records.records, hasLength(1));
+    final saved = records.records.single;
+    expect(saved.instrument, 'DL-500 #1234');
+    expect(saved.observer, 'Kim');
+    expect(saved.note, 'Before section 3');
+    expect(saved.b2, 1.120);
+    expect(saved.unit, LengthUnit.metres);
+    expect(saved.toleranceEntry, 3.0);
+
+    await tester.tap(find.byTooltip('Saved tests'));
+    await tester.pumpAndSettle();
+    expect(find.text('Saved two-peg tests'), findsOneWidget);
+    expect(find.text('DL-500 #1234 · Kim'), findsOneWidget);
+    expect(find.text('+5.0 mm'), findsOneWidget);
+    expect(find.text('Adjustment required'), findsOneWidget);
+
+    await tester.tap(find.byKey(ValueKey('peg-test-record-${saved.id}')));
+    await tester.pumpAndSettle();
+    expect(find.text('Two-peg test record'), findsOneWidget);
+    expect(find.text('Before section 3'), findsOneWidget);
+    expect(find.text('1.115 m'), findsOneWidget);
+    // Read-only: no save button on a saved record.
+    expect(find.byKey(const ValueKey('peg-test-save-record')), findsNothing);
+
+    await tester.tap(find.byTooltip('Delete'));
+    await tester.pumpAndSettle();
+    expect(find.text('Delete this record?'), findsOneWidget);
+    await tester.tap(find.widgetWithText(FilledButton, 'Delete'));
+    await tester.pumpAndSettle();
+    expect(records.records, isEmpty);
+    expect(find.text('Saved two-peg tests'), findsOneWidget);
+    expect(find.text('No saved tests yet'), findsOneWidget);
+    expect(find.text('Record deleted'), findsOneWidget);
+  });
+
   testWidgets('restores saved inputs and edits the tolerance (Korean, ft)', (
     tester,
   ) async {
@@ -155,6 +228,37 @@ void main() {
     expect(repository.savedTolerance, (LengthUnit.feet, 0.02));
     expect(find.text('적합'), findsOneWidget);
   });
+}
+
+class _MemoryPegTestRecordRepository extends PegTestRecordRepository {
+  final List<PegTestRecord> records = [];
+  PegTestMetadata metadata;
+  var _nextId = 1;
+
+  _MemoryPegTestRecordRepository({
+    this.metadata = (instrument: null, observer: null),
+  });
+
+  @override
+  Future<int> create(PegTestRecord record) async {
+    final id = _nextId++;
+    records.add(PegTestRecord.fromMap({...record.toMap(), 'id': id}));
+    return id;
+  }
+
+  @override
+  Future<List<PegTestRecord>> list() async =>
+      records.reversed.toList(growable: false);
+
+  @override
+  Future<int> delete(int id) async {
+    final before = records.length;
+    records.removeWhere((record) => record.id == id);
+    return before - records.length;
+  }
+
+  @override
+  Future<PegTestMetadata> lastMetadata() async => metadata;
 }
 
 class _MemoryPegTestRepository extends PegTestSettingsRepository {

@@ -127,6 +127,7 @@ class DatabaseHelper {
 
     await _createSettingsTable(db);
     await _createQuickMemosTable(db);
+    await _createPegTestsTable(db);
   }
 
   Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
@@ -192,6 +193,32 @@ class DatabaseHelper {
     if (oldVersion < 10) {
       await _addReductionMethod(db);
     }
+    if (oldVersion < 11) {
+      await _createPegTestsTable(db);
+    }
+  }
+
+  /// v11: saved two-peg tests (instrument checks). Standalone like quick
+  /// memos, not linked to projects. Readings and the peg distance are in
+  /// [unit] (`LengthUnit.name`); the tolerance is the entry value (mm for
+  /// metres, ft for feet).
+  Future<void> _createPegTestsTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS peg_tests (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        created_at TEXT NOT NULL,
+        instrument TEXT,
+        observer TEXT,
+        unit TEXT NOT NULL DEFAULT 'metres',
+        a1 REAL NOT NULL,
+        b1 REAL NOT NULL,
+        a2 REAL NOT NULL,
+        b2 REAL NOT NULL,
+        peg_distance REAL NOT NULL,
+        tolerance_entry REAL NOT NULL,
+        note TEXT
+      )
+    ''');
   }
 
   /// v10: per field book reduction method (HI / rise and fall). Existing
