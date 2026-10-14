@@ -2816,6 +2816,12 @@ abstract class AppLocalizations {
   /// **'Documents'**
   String get settingsDocumentSection;
 
+  /// Settings section header for the store review link.
+  ///
+  /// In en, this message translates to:
+  /// **'Feedback'**
+  String get settingsFeedbackSection;
+
   /// No description provided for @settingsPdfSettingsSubtitle.
   ///
   /// In en, this message translates to:
@@ -2833,6 +2839,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Purchase status'**
   String get settingsPurchaseStatusSection;
+
+  /// Subtitle of the rate-app tile.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the Google Play listing to leave a review.'**
+  String get settingsRateAppSubtitle;
+
+  /// Settings tile that opens the Play Store listing (passive, no prompt).
+  ///
+  /// In en, this message translates to:
+  /// **'Rate Lv Book'**
+  String get settingsRateAppTitle;
 
   /// No description provided for @settingsRemoveAdsTitle.
   ///

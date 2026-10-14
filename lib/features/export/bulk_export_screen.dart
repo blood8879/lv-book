@@ -11,6 +11,7 @@ import '../fieldbook/data/fieldbook_providers.dart';
 import '../fieldbook/domain/fieldbook.dart';
 import '../pro/pro_providers.dart';
 import '../project/data/project_providers.dart';
+import '../review/review_providers.dart';
 import '../settings/misclosure_tolerance_repository.dart';
 import 'bulk_export_service.dart';
 import '../../core/constants/app_constants.dart';
@@ -292,6 +293,12 @@ class _BulkExportScreenState extends ConsumerState<BulkExportScreen> {
         AppSnackbar.error(context, l10n.exportBulkNothingToExport);
       } else {
         AppSnackbar.success(context, l10n.exportBulkShared(fileCount));
+        // Bulk export (Pro) shows no interstitial, so nothing can stack.
+        if (mounted) {
+          await ref
+              .read(reviewPromptCoordinatorProvider)
+              .onExportShared(interstitialShown: false);
+        }
       }
     } catch (error) {
       if (!mounted) return;

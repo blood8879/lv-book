@@ -1435,9 +1435,21 @@
     "description": "Settings section header."
   },
   "settingsDocumentSection": "Documents",
+  "settingsFeedbackSection": "Feedback",
+  "@settingsFeedbackSection": {
+    "description": "Settings section header for the store review link."
+  },
   "settingsPdfSettingsSubtitle": "Set company name, template, watermark and signature.",
   "settingsPdfSettingsTitle": "Submission PDF settings",
   "settingsPurchaseStatusSection": "Purchase status",
+  "settingsRateAppSubtitle": "Open the Google Play listing to leave a review.",
+  "@settingsRateAppSubtitle": {
+    "description": "Subtitle of the rate-app tile."
+  },
+  "settingsRateAppTitle": "Rate Lv Book",
+  "@settingsRateAppTitle": {
+    "description": "Settings tile that opens the Play Store listing (passive, no prompt)."
+  },
   "settingsRemoveAdsTitle": "Remove ads",
   "settingsRestorePurchasePendingSubtitle": "Checking your purchase history with the store.",
   "settingsRestorePurchaseSubtitle": "Restore the Pro purchase you already made.",

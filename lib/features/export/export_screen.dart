@@ -18,6 +18,7 @@ import '../ads/ad_providers.dart';
 import '../pro/pro_pdf_settings.dart';
 import '../pro/pro_providers.dart';
 import '../project/data/project_providers.dart';
+import '../review/review_providers.dart';
 import '../settings/misclosure_tolerance_repository.dart';
 import 'export_file_namer.dart';
 import 'export_history_repository.dart';
@@ -103,20 +104,33 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
     }
   }
 
-  Future<void> _showInterstitialAd() async {
+  /// Returns true when an interstitial was actually shown.
+  Future<bool> _showInterstitialAd() async {
     final ad = _interstitialAd;
-    if (ad == null) return;
+    if (ad == null) return false;
 
     final settings = ref.read(adSettingsRepositoryProvider);
     if (!await settings.canShowInterstitial()) {
       await ad.dispose();
       _interstitialAd = null;
-      return;
+      return false;
     }
 
     await settings.recordInterstitialShown();
     await ad.show();
     _interstitialAd = null;
+    return true;
+  }
+
+  /// Existing interstitial logic, then maybe an in-app review request.
+  /// A dismissed share sheet is not a value moment, so it neither counts as an
+  /// export nor triggers a review request.
+  Future<void> _afterShare(ShareResult result) async {
+    // Read before awaiting: the screen may be closed while the ad is shown.
+    final coordinator = ref.read(reviewPromptCoordinatorProvider);
+    final interstitialShown = await _showInterstitialAd();
+    if (result.status == ShareResultStatus.dismissed) return;
+    await coordinator.onExportShared(interstitialShown: interstitialShown);
   }
 
   @override
@@ -191,7 +205,7 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
       );
       final file = File('${dir.path}/$fileName');
       await file.writeAsBytes(pdfBytes);
-      await Share.shareXFiles([XFile(file.path)]);
+      final shareResult = await Share.shareXFiles([XFile(file.path)]);
       await ExportHistoryRepository().record(
         ExportHistoryRecord(
           fileName: file.path.split('/').last,
@@ -200,7 +214,7 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
           exportedAt: DateTime.now(),
         ),
       );
-      await _showInterstitialAd();
+      await _afterShare(shareResult);
     } catch (e) {
       if (context.mounted) {
         AppSnackbar.error(context, l10n.exportPdfError('$e'));
@@ -231,7 +245,7 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
       );
       final file = File('${dir.path}/$fileName');
       await file.writeAsString(CsvExporter.withBom(csvString));
-      await Share.shareXFiles([XFile(file.path)]);
+      final shareResult = await Share.shareXFiles([XFile(file.path)]);
       await ExportHistoryRepository().record(
         ExportHistoryRecord(
           fileName: file.path.split('/').last,
@@ -240,7 +254,7 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
           exportedAt: DateTime.now(),
         ),
       );
-      await _showInterstitialAd();
+      await _afterShare(shareResult);
     } catch (e) {
       if (context.mounted) {
         AppSnackbar.error(context, l10n.exportCsvError('$e'));

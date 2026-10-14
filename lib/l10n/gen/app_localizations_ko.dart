@@ -1532,6 +1532,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get settingsDocumentSection => '문서 설정';
 
   @override
+  String get settingsFeedbackSection => '의견';
+
+  @override
   String get settingsPdfSettingsSubtitle => '회사명, 템플릿, 워터마크, 서명을 설정합니다.';
 
   @override
@@ -1539,6 +1542,12 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get settingsPurchaseStatusSection => '구매 상태';
+
+  @override
+  String get settingsRateAppSubtitle => 'Google Play 스토어에서 리뷰를 남길 수 있습니다.';
+
+  @override
+  String get settingsRateAppTitle => '앱 평가하기';
 
   @override
   String get settingsRemoveAdsTitle => '광고 제거';

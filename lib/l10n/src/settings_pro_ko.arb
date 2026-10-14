@@ -115,5 +115,8 @@
   "settingsUnitTitle": "단위",
   "settingsUnitMetres": "미터 (m)",
   "settingsUnitFeet": "피트 (ft)",
-  "settingsUnitNote": "표시 단위만 바뀌며 기존 값은 변환되지 않습니다."
+  "settingsUnitNote": "표시 단위만 바뀌며 기존 값은 변환되지 않습니다.",
+  "settingsFeedbackSection": "의견",
+  "settingsRateAppTitle": "앱 평가하기",
+  "settingsRateAppSubtitle": "Google Play 스토어에서 리뷰를 남길 수 있습니다."
 }

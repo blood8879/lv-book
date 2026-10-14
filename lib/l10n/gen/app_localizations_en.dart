@@ -1634,6 +1634,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsDocumentSection => 'Documents';
 
   @override
+  String get settingsFeedbackSection => 'Feedback';
+
+  @override
   String get settingsPdfSettingsSubtitle =>
       'Set company name, template, watermark and signature.';
 
@@ -1642,6 +1645,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsPurchaseStatusSection => 'Purchase status';
+
+  @override
+  String get settingsRateAppSubtitle =>
+      'Open the Google Play listing to leave a review.';
+
+  @override
+  String get settingsRateAppTitle => 'Rate Lv Book';
 
   @override
   String get settingsRemoveAdsTitle => 'Remove ads';

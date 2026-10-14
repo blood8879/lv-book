@@ -245,5 +245,11 @@
   "settingsUnitFeet": "Feet (ft)",
   "@settingsUnitFeet": {"description": "Length unit option."},
   "settingsUnitNote": "Only labels change; existing numbers are not converted.",
-  "@settingsUnitNote": {"description": "One-line note under the unit choice."}
+  "@settingsUnitNote": {"description": "One-line note under the unit choice."},
+  "settingsFeedbackSection": "Feedback",
+  "@settingsFeedbackSection": {"description": "Settings section header for the store review link."},
+  "settingsRateAppTitle": "Rate Lv Book",
+  "@settingsRateAppTitle": {"description": "Settings tile that opens the Play Store listing (passive, no prompt)."},
+  "settingsRateAppSubtitle": "Open the Google Play listing to leave a review.",
+  "@settingsRateAppSubtitle": {"description": "Subtitle of the rate-app tile."}
 }

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -10,6 +11,7 @@ import '../purchase/purchase_controller.dart';
 import '../purchase/purchase_providers.dart';
 import '../../core/constants/app_constants.dart';
 import '../fieldbook/domain/misclosure.dart';
+import '../review/review_providers.dart';
 import 'misclosure_tolerance_repository.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -145,6 +147,12 @@ class SettingsScreen extends ConsumerWidget {
             title: l10n.adsPolicyExportTitle,
             subtitle: l10n.adsPolicyExportSubtitle,
           ),
+          // Passive store link only (no rating prompt / incentive). Android
+          // only: there is no App Store listing yet.
+          if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) ...[
+            _SectionHeader(title: l10n.settingsFeedbackSection),
+            const _RateAppTile(),
+          ],
         ],
       ),
     );
@@ -318,6 +326,36 @@ class _StatusTile extends StatelessWidget {
       leading: Icon(icon),
       title: Text(title),
       subtitle: Text(subtitle),
+    );
+  }
+}
+
+class _RateAppTile extends ConsumerWidget {
+  const _RateAppTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final colors = context.appColors;
+    final l10n = context.l10n;
+    return ListTile(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: colors.line),
+      ),
+      tileColor: colors.panel,
+      leading: const Icon(Icons.star_outline),
+      title: Text(l10n.settingsRateAppTitle),
+      subtitle: Text(l10n.settingsRateAppSubtitle),
+      trailing: const Icon(Icons.open_in_new),
+      onTap: () async {
+        try {
+          await ref.read(appReviewClientProvider).openStoreListing();
+        } catch (error) {
+          if (context.mounted) {
+            AppSnackbar.error(context, l10n.coreErrorWithDetail('$error'));
+          }
+        }
+      },
     );
   }
 }

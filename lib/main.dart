@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app.dart';
 import 'features/ads/ad_manager.dart';
 import 'features/backup/auto_backup_service.dart';
+import 'features/review/review_prompt_policy.dart';
+import 'features/review/review_providers.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,6 +20,18 @@ void main() async {
   await AdManager.initialize();
   runApp(const ProviderScope(child: LvBookApp()));
   _runAutoBackup();
+  _recordFirstLaunch();
+}
+
+/// Install-age baseline for the in-app review prompt; best effort.
+Future<void> _recordFirstLaunch() async {
+  try {
+    await ReviewPromptPolicy(
+      store: AppSettingsReviewPromptStore(),
+    ).ensureFirstLaunchRecorded();
+  } catch (_) {
+    // Never block or crash startup.
+  }
 }
 
 /// Fire-and-forget daily snapshot; must never block or crash startup.
