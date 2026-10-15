@@ -24,6 +24,7 @@ AUTOMATIC REDUCTION
 • Height of instrument (HI) or Rise & Fall method: levels are reduced as you type BS and FS
 • Turning points (TP) are detected automatically; mark one manually when needed
 • Intermediate sights handled correctly in the arithmetic check
+• Optional design level column with cut/fill for every station (C/F), for formation and setting-out checks
 
 BUILT-IN CHECKS
 • Arithmetic check: ΣBS − ΣFS = (ΣRise − ΣFall) = Final RL − Start RL
@@ -68,7 +69,7 @@ Your data stays on your device. Back it up any time as a JSON file.
 ## Release notes (en-US)
 
 ```
-• New: Two-peg test (collimation check) under Settings → Tools
-• Rate Lv Book from Settings → Feedback
-• Faster benchmark photo preview
+• New: Design level and cut/fill columns — turn on per level book in Review
+• Cut/fill included in PDF and CSV exports
+• Two-peg test records with PDF (1.7.0)
 ```
