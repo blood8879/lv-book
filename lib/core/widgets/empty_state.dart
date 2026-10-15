@@ -62,7 +62,13 @@ class EmptyState extends StatelessWidget {
     if (leading == null) return Text(action.label);
     return Row(
       mainAxisSize: MainAxisSize.min,
-      children: [leading, const SizedBox(width: 8), Text(action.label)],
+      children: [
+        leading,
+        const SizedBox(width: 8),
+        // Long labels (other languages, large text) wrap instead of
+        // overflowing the button.
+        Flexible(child: Text(action.label, textAlign: TextAlign.center)),
+      ],
     );
   }
 

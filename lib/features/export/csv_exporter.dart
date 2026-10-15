@@ -18,8 +18,9 @@ class CsvExporter {
   static String withBom(String csv) =>
       csv.startsWith(utf8Bom) ? csv : '$utf8Bom$csv';
 
-  /// Labels follow the app language ([l10n]); `CsvImporter` accepts both the
-  /// Korean and English labels, and the 'TP' remark marker is not localized.
+  /// Labels follow the app language ([l10n]); `CsvImporter` accepts the
+  /// labels of every app language, and the 'TP' remark marker is not
+  /// localized.
   static String generateFieldBookCsv({
     required FieldBook fieldBook,
     required List<Measurement> measurements,
@@ -117,9 +118,9 @@ class CsvExporter {
     final sums = closure.sums;
     rows.add([]);
     rows.add([
-      'ΣBS',
+      l10n.exportCheckSumBs,
       sums.sumBs.toStringAsFixed(3),
-      'ΣFS',
+      l10n.exportCheckSumFs,
       sums.sumFs.toStringAsFixed(3),
     ]);
     rows.add([l10n.exportCheckDifference, sums.difference.toStringAsFixed(3)]);

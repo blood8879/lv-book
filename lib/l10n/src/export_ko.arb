@@ -93,6 +93,8 @@
   "exportFieldUnit": "단위",
   "exportCheckSumRise": "Σ승",
   "exportCheckSumFall": "Σ강",
+  "exportCheckSumBs": "ΣBS",
+  "exportCheckSumFs": "ΣFS",
   "exportCheckRiseFallDifference": "Σ승 − Σ강",
   "exportImportUnitMismatch": "파일 단위는 {fileUnit}, 앱 단위는 {appUnit}입니다. 값은 변환 없이 가져왔습니다.",
   "exportColumnDesign": "계획고",

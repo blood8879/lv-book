@@ -387,8 +387,8 @@ class PdfExporter {
     final misclosure = closure.misclosure;
     return [
       [
-        ('ΣBS', sums.sumBs.toStringAsFixed(3)),
-        ('ΣFS', sums.sumFs.toStringAsFixed(3)),
+        (l10n.exportCheckSumBs, sums.sumBs.toStringAsFixed(3)),
+        (l10n.exportCheckSumFs, sums.sumFs.toStringAsFixed(3)),
         (l10n.exportCheckDifference, sums.difference.toStringAsFixed(3)),
       ],
       [

@@ -17,6 +17,7 @@ import '../data/peg_test_settings_repository.dart';
 import '../domain/peg_test_record.dart';
 import '../domain/two_peg_test.dart';
 import 'peg_test_history_screen.dart';
+import '../../../core/utils/decimal_input.dart';
 
 /// Two-peg test calculator: live result while typing, last inputs and the
 /// allowance persisted in `app_settings`. A result can be saved as a record
@@ -461,6 +462,7 @@ class _PegTestToleranceDialogState extends State<PegTestToleranceDialog> {
       content: TextField(
         controller: _controller,
         autofocus: true,
+        inputFormatters: const [DecimalCommaFormatter()],
         keyboardType: const TextInputType.numberWithOptions(decimal: true),
         decoration: InputDecoration(
           labelText: l10n.pegTestToleranceFieldLabel(symbol),
@@ -692,6 +694,7 @@ class _NumberField extends StatelessWidget {
     final colors = context.appColors;
     return TextField(
       controller: controller,
+      inputFormatters: const [DecimalCommaFormatter()],
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
       textInputAction: last ? TextInputAction.done : TextInputAction.next,
       style: TextStyle(

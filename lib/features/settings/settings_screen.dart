@@ -14,6 +14,7 @@ import '../fieldbook/domain/misclosure.dart';
 import '../pegtest/presentation/peg_test_screen.dart';
 import '../review/review_providers.dart';
 import 'misclosure_tolerance_repository.dart';
+import '../../core/utils/decimal_input.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -654,6 +655,7 @@ class _MisclosureToleranceDialogState extends State<MisclosureToleranceDialog> {
               key: ValueKey(_mode),
               controller: _activeController,
               autofocus: true,
+              inputFormatters: const [DecimalCommaFormatter()],
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),

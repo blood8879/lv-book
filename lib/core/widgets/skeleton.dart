@@ -63,34 +63,39 @@ class ListSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    return Column(
-      children: List.generate(count, (_) {
-        return Container(
-          margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: colors.panel,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: colors.line),
-          ),
-          child: Row(
-            children: [
-              const SkeletonBox(width: 56, height: 56),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    SkeletonBox(height: 14, width: 200),
-                    SizedBox(height: 10),
-                    SkeletonBox(height: 12, width: 140),
-                  ],
+    // Clipped, not scrollable: a short viewport (small phone, tall header
+    // panel above it) cuts the placeholder off instead of overflowing.
+    return SingleChildScrollView(
+      physics: const NeverScrollableScrollPhysics(),
+      child: Column(
+        children: List.generate(count, (_) {
+          return Container(
+            margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: colors.panel,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: colors.line),
+            ),
+            child: Row(
+              children: [
+                const SkeletonBox(width: 56, height: 56),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      SkeletonBox(height: 14, width: 200),
+                      SizedBox(height: 10),
+                      SkeletonBox(height: 12, width: 140),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-        );
-      }),
+              ],
+            ),
+          );
+        }),
+      ),
     );
   }
 }

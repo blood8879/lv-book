@@ -329,9 +329,17 @@
   "@exportCheckStartRl": {
     "description": "Arithmetic check: first reduced level."
   },
+  "exportCheckSumBs": "ΣBS",
+  "@exportCheckSumBs": {
+    "description": "Check box / CSV summary: sum of backsights. Must start with Σ (CsvImporter stops the table at a Σ row)."
+  },
   "exportCheckSumFall": "ΣFall",
   "@exportCheckSumFall": {
     "description": "Check box: sum of falls."
+  },
+  "exportCheckSumFs": "ΣFS",
+  "@exportCheckSumFs": {
+    "description": "Check box / CSV summary: sum of foresights. Must start with Σ."
   },
   "exportCheckSumRise": "ΣRise",
   "@exportCheckSumRise": {
@@ -816,6 +824,10 @@
       }
     }
   },
+  "fieldbookColumnBs": "BS",
+  "@fieldbookColumnBs": {
+    "description": "Editor table header: backsight (Spanish VAt). Keep very short."
+  },
   "fieldbookColumnCutFill": "Cut(+)/Fill(−)",
   "@fieldbookColumnCutFill": {
     "description": "Editor table header of the read-only cut/fill column (RL − design)."
@@ -823,6 +835,10 @@
   "fieldbookColumnDesign": "Design",
   "@fieldbookColumnDesign": {
     "description": "Editor table header of the editable design level column; must fit ~68 px."
+  },
+  "fieldbookColumnFs": "FS",
+  "@fieldbookColumnFs": {
+    "description": "Editor table header: foresight (Spanish VAd). Keep very short."
   },
   "fieldbookColumnHi": "HI",
   "fieldbookColumnNo": "Stn",
@@ -1061,6 +1077,10 @@
     }
   },
   "fieldbookSummaryStart": "Start RL",
+  "fieldbookSummarySumBs": "ΣBS",
+  "@fieldbookSummarySumBs": {
+    "description": "Editor summary cell label: sum of backsights."
+  },
   "fieldbookSummarySumFall": "ΣFall {value}",
   "@fieldbookSummarySumFall": {
     "description": "Caption under ΣFS for rise-and-fall books.",
@@ -1069,6 +1089,10 @@
         "type": "String"
       }
     }
+  },
+  "fieldbookSummarySumFs": "ΣFS",
+  "@fieldbookSummarySumFs": {
+    "description": "Editor summary cell label: sum of foresights (turning points and last point)."
   },
   "fieldbookSummarySumRise": "ΣRise {value}",
   "@fieldbookSummarySumRise": {

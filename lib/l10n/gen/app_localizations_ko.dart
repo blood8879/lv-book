@@ -371,7 +371,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get exportCheckStartRl => '시작 GH';
 
   @override
+  String get exportCheckSumBs => 'ΣBS';
+
+  @override
   String get exportCheckSumFall => 'Σ강';
+
+  @override
+  String get exportCheckSumFs => 'ΣFS';
 
   @override
   String get exportCheckSumRise => 'Σ승';
@@ -733,10 +739,16 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String get fieldbookColumnBs => 'BS';
+
+  @override
   String get fieldbookColumnCutFill => '절토(+)/성토(−)';
 
   @override
   String get fieldbookColumnDesign => '계획고';
+
+  @override
+  String get fieldbookColumnFs => 'FS';
 
   @override
   String get fieldbookColumnHi => 'IH';
@@ -1056,9 +1068,15 @@ class AppLocalizationsKo extends AppLocalizations {
   String get fieldbookSummaryStart => '시작';
 
   @override
+  String get fieldbookSummarySumBs => 'ΣBS';
+
+  @override
   String fieldbookSummarySumFall(String value) {
     return 'Σ강 $value';
   }
+
+  @override
+  String get fieldbookSummarySumFs => 'ΣFS';
 
   @override
   String fieldbookSummarySumRise(String value) {

@@ -1,0 +1,21 @@
+{
+  "@@locale": "es",
+  "coreAppName": "Lv Book",
+  "coreAppProName": "Lv Book Pro",
+  "coreCancel": "Cancelar",
+  "coreSave": "Guardar",
+  "coreDelete": "Eliminar",
+  "coreConfirm": "Aceptar",
+  "coreAdd": "Agregar",
+  "coreEdit": "Editar",
+  "coreClose": "Cerrar",
+  "coreRetry": "Reintentar",
+  "coreProcessing": "Procesando…",
+  "coreSaved": "Guardado",
+  "coreErrorWithDetail": "Error: {error}",
+  "coreSelectedCount": "{count, plural, =0{Ninguno seleccionado} =1{1 seleccionado} other{{count} seleccionados}}",
+  "coreJudgementWithinTolerance": "Dentro de tolerancia",
+  "coreJudgementOk": "OK",
+  "coreJudgementCheckRequired": "Requiere revisión",
+  "coreFileNotUtf8": "Solo se admiten archivos UTF-8. En Excel, guarde el archivo de nuevo como \"CSV UTF-8 (delimitado por comas)\"."
+}

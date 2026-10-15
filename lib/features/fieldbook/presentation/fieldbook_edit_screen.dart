@@ -24,6 +24,7 @@ import '../../../core/utils/calculation.dart';
 import '../../../l10n/l10n.dart';
 import 'fieldbook_l10n.dart';
 import 'reduction_method_selector.dart';
+import '../../../core/utils/decimal_input.dart';
 
 /// Display text for a BS/FS reading: 3 decimals (e.g. 1.94 → '1.940'), but
 /// never rounds away entered precision (1.2345 stays '1.2345').
@@ -762,12 +763,18 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
       color: colors.darkSurface,
       child: Row(
         children: [
-          Text(
-            context.l10n.fieldbookStartRlLabel,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: onDarkMuted,
+          // Flexible: longer labels (e.g. Spanish "Cota inicial") ellipsize
+          // instead of squeezing the closing button off a narrow phone.
+          Flexible(
+            child: Text(
+              context.l10n.fieldbookStartRlLabel,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: onDarkMuted,
+              ),
             ),
           ),
           const SizedBox(width: 8),
@@ -781,6 +788,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
                 color: onDark,
                 fontFeatures: AppTypography.tabularFeatures,
               ),
+              inputFormatters: const [DecimalCommaFormatter()],
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
@@ -1157,8 +1165,8 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
       child: Row(
         children: [
           _headerCell(l10n.fieldbookColumnNo, flex: _flexNo),
-          _headerCell('BS', flex: _flexValue),
-          _headerCell('FS', flex: _flexValue),
+          _headerCell(l10n.fieldbookColumnBs, flex: _flexValue),
+          _headerCell(l10n.fieldbookColumnFs, flex: _flexValue),
           _headerCell(
             _isRiseFall ? l10n.fieldbookColumnRiseFall : l10n.fieldbookColumnHi,
             flex: _flexValue,
@@ -1394,6 +1402,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
           color: colors.ink,
           fontFeatures: AppTypography.tabularFeatures,
         ),
+        inputFormatters: const [DecimalCommaFormatter()],
         keyboardType: const TextInputType.numberWithOptions(
           decimal: true,
           signed: true,
@@ -1488,7 +1497,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _summaryItem(
-                'ΣBS',
+                l10n.fieldbookSummarySumBs,
                 sums.sumBs.toStringAsFixed(3),
                 caption: riseFall == null
                     ? null
@@ -1497,7 +1506,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
                       ),
               ),
               _summaryItem(
-                'ΣFS',
+                l10n.fieldbookSummarySumFs,
                 sums.sumFs.toStringAsFixed(3),
                 caption: riseFall == null
                     ? null
@@ -1966,6 +1975,7 @@ class _ClosingReferenceSheetState extends State<_ClosingReferenceSheet> {
               TextField(
                 controller: _elevationController,
                 autofocus: true,
+                inputFormatters: const [DecimalCommaFormatter()],
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                   signed: true,

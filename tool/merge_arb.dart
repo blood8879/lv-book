@@ -17,7 +17,7 @@ import 'dart:convert';
 import 'dart:io';
 
 /// Supported locales. The first one is the gen-l10n template (en).
-const List<String> kLocales = ['en', 'ko'];
+const List<String> kLocales = ['en', 'ko', 'es'];
 
 /// Area -> allowed key prefixes. A key must be `<prefix><UpperCaseOrDigit>...`.
 /// One fragment per area keeps parallel work conflict-free.

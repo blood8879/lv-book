@@ -10,6 +10,7 @@
 	<array>
 		<string>en</string>
 		<string>ko</string>
+		<string>es</string>
 	</array>
 	<key>CFBundleDisplayName</key>
 	<string>Lv Book</string>

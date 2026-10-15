@@ -6,6 +6,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
 import 'app_localizations_en.dart';
+import 'app_localizations_es.dart';
 import 'app_localizations_ko.dart';
 
 // ignore_for_file: type=lint
@@ -95,6 +96,7 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
+    Locale('es'),
     Locale('ko'),
   ];
 
@@ -740,11 +742,23 @@ abstract class AppLocalizations {
   /// **'Start RL'**
   String get exportCheckStartRl;
 
+  /// Check box / CSV summary: sum of backsights. Must start with Σ (CsvImporter stops the table at a Σ row).
+  ///
+  /// In en, this message translates to:
+  /// **'ΣBS'**
+  String get exportCheckSumBs;
+
   /// Check box: sum of falls.
   ///
   /// In en, this message translates to:
   /// **'ΣFall'**
   String get exportCheckSumFall;
+
+  /// Check box / CSV summary: sum of foresights. Must start with Σ.
+  ///
+  /// In en, this message translates to:
+  /// **'ΣFS'**
+  String get exportCheckSumFs;
 
   /// Check box: sum of rises.
   ///
@@ -1394,6 +1408,12 @@ abstract class AppLocalizations {
   /// **'{name} · {rl}'**
   String fieldbookClosingSummary(String name, String rl);
 
+  /// Editor table header: backsight (Spanish VAt). Keep very short.
+  ///
+  /// In en, this message translates to:
+  /// **'BS'**
+  String get fieldbookColumnBs;
+
   /// Editor table header of the read-only cut/fill column (RL − design).
   ///
   /// In en, this message translates to:
@@ -1405,6 +1425,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Design'**
   String get fieldbookColumnDesign;
+
+  /// Editor table header: foresight (Spanish VAd). Keep very short.
+  ///
+  /// In en, this message translates to:
+  /// **'FS'**
+  String get fieldbookColumnFs;
 
   /// No description provided for @fieldbookColumnHi.
   ///
@@ -1976,11 +2002,23 @@ abstract class AppLocalizations {
   /// **'Start RL'**
   String get fieldbookSummaryStart;
 
+  /// Editor summary cell label: sum of backsights.
+  ///
+  /// In en, this message translates to:
+  /// **'ΣBS'**
+  String get fieldbookSummarySumBs;
+
   /// Caption under ΣFS for rise-and-fall books.
   ///
   /// In en, this message translates to:
   /// **'ΣFall {value}'**
   String fieldbookSummarySumFall(String value);
+
+  /// Editor summary cell label: sum of foresights (turning points and last point).
+  ///
+  /// In en, this message translates to:
+  /// **'ΣFS'**
+  String get fieldbookSummarySumFs;
 
   /// Caption under ΣBS for rise-and-fall books (3 decimals by caller).
   ///
@@ -3374,7 +3412,7 @@ class _AppLocalizationsDelegate
 
   @override
   bool isSupported(Locale locale) =>
-      <String>['en', 'ko'].contains(locale.languageCode);
+      <String>['en', 'es', 'ko'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -3385,6 +3423,8 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
   switch (locale.languageCode) {
     case 'en':
       return AppLocalizationsEn();
+    case 'es':
+      return AppLocalizationsEs();
     case 'ko':
       return AppLocalizationsKo();
   }

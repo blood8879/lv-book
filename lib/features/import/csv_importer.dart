@@ -1,6 +1,4 @@
 import 'package:csv/csv.dart';
-import 'package:flutter/widgets.dart' show Locale;
-
 import '../../l10n/l10n.dart';
 import '../export/export_labels.dart';
 import '../fieldbook/domain/fieldbook.dart';
@@ -42,16 +40,45 @@ enum _CsvField {
   unit,
 }
 
-/// Imports CSV files exported by Lv Book in either language.
+/// Imports CSV files exported by Lv Book in any app language.
 ///
-/// Labels are matched against both the Korean labels (every file exported
-/// before English support, and Korean-language exports) and the English
-/// labels, case-insensitively. Errors and warnings are returned in the
-/// language of [l10n].
+/// Labels are matched against the labels of every supported language (Korean:
+/// every file exported before English support; English; Spanish),
+/// case-insensitively. Errors and warnings are returned in the language of
+/// [l10n].
 class CsvImporter {
-  /// Accepted metadata labels (lowercased) per field. Keep in sync with
-  /// `CsvExporter` / the `exportField*` keys; never remove a legacy label.
-  static const Map<String, _CsvField> _metadataAliases = {
+  /// Strings of every app language; exported labels are matched against all.
+  static final List<AppLocalizations> _allLanguages = [
+    for (final locale in AppLocalizations.supportedLocales)
+      lookupAppLocalizations(locale),
+  ];
+
+  /// Accepted metadata labels (lowercased) per field: [_legacyMetadataAliases]
+  /// plus the current `exportField*` label of every language.
+  static final Map<String, _CsvField> _metadataAliases = {
+    ..._legacyMetadataAliases,
+    for (final strings in _allLanguages) ...{
+      _normalize(strings.exportFieldTitle): _CsvField.title,
+      _normalize(strings.exportFieldDate): _CsvField.date,
+      _normalize(strings.exportFieldBmElevation): _CsvField.bmElevation,
+      _normalize(strings.exportFieldSurveyor): _CsvField.surveyor,
+      _normalize(strings.exportFieldChecker): _CsvField.checker,
+      _normalize(strings.exportFieldInstrument): _CsvField.instrument,
+      _normalize(strings.exportFieldWeather): _CsvField.weather,
+      _normalize(strings.exportFieldSection): _CsvField.section,
+      _normalize(strings.exportFieldJobNumber): _CsvField.jobNumber,
+      _normalize(strings.exportFieldStartBm): _CsvField.startBm,
+      _normalize(strings.exportFieldClosingBm): _CsvField.closingBm,
+      _normalize(strings.exportFieldClosingRl): _CsvField.closingRl,
+      _normalize(strings.exportFieldReductionMethod): _CsvField.reductionMethod,
+      _normalize(strings.exportFieldUnit): _CsvField.unit,
+    },
+  };
+
+  /// Metadata labels of earlier app versions and common spellings. Keep in
+  /// sync with `CsvExporter` / the `exportField*` keys; never remove a
+  /// legacy label.
+  static const Map<String, _CsvField> _legacyMetadataAliases = {
     '야장명': _CsvField.title,
     'level book': _CsvField.title,
     'level book name': _CsvField.title,
@@ -94,7 +121,10 @@ class CsvImporter {
 
   /// Reduction method values (lowercased) meaning rise and fall; anything
   /// else (including '기고식' / 'Height of instrument') is HI.
-  static const _riseFallValues = {
+  static final _riseFallValues = {
+    for (final strings in _allLanguages)
+      _normalize(strings.exportReductionRiseFall),
+    'ascensos y descensos',
     'rise and fall',
     'rise & fall',
     'rise/fall',
@@ -110,14 +140,18 @@ class CsvImporter {
     'metres': LengthUnit.metres,
     'meter': LengthUnit.metres,
     'meters': LengthUnit.metres,
+    'metro': LengthUnit.metres,
+    'metros': LengthUnit.metres,
     '미터': LengthUnit.metres,
     'ft': LengthUnit.feet,
     'foot': LengthUnit.feet,
     'feet': LengthUnit.feet,
+    'pie': LengthUnit.feet,
+    'pies': LengthUnit.feet,
     '피트': LengthUnit.feet,
   };
 
-  /// Table header labels (lowercased) per column: every label either
+  /// Table header labels (lowercased) per column: every label any
   /// language exports, plus common spellings. Files without recognisable
   /// BS/FS headers use the legacy fixed layout ([_legacyColumns]).
   static final Map<String, ExportColumn> _columnAliases = () {
@@ -140,7 +174,7 @@ class CsvImporter {
       'cut_fill': ExportColumn.cutFill,
       'cut/fill': ExportColumn.cutFill,
     };
-    for (final strings in [l10nKo, l10nFor(const Locale('en'))]) {
+    for (final strings in _allLanguages) {
       for (final column in ExportColumn.values) {
         map[_normalize(exportColumnHeader(strings, column))] = column;
       }
@@ -174,11 +208,27 @@ class CsvImporter {
   }
 
   /// Table header cells that mark the start of the measurement table.
-  static const _rowNumberHeaders = {'no.', 'no'};
-  static const _stationHeaders = {'측점명', 'station'};
+  static final _rowNumberHeaders = {
+    'no.',
+    'no',
+    for (final strings in _allLanguages) _normalize(strings.exportColumnNo),
+  };
+  static final _stationHeaders = {
+    '측점명',
+    'station',
+    for (final strings in _allLanguages)
+      _normalize(strings.exportColumnStation),
+  };
 
-  /// Remarks values that mark a turning point (Korean and English files).
-  static const _turningPointMarkers = {'tp', 't.p.', 'turning point', '전환점'};
+  /// Remarks values that mark a turning point. Exports always write 'TP';
+  /// the others are spellings users may type.
+  static const _turningPointMarkers = {
+    'tp',
+    't.p.',
+    'turning point',
+    '전환점',
+    'punto de cambio',
+  };
 
   static String _normalize(Object? cell) =>
       cell.toString().replaceAll('\ufeff', '').trim().toLowerCase();

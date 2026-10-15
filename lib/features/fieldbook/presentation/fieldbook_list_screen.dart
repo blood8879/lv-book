@@ -27,6 +27,7 @@ import 'reduction_method_selector.dart';
 import '../../settings/misclosure_tolerance_repository.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../l10n/l10n.dart';
+import '../../../core/utils/decimal_input.dart';
 
 class FieldBookListScreen extends ConsumerWidget {
   final int projectId;
@@ -352,6 +353,7 @@ class FieldBookListScreen extends ConsumerWidget {
                         labelText: l10n.fieldbookStartElevationLabel(unit),
                         hintText: l10n.fieldbookStartElevationHint,
                       ),
+                      inputFormatters: const [DecimalCommaFormatter()],
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),

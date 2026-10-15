@@ -57,6 +57,31 @@ void main() {
     }
   });
 
+  testWidgets('Spanish paywall fits a 360 px phone as a one-time purchase', (
+    tester,
+  ) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.android;
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    try {
+      await tester.pumpWidget(_buildSettings(locale: const Locale('es')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Ajustes'), findsOneWidget);
+      expect(find.text(r'$4.99 · pago único'), findsOneWidget);
+      expect(find.text('Comprar Lv Book Pro'), findsOneWidget);
+      expect(find.text('Restaurar compra'), findsOneWidget);
+      expect(
+        find.textContaining(RegExp('suscrip|al mes', caseSensitive: false)),
+        findsNothing,
+      );
+      expect(tester.takeException(), isNull);
+    } finally {
+      debugDefaultTargetPlatformOverride = null;
+    }
+  });
+
   test('purchase notices render in both languages', () {
     final en = l10nFor(const Locale('en'));
     const nothing = PurchaseNotice(PurchaseNoticeCode.nothingToRestore);

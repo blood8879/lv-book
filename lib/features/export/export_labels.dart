@@ -44,9 +44,10 @@ enum ExportColumn {
   cutFill,
 }
 
-/// English exports use the standard level book layout BS | IS | FS for both
-/// methods; Korean exports keep their original layout (intermediate sights
-/// stay in the FS column) so existing users see no change.
+/// English and Spanish exports use the standard level book layout
+/// BS | IS | FS (VAt | VI | VAd) for both methods; Korean exports keep their
+/// original layout (intermediate sights stay in the FS column) so existing
+/// users see no change.
 bool exportUsesIntermediateColumn(AppLocalizations l10n) =>
     !l10n.localeName.startsWith('ko');
 

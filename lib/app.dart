@@ -43,7 +43,7 @@ class _LvBookAppState extends ConsumerState<LvBookApp> {
       onGenerateTitle: (context) => context.l10n.coreAppName,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      // Korean device -> ko, anything else -> en.
+      // Korean device -> ko, Spanish -> es, anything else -> en.
       localeListResolutionCallback: (locales, _) => resolveAppLocale(locales),
       navigatorKey: navigatorKey,
       theme: AppTheme.lightTheme,

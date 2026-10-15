@@ -403,7 +403,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exportCheckStartRl => 'Start RL';
 
   @override
+  String get exportCheckSumBs => 'ΣBS';
+
+  @override
   String get exportCheckSumFall => 'ΣFall';
+
+  @override
+  String get exportCheckSumFs => 'ΣFS';
 
   @override
   String get exportCheckSumRise => 'ΣRise';
@@ -775,10 +781,16 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get fieldbookColumnBs => 'BS';
+
+  @override
   String get fieldbookColumnCutFill => 'Cut(+)/Fill(−)';
 
   @override
   String get fieldbookColumnDesign => 'Design';
+
+  @override
+  String get fieldbookColumnFs => 'FS';
 
   @override
   String get fieldbookColumnHi => 'HI';
@@ -1102,9 +1114,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fieldbookSummaryStart => 'Start RL';
 
   @override
+  String get fieldbookSummarySumBs => 'ΣBS';
+
+  @override
   String fieldbookSummarySumFall(String value) {
     return 'ΣFall $value';
   }
+
+  @override
+  String get fieldbookSummarySumFs => 'ΣFS';
 
   @override
   String fieldbookSummarySumRise(String value) {

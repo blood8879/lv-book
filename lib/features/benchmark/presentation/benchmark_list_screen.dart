@@ -16,6 +16,7 @@ import '../../ads/ad_providers.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../l10n/l10n.dart';
 import '../../settings/misclosure_tolerance_repository.dart';
+import '../../../core/utils/decimal_input.dart';
 
 class BenchmarkListScreen extends ConsumerWidget {
   final int projectId;
@@ -251,6 +252,7 @@ class BenchmarkListScreen extends ConsumerWidget {
                     hintText: l10n.benchmarkElevationHint,
                     errorText: elevationError,
                   ),
+                  inputFormatters: const [DecimalCommaFormatter()],
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
@@ -416,6 +418,7 @@ class BenchmarkListScreen extends ConsumerWidget {
                     ),
                     errorText: elevationError,
                   ),
+                  inputFormatters: const [DecimalCommaFormatter()],
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),

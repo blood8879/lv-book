@@ -20,6 +20,7 @@ export 'gen/app_localizations.dart';
 /// Locales the app ships, in priority order. English is the fallback.
 const Locale kEnglishLocale = Locale('en');
 const Locale kKoreanLocale = Locale('ko');
+const Locale kSpanishLocale = Locale('es');
 
 extension L10nX on BuildContext {
   /// Strings for the current app locale.
@@ -45,8 +46,9 @@ AppLocalizations l10nForPlatform() => lookupAppLocalizations(
   resolveAppLocale(PlatformDispatcher.instance.locales),
 );
 
-/// App locale policy: the first preferred locale whose language is Korean or
-/// English wins; anything else falls back to English.
+/// App locale policy: the first preferred locale whose language is Korean,
+/// English or Spanish (any region: es-ES, es-MX, es-419, ...) wins; anything
+/// else falls back to English.
 Locale resolveAppLocale(Iterable<Locale>? preferred) {
   for (final locale in preferred ?? const <Locale>[]) {
     switch (locale.languageCode) {
@@ -54,6 +56,8 @@ Locale resolveAppLocale(Iterable<Locale>? preferred) {
         return kKoreanLocale;
       case 'en':
         return kEnglishLocale;
+      case 'es':
+        return kSpanishLocale;
     }
   }
   return kEnglishLocale;
