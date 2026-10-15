@@ -68,6 +68,17 @@ class FieldBookRepository {
     );
   }
 
+  /// Persists only the Design / Cut-Fill column flag.
+  Future<int> updateShowDesignLevel(FieldBook fieldBook) async {
+    final db = await _dbHelper.database;
+    return await db.update(
+      'field_books',
+      {'show_design_level': fieldBook.showDesignLevel ? 1 : 0},
+      where: 'id = ?',
+      whereArgs: [fieldBook.id],
+    );
+  }
+
   Future<int> delete(int id) async {
     final db = await _dbHelper.database;
     return await db.transaction((txn) async {

@@ -29,6 +29,7 @@ class FieldBookTemplates {
       closingBmId: source.closingBmId,
       closingElevation: source.closingElevation,
       reductionMethod: source.reductionMethod,
+      showDesignLevel: source.showDesignLevel,
       memo: source.memo,
       surveyor: source.surveyor,
       checker: source.checker,
@@ -48,6 +49,9 @@ class FieldBookTemplates {
             stationName: measurements[i].stationName,
             type: measurements[i].type,
             manualTp: measurements[i].manualTp,
+            // Design levels belong to the stations (planned levels), not to
+            // the readings, so a re-survey of the same stations keeps them.
+            designLevel: measurements[i].designLevel,
           ),
       ],
     );

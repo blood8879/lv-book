@@ -782,6 +782,18 @@ abstract class AppLocalizations {
   /// **'BS'**
   String get exportColumnBs;
 
+  /// Measurement table column: cut (+) / fill (−) = RL − design level.
+  ///
+  /// In en, this message translates to:
+  /// **'Cut(+)/Fill(−)'**
+  String get exportColumnCutFill;
+
+  /// Measurement table column: design (planned) level. Only when the book shows design levels. CsvImporter matches it in both languages.
+  ///
+  /// In en, this message translates to:
+  /// **'Design level'**
+  String get exportColumnDesign;
+
   /// Table column of a rise-and-fall book.
   ///
   /// In en, this message translates to:
@@ -847,6 +859,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Couldn\'t create the CSV: {error}'**
   String exportCsvError(String error);
+
+  /// PDF prefix of a cut value ('C 0.125').
+  ///
+  /// In en, this message translates to:
+  /// **'C'**
+  String get exportCutLetter;
 
   /// Title printed at the top of the exported PDF/CSV level book.
   ///
@@ -979,6 +997,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Weather'**
   String get exportFieldWeather;
+
+  /// PDF prefix of a fill value ('F 0.040').
+  ///
+  /// In en, this message translates to:
+  /// **'F'**
+  String get exportFillLetter;
 
   /// CSV import warning.
   ///
@@ -1370,6 +1394,18 @@ abstract class AppLocalizations {
   /// **'{name} · {rl}'**
   String fieldbookClosingSummary(String name, String rl);
 
+  /// Editor table header of the read-only cut/fill column (RL − design).
+  ///
+  /// In en, this message translates to:
+  /// **'Cut(+)/Fill(−)'**
+  String get fieldbookColumnCutFill;
+
+  /// Editor table header of the editable design level column; must fit ~68 px.
+  ///
+  /// In en, this message translates to:
+  /// **'Design'**
+  String get fieldbookColumnDesign;
+
   /// No description provided for @fieldbookColumnHi.
   ///
   /// In en, this message translates to:
@@ -1436,6 +1472,12 @@ abstract class AppLocalizations {
   /// **'Or paste CSV exported from Lv Book.'**
   String get fieldbookCsvPasteHint;
 
+  /// One-letter prefix of a cut value in the editor ('C 0.125'): ground above design.
+  ///
+  /// In en, this message translates to:
+  /// **'C'**
+  String get fieldbookCutLetter;
+
   /// No description provided for @fieldbookDeleteConfirm.
   ///
   /// In en, this message translates to:
@@ -1459,6 +1501,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Delete level book'**
   String get fieldbookDeleteTitle;
+
+  /// Helper under the design level switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Adds a Design column. Cut/fill = RL − design: C (cut) when the ground is above design, F (fill) when below.'**
+  String get fieldbookDesignToggleHelp;
+
+  /// Switch in the editor's review panel that shows the Design / Cut-Fill columns for this level book.
+  ///
+  /// In en, this message translates to:
+  /// **'Design level & cut/fill'**
+  String get fieldbookDesignToggleLabel;
 
   /// No description provided for @fieldbookDuplicateError.
   ///
@@ -1519,6 +1573,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Level book'**
   String get fieldbookFabLabel;
+
+  /// One-letter prefix of a fill value in the editor ('F 0.040'): ground below design.
+  ///
+  /// In en, this message translates to:
+  /// **'F'**
+  String get fieldbookFillLetter;
 
   /// No description provided for @fieldbookImportButton.
   ///

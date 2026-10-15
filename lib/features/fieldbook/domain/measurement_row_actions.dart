@@ -42,6 +42,7 @@ class MeasurementRowActions {
         ih: source.ih,
         gh: source.gh,
         manualTp: source.manualTp,
+        designLevel: source.designLevel,
       ),
     );
     return _reindex(next);

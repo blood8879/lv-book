@@ -399,5 +399,13 @@
   "exportCheckRiseFallDifference": "ΣRise − ΣFall",
   "@exportCheckRiseFallDifference": {"description": "Check box: ΣRise − ΣFall (equals ΣBS − ΣFS and Final − Start)."},
   "exportImportUnitMismatch": "The file is in {fileUnit} but the app is set to {appUnit}. Numbers were imported unchanged.",
-  "@exportImportUnitMismatch": {"description": "CSV import warning when the file unit differs from the app unit.", "placeholders": {"fileUnit": {"type": "String"}, "appUnit": {"type": "String"}}}
+  "@exportImportUnitMismatch": {"description": "CSV import warning when the file unit differs from the app unit.", "placeholders": {"fileUnit": {"type": "String"}, "appUnit": {"type": "String"}}},
+  "exportColumnDesign": "Design level",
+  "@exportColumnDesign": {"description": "Measurement table column: design (planned) level. Only when the book shows design levels. CsvImporter matches it in both languages."},
+  "exportColumnCutFill": "Cut(+)/Fill(−)",
+  "@exportColumnCutFill": {"description": "Measurement table column: cut (+) / fill (−) = RL − design level."},
+  "exportCutLetter": "C",
+  "@exportCutLetter": {"description": "PDF prefix of a cut value ('C 0.125')."},
+  "exportFillLetter": "F",
+  "@exportFillLetter": {"description": "PDF prefix of a fill value ('F 0.040')."}
 }

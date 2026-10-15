@@ -1,4 +1,5 @@
 import '../../l10n/l10n.dart';
+import '../fieldbook/domain/design_level.dart';
 import '../fieldbook/domain/fieldbook.dart';
 import '../fieldbook/domain/measurement.dart';
 import '../fieldbook/domain/misclosure.dart';
@@ -35,6 +36,12 @@ enum ExportColumn {
   fall,
   rl,
   remarks,
+
+  /// Design level (계획고); only for books that show design levels.
+  design,
+
+  /// Cut (+) / fill (−) = RL − design level.
+  cutFill,
 }
 
 /// English exports use the standard level book layout BS | IS | FS for both
@@ -44,9 +51,14 @@ bool exportUsesIntermediateColumn(AppLocalizations l10n) =>
     !l10n.localeName.startsWith('ko');
 
 /// No. / Station / BS / [IS] / FS / HI or Rise, Fall / RL / Remarks.
+/// With [design] (see `exportsDesignColumns`), Design / Cut-Fill follow
+/// Remarks at the end (CSV, so older importers' column positions never
+/// shift) or, with [designBeforeRemarks], sit next to RL (PDF).
 List<ExportColumn> exportTableColumns({
   ReductionMethod method = ReductionMethod.heightOfInstrument,
   bool intermediateSights = false,
+  bool design = false,
+  bool designBeforeRemarks = false,
 }) => [
   ExportColumn.no,
   ExportColumn.station,
@@ -59,7 +71,15 @@ List<ExportColumn> exportTableColumns({
   ] else
     ExportColumn.hi,
   ExportColumn.rl,
+  if (design && designBeforeRemarks) ...[
+    ExportColumn.design,
+    ExportColumn.cutFill,
+  ],
   ExportColumn.remarks,
+  if (design && !designBeforeRemarks) ...[
+    ExportColumn.design,
+    ExportColumn.cutFill,
+  ],
 ];
 
 String exportColumnHeader(AppLocalizations l10n, ExportColumn column) =>
@@ -74,6 +94,8 @@ String exportColumnHeader(AppLocalizations l10n, ExportColumn column) =>
       ExportColumn.fall => l10n.exportColumnFall,
       ExportColumn.rl => l10n.exportColumnRl,
       ExportColumn.remarks => l10n.exportColumnRemarks,
+      ExportColumn.design => l10n.exportColumnDesign,
+      ExportColumn.cutFill => l10n.exportColumnCutFill,
     };
 
 /// Measurement table headers (defaults: No. / Station / BS / FS / HI / RL /
@@ -94,12 +116,20 @@ List<String> exportTableHeaders(
 /// ('-' in PDF, '' in CSV). Readings/RLs keep 3 decimals. With an IS column,
 /// intermediate sights ([intermediateSightFlags]) move from FS to IS. Rise
 /// and fall are printed unsigned in their own column (0 counts as a rise).
+/// Cut/fill is signed ('0.125' / '-0.040', [formatCutFillSigned]) unless
+/// [cutFillText] formats it (PDF: 'C 0.125' / 'F 0.040').
 List<List<String>> exportTableRows(
   List<Measurement> measurements, {
   required List<ExportColumn> columns,
   String empty = '',
+  String Function(double cutFill) cutFillText = formatCutFillSigned,
 }) {
   String fmt(double? value) => value?.toStringAsFixed(3) ?? empty;
+  String cutFill(Measurement m) {
+    final value = measurementCutFill(m);
+    return value == null ? empty : cutFillText(value);
+  }
+
   final riseFall = riseFallOf(measurements);
   final intermediate = columns.contains(ExportColumn.intermediate)
       ? intermediateSightFlags(measurements)
@@ -128,6 +158,8 @@ List<List<String>> exportTableRows(
             ExportColumn.rl => fmt(measurements[i].gh),
             ExportColumn.remarks =>
               measurements[i].type == MeasurementType.tp ? 'TP' : '',
+            ExportColumn.design => fmt(measurements[i].designLevel),
+            ExportColumn.cutFill => cutFill(measurements[i]),
           },
       ],
   ];

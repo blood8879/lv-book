@@ -396,6 +396,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get exportColumnBs => '후시(BS)';
 
   @override
+  String get exportColumnCutFill => '절토(+)/성토(−)';
+
+  @override
+  String get exportColumnDesign => '계획고';
+
+  @override
   String get exportColumnFall => '강(−)';
 
   @override
@@ -429,6 +435,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String exportCsvError(String error) {
     return 'CSV 생성 실패: $error';
   }
+
+  @override
+  String get exportCutLetter => '절';
 
   @override
   String get exportDocTitle => '직접수준측량 야장';
@@ -497,6 +506,9 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get exportFieldWeather => '날씨';
+
+  @override
+  String get exportFillLetter => '성';
 
   @override
   String exportImportDateMissing(String date) {
@@ -721,6 +733,12 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String get fieldbookColumnCutFill => '절토(+)/성토(−)';
+
+  @override
+  String get fieldbookColumnDesign => '계획고';
+
+  @override
   String get fieldbookColumnHi => 'IH';
 
   @override
@@ -760,6 +778,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get fieldbookCsvPasteHint => '또는 Lv Book에서 내보낸 CSV 내용을 붙여넣으세요.';
 
   @override
+  String get fieldbookCutLetter => '절';
+
+  @override
   String fieldbookDeleteConfirm(String title) {
     return '\"$title\" 야장을 삭제하시겠습니까?';
   }
@@ -774,6 +795,13 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get fieldbookDeleteTitle => '야장 삭제';
+
+  @override
+  String get fieldbookDesignToggleHelp =>
+      '계획고 열을 추가합니다. 절성토 = 지반고 − 계획고: 지반이 높으면 절(절토), 낮으면 성(성토).';
+
+  @override
+  String get fieldbookDesignToggleLabel => '계획고·절성토 표시';
 
   @override
   String fieldbookDuplicateError(String error) {
@@ -807,6 +835,9 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get fieldbookFabLabel => '야장';
+
+  @override
+  String get fieldbookFillLetter => '성';
 
   @override
   String get fieldbookImportButton => '가져오기';

@@ -53,6 +53,11 @@ class FieldBook {
 
   /// HI (default) or rise and fall; presentation and checks only.
   final ReductionMethod reductionMethod;
+
+  /// Shows the Design level and Cut/Fill columns (editor and exports).
+  /// Off for every book created before the feature; turning it off hides the
+  /// columns but keeps the stored design levels.
+  final bool showDesignLevel;
   final String? memo;
   final String? surveyor;
   final String? checker;
@@ -76,6 +81,7 @@ class FieldBook {
     this.closingBmId,
     this.closingElevation,
     this.reductionMethod = ReductionMethod.heightOfInstrument,
+    this.showDesignLevel = false,
     this.memo,
     this.surveyor,
     this.checker,
@@ -101,6 +107,7 @@ class FieldBook {
       'closing_bm_id': closingBmId,
       'closing_elevation': closingElevation,
       'reduction_method': reductionMethod.name,
+      'show_design_level': showDesignLevel ? 1 : 0,
       'memo': memo,
       'surveyor': surveyor,
       'checker': checker,
@@ -129,6 +136,8 @@ class FieldBook {
       closingElevation: (map['closing_elevation'] as num?)?.toDouble(),
       // Absent in rows/backups written before rise and fall existed: HI.
       reductionMethod: ReductionMethod.parse(map['reduction_method']),
+      // Absent in rows/backups written before design levels existed: off.
+      showDesignLevel: _parseFlag(map['show_design_level']),
       memo: map['memo'] as String?,
       surveyor: map['surveyor'] as String?,
       checker: map['checker'] as String?,
@@ -144,6 +153,12 @@ class FieldBook {
       createdAt: DateTime.parse(map['created_at'] as String),
     );
   }
+
+  static bool _parseFlag(Object? value) => switch (value) {
+    final bool flag => flag,
+    final num number => number != 0,
+    _ => false,
+  };
 
   /// Known RL the run closes on, given the effective [startElevation];
   /// null when no closing reference is set (or a stored one lost its RL).
@@ -165,6 +180,7 @@ class FieldBook {
     Object? closingBmId = _unset,
     Object? closingElevation = _unset,
     ReductionMethod? reductionMethod,
+    bool? showDesignLevel,
     String? memo,
     String? surveyor,
     String? checker,
@@ -192,6 +208,7 @@ class FieldBook {
           ? this.closingElevation
           : closingElevation as double?,
       reductionMethod: reductionMethod ?? this.reductionMethod,
+      showDesignLevel: showDesignLevel ?? this.showDesignLevel,
       memo: memo ?? this.memo,
       surveyor: surveyor ?? this.surveyor,
       checker: checker ?? this.checker,

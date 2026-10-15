@@ -688,6 +688,8 @@ class ProjectBackupService {
       closingElevation: fieldBook.closingElevation,
       // Older backups have no reduction method: restored as HI.
       reductionMethod: fieldBook.reductionMethod,
+      // Older backups have no design flag: restored off.
+      showDesignLevel: fieldBook.showDesignLevel,
       memo: fieldBook.memo,
       surveyor: fieldBook.surveyor,
       checker: fieldBook.checker,

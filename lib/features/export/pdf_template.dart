@@ -5,6 +5,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import '../../l10n/l10n.dart';
+import '../fieldbook/domain/design_level.dart';
 import '../fieldbook/domain/fieldbook.dart';
 import '../fieldbook/domain/measurement.dart';
 import '../fieldbook/domain/misclosure.dart';
@@ -74,7 +75,13 @@ class PdfExporter {
               ),
             ),
           pw.SizedBox(height: 12),
-          _buildTable(measurements, fieldBook.reductionMethod, ttf, l10n),
+          _buildTable(
+            measurements,
+            fieldBook.reductionMethod,
+            ttf,
+            l10n,
+            design: exportsDesignColumns(fieldBook, measurements),
+          ),
           pw.SizedBox(height: 16),
           _buildSummary(closure, ttf, proSettings, l10n),
           if (proSettings?.includeSignatureLines == true) ...[
@@ -303,15 +310,48 @@ class PdfExporter {
     ];
   }
 
+  /// Measurement table headers and cells; also used by tests. With
+  /// [design], Design / Cut-Fill sit between RL and Remarks and cut/fill is
+  /// lettered ('C 0.125' / 'F 0.040').
+  static (List<String>, List<List<String>>) tableForTest(
+    List<Measurement> measurements,
+    ReductionMethod method,
+    AppLocalizations l10n, {
+    bool design = false,
+  }) {
+    final columns = exportTableColumns(
+      method: method,
+      intermediateSights: exportUsesIntermediateColumn(l10n),
+      design: design,
+      designBeforeRemarks: true,
+    );
+    return (
+      [for (final c in columns) exportColumnHeader(l10n, c)],
+      exportTableRows(
+        measurements,
+        columns: columns,
+        empty: '-',
+        cutFillText: (value) => formatCutFill(
+          value,
+          cutLetter: l10n.exportCutLetter,
+          fillLetter: l10n.exportFillLetter,
+        ),
+      ),
+    );
+  }
+
   static pw.Widget _buildTable(
     List<Measurement> measurements,
     ReductionMethod method,
     pw.Font ttf,
-    AppLocalizations l10n,
-  ) {
-    final columns = exportTableColumns(
-      method: method,
-      intermediateSights: exportUsesIntermediateColumn(l10n),
+    AppLocalizations l10n, {
+    bool design = false,
+  }) {
+    final (headers, data) = tableForTest(
+      measurements,
+      method,
+      l10n,
+      design: design,
     );
     final style = pw.TextStyle(font: ttf, fontSize: 10);
     final headerStyle = pw.TextStyle(
@@ -330,8 +370,8 @@ class PdfExporter {
       cellPadding: const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 4),
       border: pw.TableBorder.all(color: PdfColors.grey500, width: 0.7),
       headerDecoration: const pw.BoxDecoration(color: PdfColors.grey200),
-      headers: [for (final c in columns) exportColumnHeader(l10n, c)],
-      data: exportTableRows(measurements, columns: columns, empty: '-'),
+      headers: headers,
+      data: data,
     );
   }
 

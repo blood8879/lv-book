@@ -145,7 +145,7 @@ void main() {
   });
 
   test('v10 → v11 migration adds peg_tests and keeps data', () async {
-    expect(AppConstants.dbVersion, 11);
+    expect(AppConstants.dbVersion, greaterThanOrEqualTo(11));
     final dir = await Directory.systemTemp.createTemp('lvbook_v10');
     final path = '${dir.path}/v10.db';
     try {
@@ -207,7 +207,7 @@ void main() {
         path,
         options: helper.openDatabaseOptions(),
       );
-      expect(await legacy.getVersion(), 11);
+      expect(await legacy.getVersion(), AppConstants.dbVersion);
       final columns = {
         for (final row in await legacy.rawQuery('PRAGMA table_info(peg_tests)'))
           row['name'] as String,

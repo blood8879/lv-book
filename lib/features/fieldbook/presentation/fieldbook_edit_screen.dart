@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/fieldbook_providers.dart';
 import '../data/measurement_repository.dart';
+import '../domain/design_level.dart';
 import '../domain/fieldbook.dart';
 import '../domain/measurement.dart';
 import '../domain/measurement_validation.dart';
@@ -38,12 +39,31 @@ const int _flexNo = 14;
 const int _flexValue = 19;
 const int _flexAction = 10;
 
+/// Design levels are full RLs (e.g. 100.187), wider than BS/FS readings, and
+/// the cut/fill cell carries a C/F prefix.
+const int _flexDesign = 26;
+const int _flexCutFill = 23;
+
+/// Narrowest table that keeps the numeric columns at their usual ≈68 pt when
+/// the Design / Cut-Fill columns are shown (flex 149 instead of 100); on
+/// narrower screens the table scrolls horizontally.
+const double _designTableMinWidth = 540;
+
+/// Cell column ids (focus/controller keys are `'<row>_<col>'`).
+const String _colBs = 'bs';
+const String _colFs = 'fs';
+const String _colDesign = 'dl';
+const List<String> _inputColumns = [_colBs, _colFs, _colDesign];
+
 enum _SaveStatus { saved, pending, autosaved, error }
 
 class _RowData {
   String stationName;
   String bsText;
   String fsText;
+
+  /// Design level (계획고) as typed; '' when not set.
+  String designText;
   double? ih;
   double? gh;
 
@@ -57,6 +77,7 @@ class _RowData {
     this.stationName = '',
     this.bsText = '',
     this.fsText = '',
+    this.designText = '',
     this.ih,
     this.gh,
     this.isTP = false,
@@ -66,11 +87,34 @@ class _RowData {
 
   double? get bs => double.tryParse(bsText);
   double? get fs => double.tryParse(fsText);
+  double? get design => double.tryParse(designText);
   bool get hasData => bs != null || fs != null;
 
   /// Rows worth persisting: a station name alone (e.g. from '구조 복제')
-  /// counts, fully empty rows do not.
-  bool get hasContent => stationName.trim().isNotEmpty || hasData;
+  /// or a design level entered ahead of the reading counts, fully empty
+  /// rows do not.
+  bool get hasContent =>
+      stationName.trim().isNotEmpty || hasData || design != null;
+
+  /// Cut (+) / fill (−) = RL − design; null without both.
+  double? get cutFill => cutFillOf(rl: gh, design: design);
+
+  String textOf(String col) => switch (col) {
+    _colBs => bsText,
+    _colFs => fsText,
+    _ => designText,
+  };
+
+  void setText(String col, String text) {
+    switch (col) {
+      case _colBs:
+        bsText = text;
+      case _colFs:
+        fsText = text;
+      default:
+        designText = text;
+    }
+  }
 }
 
 class FieldBookEditScreen extends ConsumerStatefulWidget {
@@ -122,6 +166,10 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
 
   /// HI / rise and fall (persisted on change, see [_applyReductionMethod]).
   late ReductionMethod _reductionMethod;
+
+  /// Design / Cut-Fill columns shown (persisted on change, see
+  /// [_applyShowDesignLevel]).
+  late bool _showDesignLevel;
   final int _initialRowCount = 20;
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _reviewMemoController = TextEditingController();
@@ -134,9 +182,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
     final key = '${row}_$col';
     if (!_controllers.containsKey(key)) {
       final r = _rows[row];
-      _controllers[key] = TextEditingController(
-        text: col == 'bs' ? r.bsText : r.fsText,
-      );
+      _controllers[key] = TextEditingController(text: r.textOf(col));
     }
     return _controllers[key]!;
   }
@@ -170,22 +216,21 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
     if (formatted == controller.text) return;
     // Same numeric value, so no recalculation or autosave is needed.
     controller.text = formatted;
-    if (col == 'bs') {
-      _rows[row].bsText = formatted;
-    } else {
-      _rows[row].fsText = formatted;
-    }
+    _rows[row].setText(col, formatted);
   }
 
   void _moveToNextCell(int currentRow, String currentCol) {
-    if (currentCol == 'bs') {
+    if (currentCol == _colBs) {
       // BS → FS of same row
-      _getFocusNode(currentRow, 'fs').requestFocus();
+      _getFocusNode(currentRow, _colFs).requestFocus();
+    } else if (currentCol == _colFs && _showDesignLevel) {
+      // FS → Design of same row (when the design column is shown)
+      _getFocusNode(currentRow, _colDesign).requestFocus();
     } else {
-      // FS → BS of next row
+      // FS (or Design) → BS of next row
       final nextRow = currentRow + 1;
       if (nextRow < _rows.length) {
-        _getFocusNode(nextRow, 'bs').requestFocus();
+        _getFocusNode(nextRow, _colBs).requestFocus();
         // Auto-scroll to make next row visible
         Future.delayed(const Duration(milliseconds: 100), () {
           if (_scrollController.hasClients) {
@@ -215,6 +260,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
     _closingBmId = widget.fieldBook.closingBmId;
     _closingElevation = widget.fieldBook.closingElevation;
     _reductionMethod = widget.fieldBook.reductionMethod;
+    _showDesignLevel = widget.fieldBook.showDesignLevel;
     _loadData();
   }
 
@@ -272,6 +318,9 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
           stationName: m.stationName,
           bsText: m.bs == null ? '' : formatReadingText(m.bs!),
           fsText: m.fs == null ? '' : formatReadingText(m.fs!),
+          designText: m.designLevel == null
+              ? ''
+              : formatReadingText(m.designLevel!),
           ih: m.ih,
           gh: m.gh,
           isTP: m.type == MeasurementType.tp,
@@ -332,6 +381,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
           ih: row.ih,
           gh: row.gh,
           manualTp: row.manualTp,
+          designLevel: row.design,
         ),
       );
       orderIndex++;
@@ -441,6 +491,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
       closingBmId: _closingBmId,
       closingElevation: _closingElevation,
       reductionMethod: _reductionMethod,
+      showDesignLevel: _showDesignLevel,
       memo: widget.fieldBook.memo,
       surveyor: widget.fieldBook.surveyor,
       checker: widget.fieldBook.checker,
@@ -470,10 +521,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
             FilledButton(
               onPressed: () {
                 // Remove controllers and focus nodes for this row
-                _controllers.remove('${index}_bs')?.dispose();
-                _controllers.remove('${index}_fs')?.dispose();
-                _focusNodes.remove('${index}_bs')?.dispose();
-                _focusNodes.remove('${index}_fs')?.dispose();
+                _disposeRowCells(index);
                 setState(() => _rows.removeAt(index));
                 // Rebuild controller/focus node keys
                 _rebuildControllerKeys();
@@ -490,14 +538,18 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
         ),
       );
     } else {
-      _controllers.remove('${index}_bs')?.dispose();
-      _controllers.remove('${index}_fs')?.dispose();
-      _focusNodes.remove('${index}_bs')?.dispose();
-      _focusNodes.remove('${index}_fs')?.dispose();
+      _disposeRowCells(index);
       setState(() => _rows.removeAt(index));
       _rebuildControllerKeys();
       _recalculate();
       _scheduleAutosave();
+    }
+  }
+
+  void _disposeRowCells(int index) {
+    for (final col in _inputColumns) {
+      _controllers.remove('${index}_$col')?.dispose();
+      _focusNodes.remove('${index}_$col')?.dispose();
     }
   }
 
@@ -521,6 +573,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
               : context.l10n.fieldbookCopyName(row.stationName),
           bsText: row.bsText,
           fsText: row.fsText,
+          designText: row.designText,
           ih: row.ih,
           gh: row.gh,
           isTP: row.isTP,
@@ -588,10 +641,9 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
     _focusNodes.clear();
 
     for (int i = 0; i < _rows.length; i++) {
-      for (final col in ['bs', 'fs']) {
+      for (final col in _inputColumns) {
         final key = '${i}_$col';
-        final text = col == 'bs' ? _rows[i].bsText : _rows[i].fsText;
-        _controllers[key] = TextEditingController(text: text);
+        _controllers[key] = TextEditingController(text: _rows[i].textOf(col));
         _focusNodes[key] = _createFocusNode(key);
       }
     }
@@ -689,8 +741,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
                   children: [
                     _buildStartElevationBar(),
                     _buildReviewPanel(),
-                    _buildTableHeader(),
-                    Expanded(child: _buildTableBody()),
+                    Expanded(child: _buildTable()),
                     _buildValidationBar(_validate(tolerance)),
                     _buildSummary(tolerance),
                   ],
@@ -914,6 +965,25 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
     }
   }
 
+  /// Shows/hides the Design / Cut-Fill columns. Only the flag is written
+  /// (like the reduction method); design levels themselves are part of the
+  /// rows and go through the serialized save queue. Hiding keeps them.
+  Future<void> _applyShowDesignLevel(bool show) async {
+    if (show == _showDesignLevel) return;
+    final l10n = context.l10n;
+    setState(() => _showDesignLevel = show);
+    try {
+      await _container
+          .read(fieldBookRepositoryProvider)
+          .updateShowDesignLevel(_fieldBookWithReviewMetadata());
+      _container.invalidate(fieldBookListProvider(widget.projectId));
+    } catch (error) {
+      if (mounted) {
+        AppSnackbar.error(context, l10n.coreErrorWithDetail('$error'));
+      }
+    }
+  }
+
   bool get _isRiseFall => _reductionMethod == ReductionMethod.riseAndFall;
 
   Widget _buildReviewPanel() {
@@ -1031,7 +1101,49 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
         onChanged: _applyReductionMethod,
         showHelp: true,
       ),
+      const SizedBox(height: 4),
+      SwitchListTile(
+        key: const ValueKey('design-level-switch'),
+        contentPadding: EdgeInsets.zero,
+        value: _showDesignLevel,
+        onChanged: _applyShowDesignLevel,
+        title: Text(
+          l10n.fieldbookDesignToggleLabel,
+          style: const TextStyle(fontSize: 14),
+        ),
+        subtitle: Text(
+          l10n.fieldbookDesignToggleHelp,
+          style: TextStyle(fontSize: 12, color: context.appColors.subtext),
+        ),
+      ),
     ];
+  }
+
+  /// Header + rows. With the Design / Cut-Fill columns the table keeps at
+  /// least [_designTableMinWidth] and scrolls horizontally on narrow phones;
+  /// without them it fills the width exactly as before.
+  Widget _buildTable() {
+    Widget table() => Column(
+      children: [
+        _buildTableHeader(),
+        Expanded(child: _buildTableBody()),
+      ],
+    );
+    if (!_showDesignLevel) return table();
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth >= _designTableMinWidth) return table();
+        return SingleChildScrollView(
+          key: const ValueKey('design-table-scroll'),
+          scrollDirection: Axis.horizontal,
+          child: SizedBox(
+            width: _designTableMinWidth,
+            height: constraints.maxHeight,
+            child: table(),
+          ),
+        );
+      },
+    );
   }
 
   Widget _buildTableHeader() {
@@ -1052,6 +1164,10 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
             flex: _flexValue,
           ),
           _headerCell(l10n.fieldbookColumnRl, flex: _flexValue),
+          if (_showDesignLevel) ...[
+            _headerCell(l10n.fieldbookColumnDesign, flex: _flexDesign),
+            _headerCell(l10n.fieldbookColumnCutFill, flex: _flexCutFill),
+          ],
           _headerCell('', flex: _flexAction), // TP/비고
         ],
       ),
@@ -1147,9 +1263,9 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
               ),
             ),
             // BS
-            Expanded(flex: _flexValue, child: _editableCell(index, 'bs')),
+            Expanded(flex: _flexValue, child: _editableCell(index, _colBs)),
             // FS
-            Expanded(flex: _flexValue, child: _editableCell(index, 'fs')),
+            Expanded(flex: _flexValue, child: _editableCell(index, _colFs)),
             // IH or rise(+)/fall(−) (read-only) — column-wide blue tint
             Expanded(
               flex: _flexValue,
@@ -1207,6 +1323,15 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
                 ),
               ),
             ),
+            if (_showDesignLevel) ...[
+              // Design level (editable, same input as BS/FS)
+              Expanded(
+                flex: _flexDesign,
+                child: _editableCell(index, _colDesign),
+              ),
+              // Cut/fill (read-only)
+              Expanded(flex: _flexCutFill, child: _cutFillCell(row)),
+            ],
             // TP indicator and row actions
             Expanded(
               flex: _flexAction,
@@ -1261,6 +1386,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
         border: Border(left: BorderSide(color: colors.zebra, width: 1)),
       ),
       child: TextField(
+        key: ValueKey('cell-$rowIndex-$col'),
         controller: _getController(rowIndex, col),
         focusNode: _getFocusNode(rowIndex, col),
         style: TextStyle(
@@ -1280,15 +1406,50 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
           border: InputBorder.none,
         ),
         onChanged: (v) {
-          if (col == 'bs') {
-            _rows[rowIndex].bsText = v;
-          } else {
-            _rows[rowIndex].fsText = v;
-          }
-          _recalculate();
+          _rows[rowIndex].setText(col, v);
+          // A design level never changes RLs; the cut/fill cell is redrawn
+          // by the autosave's setState.
+          if (col != _colDesign) _recalculate();
           _scheduleAutosave();
         },
         onSubmitted: (_) => _moveToNextCell(rowIndex, col),
+      ),
+    );
+  }
+
+  /// 'C 0.125' (cut, orange) / 'F 0.040' (fill, blue) / '0.000' (on grade).
+  /// The letter carries the meaning; the colour only reinforces it.
+  Widget _cutFillCell(_RowData row) {
+    final colors = context.appColors;
+    final l10n = context.l10n;
+    final value = row.cutFill;
+    final kind = value == null ? null : cutFillKindOf(value);
+    return Container(
+      alignment: Alignment.centerRight,
+      padding: const EdgeInsets.only(right: 8),
+      color: colors.soft,
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.centerRight,
+        child: Text(
+          value == null
+              ? ''
+              : formatCutFill(
+                  value,
+                  cutLetter: l10n.fieldbookCutLetter,
+                  fillLetter: l10n.fieldbookFillLetter,
+                ),
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: switch (kind) {
+              CutFillKind.cut => colors.orange,
+              CutFillKind.fill => colors.blue,
+              _ => colors.subtext,
+            },
+            fontFeatures: AppTypography.tabularFeatures,
+          ),
+        ),
       ),
     );
   }

@@ -133,6 +133,12 @@ class CsvImporter {
       'gh': ExportColumn.rl,
       'reduced level': ExportColumn.rl,
       'no': ExportColumn.no,
+      // Design level / cut-fill (columns of books showing design levels).
+      'design_level': ExportColumn.design,
+      'design': ExportColumn.design,
+      'design rl': ExportColumn.design,
+      'cut_fill': ExportColumn.cutFill,
+      'cut/fill': ExportColumn.cutFill,
     };
     for (final strings in [l10nKo, l10nFor(const Locale('en'))]) {
       for (final column in ExportColumn.values) {
@@ -343,6 +349,9 @@ class CsvImporter {
             (columns.containsKey(ExportColumn.rise)
                 ? ReductionMethod.riseAndFall
                 : ReductionMethod.heightOfInstrument),
+        // Files with design levels (a Design column with values) show the
+        // design column; every other file imports exactly as before.
+        showDesignLevel: measurements.any((m) => m.designLevel != null),
         surveyor: metadata[_CsvField.surveyor],
         checker: metadata[_CsvField.checker],
         instrument: metadata[_CsvField.instrument],
@@ -424,6 +433,9 @@ class CsvImporter {
     if (ih.error != null) return _ParsedMeasurement.error(ih.error!);
     final gh = number(ExportColumn.rl, l10n.exportColumnRl);
     if (gh.error != null) return _ParsedMeasurement.error(gh.error!);
+    // Cut/fill is derived (RL − design), so only the design level is read.
+    final design = number(ExportColumn.design, l10n.exportColumnDesign);
+    if (design.error != null) return _ParsedMeasurement.error(design.error!);
     final note = _cell(row, columns[ExportColumn.remarks]);
 
     return _ParsedMeasurement.value(
@@ -438,6 +450,7 @@ class CsvImporter {
         fs: fs.value ?? intermediate.value,
         ih: ih.value,
         gh: gh.value,
+        designLevel: design.value,
       ),
     );
   }

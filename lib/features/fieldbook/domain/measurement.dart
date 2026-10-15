@@ -40,6 +40,8 @@ class LevelClosure {
 }
 
 class Measurement {
+  static const _unset = Object();
+
   final int? id;
   final int fieldBookId;
   final int orderIndex;
@@ -50,6 +52,10 @@ class Measurement {
   final double? ih;
   final double? gh;
   final bool manualTp;
+
+  /// Design (planned) level of the station (계획고), in the book's unit;
+  /// null when not set. Cut/fill = RL − design (see `design_level.dart`).
+  final double? designLevel;
 
   Measurement({
     this.id,
@@ -62,6 +68,7 @@ class Measurement {
     this.ih,
     this.gh,
     this.manualTp = false,
+    this.designLevel,
   });
 
   Map<String, dynamic> toMap() {
@@ -76,6 +83,7 @@ class Measurement {
       'ih': ih,
       'gh': gh,
       'manual_tp': manualTp ? 1 : 0,
+      'design_level': designLevel,
     };
   }
 
@@ -91,6 +99,8 @@ class Measurement {
       ih: (map['ih'] as num?)?.toDouble(),
       gh: (map['gh'] as num?)?.toDouble(),
       manualTp: (map['manual_tp'] as int? ?? 0) == 1,
+      // Absent in rows/backups written before design levels existed.
+      designLevel: (map['design_level'] as num?)?.toDouble(),
     );
   }
 
@@ -105,6 +115,7 @@ class Measurement {
     double? ih,
     double? gh,
     bool? manualTp,
+    Object? designLevel = _unset,
   }) {
     return Measurement(
       id: id ?? this.id,
@@ -117,6 +128,9 @@ class Measurement {
       ih: ih ?? this.ih,
       gh: gh ?? this.gh,
       manualTp: manualTp ?? this.manualTp,
+      designLevel: identical(designLevel, _unset)
+          ? this.designLevel
+          : designLevel as double?,
     );
   }
 }

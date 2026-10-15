@@ -1,5 +1,6 @@
 import 'package:csv/csv.dart';
 import '../../l10n/l10n.dart';
+import '../fieldbook/domain/design_level.dart';
 import '../fieldbook/domain/fieldbook.dart';
 import '../fieldbook/domain/measurement.dart';
 import '../fieldbook/domain/misclosure.dart';
@@ -94,10 +95,12 @@ class CsvExporter {
     rows.add([]);
 
     // Table: English adds the IS column; rise and fall replaces HI with
-    // Rise / Fall.
+    // Rise / Fall. Design / Cut-Fill are appended at the end only for books
+    // showing design levels, so other files are unchanged.
     final columns = exportTableColumns(
       method: method,
       intermediateSights: exportUsesIntermediateColumn(l10n),
+      design: exportsDesignColumns(fieldBook, measurements),
     );
     rows.add([for (final c in columns) exportColumnHeader(l10n, c)]);
     rows.addAll(exportTableRows(measurements, columns: columns));

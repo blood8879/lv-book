@@ -370,6 +370,14 @@
   "@exportColumnBs": {
     "description": "Measurement table column: backsight."
   },
+  "exportColumnCutFill": "Cut(+)/Fill(−)",
+  "@exportColumnCutFill": {
+    "description": "Measurement table column: cut (+) / fill (−) = RL − design level."
+  },
+  "exportColumnDesign": "Design level",
+  "@exportColumnDesign": {
+    "description": "Measurement table column: design (planned) level. Only when the book shows design levels. CsvImporter matches it in both languages."
+  },
   "exportColumnFall": "Fall",
   "@exportColumnFall": {
     "description": "Table column of a rise-and-fall book."
@@ -417,6 +425,10 @@
         "type": "String"
       }
     }
+  },
+  "exportCutLetter": "C",
+  "@exportCutLetter": {
+    "description": "PDF prefix of a cut value ('C 0.125')."
   },
   "exportDocTitle": "Differential leveling level book",
   "@exportDocTitle": {
@@ -510,6 +522,10 @@
   "exportFieldWeather": "Weather",
   "@exportFieldWeather": {
     "description": "Exported document field."
+  },
+  "exportFillLetter": "F",
+  "@exportFillLetter": {
+    "description": "PDF prefix of a fill value ('F 0.040')."
   },
   "exportImportDateMissing": "The CSV has no date, so it was set to {date}.",
   "@exportImportDateMissing": {
@@ -800,6 +816,14 @@
       }
     }
   },
+  "fieldbookColumnCutFill": "Cut(+)/Fill(−)",
+  "@fieldbookColumnCutFill": {
+    "description": "Editor table header of the read-only cut/fill column (RL − design)."
+  },
+  "fieldbookColumnDesign": "Design",
+  "@fieldbookColumnDesign": {
+    "description": "Editor table header of the editable design level column; must fit ~68 px."
+  },
   "fieldbookColumnHi": "HI",
   "fieldbookColumnNo": "Stn",
   "fieldbookColumnRiseFall": "Rise/Fall",
@@ -836,6 +860,10 @@
     }
   },
   "fieldbookCsvPasteHint": "Or paste CSV exported from Lv Book.",
+  "fieldbookCutLetter": "C",
+  "@fieldbookCutLetter": {
+    "description": "One-letter prefix of a cut value in the editor ('C 0.125'): ground above design."
+  },
   "fieldbookDeleteConfirm": "Delete level book \"{title}\"?",
   "@fieldbookDeleteConfirm": {
     "placeholders": {
@@ -854,6 +882,14 @@
   },
   "fieldbookDeleteRowTitle": "Delete row",
   "fieldbookDeleteTitle": "Delete level book",
+  "fieldbookDesignToggleHelp": "Adds a Design column. Cut/fill = RL − design: C (cut) when the ground is above design, F (fill) when below.",
+  "@fieldbookDesignToggleHelp": {
+    "description": "Helper under the design level switch."
+  },
+  "fieldbookDesignToggleLabel": "Design level & cut/fill",
+  "@fieldbookDesignToggleLabel": {
+    "description": "Switch in the editor's review panel that shows the Design / Cut-Fill columns for this level book."
+  },
   "fieldbookDuplicateError": "Couldn't duplicate level book: {error}",
   "@fieldbookDuplicateError": {
     "placeholders": {
@@ -871,6 +907,10 @@
   "fieldbookExportCheckTitle": "Check before export",
   "fieldbookExportTooltip": "Export",
   "fieldbookFabLabel": "Level book",
+  "fieldbookFillLetter": "F",
+  "@fieldbookFillLetter": {
+    "description": "One-letter prefix of a fill value in the editor ('F 0.040'): ground below design."
+  },
   "fieldbookImportButton": "Import",
   "fieldbookImportCsv": "Import CSV",
   "fieldbookInstrumentLabel": "Instrument",

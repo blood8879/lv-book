@@ -428,6 +428,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exportColumnBs => 'BS';
 
   @override
+  String get exportColumnCutFill => 'Cut(+)/Fill(−)';
+
+  @override
+  String get exportColumnDesign => 'Design level';
+
+  @override
   String get exportColumnFall => 'Fall';
 
   @override
@@ -461,6 +467,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String exportCsvError(String error) {
     return 'Couldn\'t create the CSV: $error';
   }
+
+  @override
+  String get exportCutLetter => 'C';
 
   @override
   String get exportDocTitle => 'Differential leveling level book';
@@ -529,6 +538,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exportFieldWeather => 'Weather';
+
+  @override
+  String get exportFillLetter => 'F';
 
   @override
   String exportImportDateMissing(String date) {
@@ -763,6 +775,12 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get fieldbookColumnCutFill => 'Cut(+)/Fill(−)';
+
+  @override
+  String get fieldbookColumnDesign => 'Design';
+
+  @override
   String get fieldbookColumnHi => 'HI';
 
   @override
@@ -802,6 +820,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fieldbookCsvPasteHint => 'Or paste CSV exported from Lv Book.';
 
   @override
+  String get fieldbookCutLetter => 'C';
+
+  @override
   String fieldbookDeleteConfirm(String title) {
     return 'Delete level book \"$title\"?';
   }
@@ -816,6 +837,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get fieldbookDeleteTitle => 'Delete level book';
+
+  @override
+  String get fieldbookDesignToggleHelp =>
+      'Adds a Design column. Cut/fill = RL − design: C (cut) when the ground is above design, F (fill) when below.';
+
+  @override
+  String get fieldbookDesignToggleLabel => 'Design level & cut/fill';
 
   @override
   String fieldbookDuplicateError(String error) {
@@ -849,6 +877,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get fieldbookFabLabel => 'Level book';
+
+  @override
+  String get fieldbookFillLetter => 'F';
 
   @override
   String get fieldbookImportButton => 'Import';

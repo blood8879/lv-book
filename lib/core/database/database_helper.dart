@@ -92,6 +92,7 @@ class DatabaseHelper {
         closing_bm_id INTEGER,
         closing_elevation REAL,
         reduction_method TEXT NOT NULL DEFAULT 'heightOfInstrument',
+        show_design_level INTEGER NOT NULL DEFAULT 0,
         memo TEXT,
         surveyor TEXT,
         checker TEXT,
@@ -121,6 +122,7 @@ class DatabaseHelper {
         ih REAL,
         gh REAL,
         manual_tp INTEGER NOT NULL DEFAULT 0,
+        design_level REAL,
         FOREIGN KEY (field_book_id) REFERENCES field_books (id) ON DELETE CASCADE
       )
     ''');
@@ -195,6 +197,29 @@ class DatabaseHelper {
     }
     if (oldVersion < 11) {
       await _createPegTestsTable(db);
+    }
+    if (oldVersion < 12) {
+      await _addDesignLevel(db);
+    }
+  }
+
+  /// v12: optional design level per row (cut/fill = RL − design) and the per
+  /// book flag that shows the Design / Cut-Fill columns. Existing books get
+  /// no design levels and the flag off, so they look exactly as before.
+  /// Idempotent like [_addClosingReference].
+  Future<void> _addDesignLevel(Database db) async {
+    Future<Set<String>> columnsOf(String table) async => {
+      for (final row in await db.rawQuery('PRAGMA table_info($table)'))
+        row['name'] as String,
+    };
+    if (!(await columnsOf('measurements')).contains('design_level')) {
+      await db.execute('ALTER TABLE measurements ADD COLUMN design_level REAL');
+    }
+    if (!(await columnsOf('field_books')).contains('show_design_level')) {
+      await db.execute(
+        'ALTER TABLE field_books ADD COLUMN show_design_level INTEGER NOT NULL '
+        'DEFAULT 0',
+      );
     }
   }
 
