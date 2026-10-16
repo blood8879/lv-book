@@ -42,7 +42,7 @@ SUBMISSION-READY EXPORT (FREE)
 • Standard BS | IS | FS level book PDF with company name, surveyor, check box and signature fields
 • Hand-drawn signature, watermark, document templates and file-naming rules
 • Native Excel (.xlsx) export with real numbers, the header and the arithmetic check
-• CSV export, and CSV import to restore or move records
+• CSV export, and CSV/Excel import to restore or move records or bring in your own spreadsheets
 
 BENCHMARKS (BM / TBM)
 • Register benchmarks with status (Usable / Possibly damaged / Out of service)
@@ -63,18 +63,14 @@ LV BOOK PRO — ONE-TIME PURCHASE (NOT A SUBSCRIPTION)
 • Benchmark photos and coordinates
 • Bulk export of many level books at once (PDF, CSV or Excel), with a submission package and summary CSV
 
-All calculations, checks, the two-peg test, single PDF/Excel/CSV export, CSV import and document settings are free.
+All calculations, checks, the two-peg test, single PDF/Excel/CSV export, CSV/Excel import and document settings are free.
 
 Your data stays on your device. Back it up any time as a JSON file.
 ```
 
-## Release notes (en-US) — 2.0.0 (27)
+## Release notes (en-US) — 2.1.0 (28)
 
 ```
-• Spanish language
-• Excel (.xlsx) export with real numbers, header and arithmetic check (free)
-• Stakeout: target staff reading (HI − design) next to cut/fill
-• Undo after deleting a row
-• Decimal comma accepted in number fields
-• K·√L misclosure tolerance by route length, with K presets
+• Excel (.xlsx) import: open level books exported by Lv Book, or your own sheets with Station / BS / IS / FS / Remarks columns
+• Smaller, faster app (optimized resource shrinking)
 ```

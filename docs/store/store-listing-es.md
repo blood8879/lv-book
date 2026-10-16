@@ -7,8 +7,8 @@ docs/i18n-guide.md (VAt = vista atrás, VAd = vista adelante, AI = altura
 instrumental, cota, BM = banco de nivel).
 
 Character counts (checked with a script; code points = UTF-16 units here):
-title 30/30, short description 79/80, full description 3143/4000, release
-notes 228/500.
+title 30/30, short description 80/80, full description 3487/4000, release
+notes 201/500.
 
 ## App name (≤ 30 chars)
 
@@ -50,7 +50,7 @@ EXPORTACIÓN LISTA PARA ENTREGAR (GRATIS)
 • PDF de libreta estándar VAt | VI | VAd con empresa, topógrafo, cuadro de comprobación y casillas de firma
 • Firma manuscrita, marca de agua, plantillas de documento y reglas de nombre de archivo
 • Exportación nativa a Excel (.xlsx) con números reales, encabezado y comprobación aritmética
-• Exportación CSV, e importación CSV para restaurar o mover registros
+• Exportación CSV, e importación CSV/Excel para restaurar o mover registros o traer sus propias hojas de cálculo
 
 BANCOS DE NIVEL (BM / TBM)
 • Registre bancos de nivel con su estado (Utilizable / Posible daño / Fuera de servicio)
@@ -71,18 +71,14 @@ LV BOOK PRO: PAGO ÚNICO (SIN SUSCRIPCIÓN)
 • Fotos y coordenadas de los bancos de nivel
 • Exportación de muchas libretas a la vez (PDF, CSV o Excel), con paquete de entrega y CSV resumen
 
-Todos los cálculos, controles, la prueba de dos estacas, la exportación individual a PDF/Excel/CSV, la importación CSV y los ajustes de documento son gratuitos.
+Todos los cálculos, controles, la prueba de dos estacas, la exportación individual a PDF/Excel/CSV, la importación CSV/Excel y los ajustes de documento son gratuitos.
 
 Sus datos se quedan en su dispositivo. Haga una copia de seguridad en cualquier momento como archivo JSON.
 ```
 
-## Release notes (es-419) — 2.0.0 (27)
+## Release notes (es-419) — 2.1.0 (28)
 
 ```
-• Nuevo idioma: español
-• Exportación a Excel (.xlsx) con números reales, encabezado y comprobación (gratis)
-• Replanteo: lectura objetivo de mira (AI − proyecto) junto al corte/relleno
-• Deshacer al eliminar una fila
-• Se acepta la coma decimal en los campos numéricos
-• Tolerancia K·√L según la longitud del itinerario, con valores de K predefinidos
+• Importación de Excel (.xlsx): abra libretas exportadas por Lv Book o sus propias hojas con columnas Punto / VAt / VI / VAd / Observaciones
+• App más ligera y rápida (reducción de recursos optimizada)
 ```
