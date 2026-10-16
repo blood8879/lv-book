@@ -13,6 +13,7 @@ import '../fieldbook/domain/measurement.dart';
 import '../fieldbook/domain/misclosure.dart';
 import 'pdf_template.dart';
 import 'csv_exporter.dart';
+import 'xlsx_exporter.dart';
 import '../ads/ad_manager.dart';
 import '../ads/ad_providers.dart';
 import '../pro/pro_pdf_settings.dart';
@@ -159,6 +160,12 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
             tooltip: l10n.exportShareCsvTooltip,
             onPressed: () => _shareCsv(context),
           ),
+          IconButton(
+            key: const ValueKey('export-share-xlsx'),
+            icon: const Icon(Icons.grid_on),
+            tooltip: l10n.exportShareXlsxTooltip,
+            onPressed: () => _shareXlsx(context),
+          ),
         ],
       ),
       body: PdfPreview(
@@ -258,6 +265,51 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
     } catch (e) {
       if (context.mounted) {
         AppSnackbar.error(context, l10n.exportCsvError('$e'));
+      }
+    }
+  }
+
+  /// Native Excel workbook; same naming, share sheet, history and ad flow as
+  /// the CSV.
+  Future<void> _shareXlsx(BuildContext context) async {
+    final l10n = context.l10n;
+    try {
+      final tolerance = await ref.read(misclosureToleranceProvider.future);
+      final bytes = XlsxExporter.generateFieldBookXlsx(
+        fieldBook: widget.fieldBook,
+        measurements: widget.measurements,
+        bmName: widget.bmName,
+        startElevation: widget.startElevation,
+        closingBmName: widget.closingBmName,
+        projectName: _projectName,
+        tolerance: tolerance,
+        proSettings: _proPdfSettings,
+        l10n: l10n,
+      );
+      final dir = await getTemporaryDirectory();
+      final fileName = ExportFileNamer().next(
+        fieldBook: widget.fieldBook,
+        extension: 'xlsx',
+        projectName: _projectName,
+        proSettings: _proPdfSettings,
+      );
+      final file = File('${dir.path}/$fileName');
+      await file.writeAsBytes(bytes);
+      final shareResult = await Share.shareXFiles([
+        XFile(file.path, mimeType: XlsxExporter.mimeType),
+      ]);
+      await ExportHistoryRepository().record(
+        ExportHistoryRecord(
+          fileName: file.path.split('/').last,
+          fieldBookTitle: widget.fieldBook.title,
+          format: 'xlsx',
+          exportedAt: DateTime.now(),
+        ),
+      );
+      await _afterShare(shareResult);
+    } catch (e) {
+      if (context.mounted) {
+        AppSnackbar.error(context, l10n.exportXlsxError('$e'));
       }
     }
   }

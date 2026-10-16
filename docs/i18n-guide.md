@@ -3,7 +3,7 @@
 Lv Book ships in **English (fallback)**, **Korean** and **Spanish**. The first
 device language that is ko, en or es (any region: es-ES, es-MX, es-419, ...)
 wins; anything else gets `en` (`resolveAppLocale` in `lib/l10n/l10n.dart`).
-There is no in-app language picker. Export documents (PDF/CSV/submission
+There is no in-app language picker. Export documents (PDF/CSV/Excel/submission
 package) follow the app language.
 
 ## Layout

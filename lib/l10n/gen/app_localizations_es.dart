@@ -325,6 +325,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get exportBulkFormatBoth => 'Ambos';
 
   @override
+  String get exportBulkFormatXlsx => 'Excel';
+
+  @override
   String get exportBulkManifestSubtitle =>
       'Enumera las libretas seleccionadas, los archivos generados y el número de puntos.';
 
@@ -338,7 +341,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get exportBulkProOnlyBody =>
-      'Comparta varias libretas en PDF/CSV a la vez.';
+      'Comparta varias libretas en PDF/CSV/Excel a la vez.';
 
   @override
   String get exportBulkProOnlyTitle => 'Función Pro';
@@ -525,6 +528,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get exportFieldMemo => 'Nota';
 
   @override
+  String get exportFieldProject => 'Proyecto';
+
+  @override
   String get exportFieldReductionMethod => 'Método de cálculo';
 
   @override
@@ -663,6 +669,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get exportSharePdfTooltip => 'Compartir PDF';
 
   @override
+  String get exportShareXlsxTooltip => 'Compartir Excel (.xlsx)';
+
+  @override
   String get exportSignatureApproved => 'Aprobó';
 
   @override
@@ -677,6 +686,14 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get exportSummaryNoSelection =>
       'Seleccione las libretas que desea resumir.';
+
+  @override
+  String exportXlsxError(String error) {
+    return 'No se pudo crear el archivo de Excel: $error';
+  }
+
+  @override
+  String get exportXlsxSheetName => 'Libreta';
 
   @override
   String get fieldbookAddTenRowsTooltip => 'Agregar 10 filas';

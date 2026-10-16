@@ -17,8 +17,10 @@ import 'export_file_namer.dart';
 import 'pdf_template.dart';
 import 'project_submission_package.dart';
 import 'submission_summary_report.dart';
+import 'xlsx_exporter.dart';
 
-enum BulkExportFormat { pdf, csv, both }
+/// [both] is PDF + CSV (unchanged); Excel is its own choice.
+enum BulkExportFormat { pdf, csv, xlsx, both }
 
 typedef BulkExportShare = Future<void> Function(List<XFile> files);
 
@@ -121,6 +123,29 @@ class BulkExportService {
         );
         await file.writeAsString(CsvExporter.withBom(csv));
         files.add(XFile(file.path));
+      }
+
+      if (format == BulkExportFormat.xlsx) {
+        final fileName = namer.next(
+          fieldBook: fieldBook,
+          extension: 'xlsx',
+          projectName: projectName,
+          proSettings: settings,
+        );
+        final file = File('${dir.path}/$fileName');
+        final bytes = XlsxExporter.generateFieldBookXlsx(
+          fieldBook: fieldBook,
+          measurements: measurements,
+          bmName: bmName,
+          startElevation: startElevation,
+          closingBmName: closingBmName,
+          projectName: projectName,
+          tolerance: tolerance,
+          proSettings: settings,
+          l10n: l10n,
+        );
+        await file.writeAsBytes(bytes);
+        files.add(XFile(file.path, mimeType: XlsxExporter.mimeType));
       }
     }
 

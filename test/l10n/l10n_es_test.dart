@@ -69,8 +69,13 @@ void main() {
               RegExp('[a-z]{4,}').hasMatch(words(en[key]!)))
             key,
       ];
-      // Words that are the same in Spanish ("Lv Book" has no 4-letter word).
-      expect(same, ['coreErrorWithDetail', 'fieldbookClosingManualShort']);
+      // Words that are the same in Spanish ("Lv Book" has no 4-letter word;
+      // "Excel" is a product name).
+      expect(same, [
+        'coreErrorWithDetail',
+        'exportBulkFormatXlsx',
+        'fieldbookClosingManualShort',
+      ]);
     });
 
     test('never judges misclosure as a failure or sells a subscription', () {

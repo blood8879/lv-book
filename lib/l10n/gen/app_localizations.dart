@@ -616,6 +616,12 @@ abstract class AppLocalizations {
   /// **'Both'**
   String get exportBulkFormatBoth;
 
+  /// Bulk export format segment: Excel (.xlsx) workbooks.
+  ///
+  /// In en, this message translates to:
+  /// **'Excel'**
+  String get exportBulkFormatXlsx;
+
   /// No description provided for @exportBulkManifestSubtitle.
   ///
   /// In en, this message translates to:
@@ -637,7 +643,7 @@ abstract class AppLocalizations {
   /// No description provided for @exportBulkProOnlyBody.
   ///
   /// In en, this message translates to:
-  /// **'Share several level books as PDF/CSV at once.'**
+  /// **'Share several level books as PDF/CSV/Excel at once.'**
   String get exportBulkProOnlyBody;
 
   /// No description provided for @exportBulkProOnlyTitle.
@@ -952,6 +958,12 @@ abstract class AppLocalizations {
   /// **'Memo'**
   String get exportFieldMemo;
 
+  /// Excel header field: project name.
+  ///
+  /// In en, this message translates to:
+  /// **'Project'**
+  String get exportFieldProject;
+
   /// Header/CSV metadata label: HI or rise and fall. CsvImporter accepts both languages.
   ///
   /// In en, this message translates to:
@@ -1174,6 +1186,12 @@ abstract class AppLocalizations {
   /// **'Share PDF'**
   String get exportSharePdfTooltip;
 
+  /// Export screen app bar button: share the level book as an Excel workbook.
+  ///
+  /// In en, this message translates to:
+  /// **'Share Excel (.xlsx)'**
+  String get exportShareXlsxTooltip;
+
   /// PDF signature box.
   ///
   /// In en, this message translates to:
@@ -1203,6 +1221,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Select level books to summarize.'**
   String get exportSummaryNoSelection;
+
+  /// No description provided for @exportXlsxError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t create the Excel file: {error}'**
+  String exportXlsxError(String error);
+
+  /// Excel worksheet (tab) name of the level book. Max 31 characters, no []:*?/\.
+  ///
+  /// In en, this message translates to:
+  /// **'Level book'**
+  String get exportXlsxSheetName;
 
   /// No description provided for @fieldbookAddTenRowsTooltip.
   ///

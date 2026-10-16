@@ -113,24 +113,16 @@ List<String> exportTableHeaders(
     exportColumnHeader(l10n, column),
 ];
 
-/// Measurement table cells for [columns]; [empty] fills a missing value
-/// ('-' in PDF, '' in CSV). Readings/RLs keep 3 decimals. With an IS column,
+/// Typed measurement table cells for [columns] (shared by every export):
+/// No. is an [int], Station / Remarks are [String]s and every other column
+/// is a [double] or null when the row has no value. With an IS column,
 /// intermediate sights ([intermediateSightFlags]) move from FS to IS. Rise
-/// and fall are printed unsigned in their own column (0 counts as a rise).
-/// Cut/fill is signed ('0.125' / '-0.040', [formatCutFillSigned]) unless
-/// [cutFillText] formats it (PDF: 'C 0.125' / 'F 0.040').
-List<List<String>> exportTableRows(
+/// and fall are unsigned in their own column (0 counts as a rise); cut/fill
+/// is signed (cut +, fill −).
+List<List<Object?>> exportTableValues(
   List<Measurement> measurements, {
   required List<ExportColumn> columns,
-  String empty = '',
-  String Function(double cutFill) cutFillText = formatCutFillSigned,
 }) {
-  String fmt(double? value) => value?.toStringAsFixed(3) ?? empty;
-  String cutFill(Measurement m) {
-    final value = measurementCutFill(m);
-    return value == null ? empty : cutFillText(value);
-  }
-
   final riseFall = riseFallOf(measurements);
   final intermediate = columns.contains(ExportColumn.intermediate)
       ? intermediateSightFlags(measurements)
@@ -140,31 +132,51 @@ List<List<String>> exportTableRows(
       [
         for (final column in columns)
           switch (column) {
-            ExportColumn.no => '${i + 1}',
+            ExportColumn.no => i + 1,
             ExportColumn.station => measurements[i].stationName,
-            ExportColumn.bs => fmt(measurements[i].bs),
+            ExportColumn.bs => measurements[i].bs,
             ExportColumn.intermediate =>
-              intermediate[i] ? fmt(measurements[i].fs) : empty,
-            ExportColumn.fs =>
-              intermediate[i] ? empty : fmt(measurements[i].fs),
-            ExportColumn.hi => fmt(measurements[i].ih),
+              intermediate[i] ? measurements[i].fs : null,
+            ExportColumn.fs => intermediate[i] ? null : measurements[i].fs,
+            ExportColumn.hi => measurements[i].ih,
             ExportColumn.rise =>
-              riseFall[i] != null && riseFall[i]! >= 0
-                  ? riseFall[i]!.toStringAsFixed(3)
-                  : empty,
+              riseFall[i] != null && riseFall[i]! >= 0 ? riseFall[i] : null,
             ExportColumn.fall =>
-              riseFall[i] != null && riseFall[i]! < 0
-                  ? (-riseFall[i]!).toStringAsFixed(3)
-                  : empty,
-            ExportColumn.rl => fmt(measurements[i].gh),
+              riseFall[i] != null && riseFall[i]! < 0 ? -riseFall[i]! : null,
+            ExportColumn.rl => measurements[i].gh,
             ExportColumn.remarks =>
               measurements[i].type == MeasurementType.tp ? 'TP' : '',
-            ExportColumn.design => fmt(measurements[i].designLevel),
-            ExportColumn.cutFill => cutFill(measurements[i]),
+            ExportColumn.design => measurements[i].designLevel,
+            ExportColumn.cutFill => measurementCutFill(measurements[i]),
           },
       ],
   ];
 }
+
+/// Measurement table cells for [columns] as text ([exportTableValues]);
+/// [empty] fills a missing value ('-' in PDF, '' in CSV). Readings/RLs keep
+/// 3 decimals. Cut/fill is signed ('0.125' / '-0.040',
+/// [formatCutFillSigned]) unless [cutFillText] formats it (PDF: 'C 0.125' /
+/// 'F 0.040').
+List<List<String>> exportTableRows(
+  List<Measurement> measurements, {
+  required List<ExportColumn> columns,
+  String empty = '',
+  String Function(double cutFill) cutFillText = formatCutFillSigned,
+}) => [
+  for (final row in exportTableValues(measurements, columns: columns))
+    [
+      for (var c = 0; c < columns.length; c++)
+        switch (row[c]) {
+          null => empty,
+          final int number => '$number',
+          final double value when columns[c] == ExportColumn.cutFill =>
+            cutFillText(value),
+          final double value => value.toStringAsFixed(3),
+          final value => '$value',
+        },
+    ],
+];
 
 /// '100.000 m' / '100.000 ft'.
 String exportLength(double value, LengthUnit unit) =>

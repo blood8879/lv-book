@@ -304,6 +304,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get exportBulkFormatBoth => '둘 다';
 
   @override
+  String get exportBulkFormatXlsx => '엑셀';
+
+  @override
   String get exportBulkManifestSubtitle => '선택한 야장, 생성 파일, 측점 수를 함께 정리합니다.';
 
   @override
@@ -313,7 +316,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get exportBulkNothingToExport => '내보낼 데이터가 있는 야장이 없습니다';
 
   @override
-  String get exportBulkProOnlyBody => '여러 야장을 한 번에 PDF/CSV로 공유할 수 있습니다.';
+  String get exportBulkProOnlyBody => '여러 야장을 한 번에 PDF/CSV/엑셀로 공유할 수 있습니다.';
 
   @override
   String get exportBulkProOnlyTitle => 'Pro 전용 기능';
@@ -484,6 +487,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get exportFieldMemo => '메모';
 
   @override
+  String get exportFieldProject => '프로젝트';
+
+  @override
   String get exportFieldReductionMethod => '기입 방식';
 
   @override
@@ -614,6 +620,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get exportSharePdfTooltip => 'PDF 공유';
 
   @override
+  String get exportShareXlsxTooltip => '엑셀(.xlsx) 공유';
+
+  @override
   String get exportSignatureApproved => '승인';
 
   @override
@@ -627,6 +636,14 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get exportSummaryNoSelection => '요약할 야장을 선택하세요.';
+
+  @override
+  String exportXlsxError(String error) {
+    return '엑셀 파일 생성 실패: $error';
+  }
+
+  @override
+  String get exportXlsxSheetName => '야장';
 
   @override
   String get fieldbookAddTenRowsTooltip => '10행 추가';

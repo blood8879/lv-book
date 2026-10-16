@@ -258,10 +258,14 @@
   "@exportBulkFormatBoth": {
     "description": "Bulk export format segment: PDF and CSV."
   },
+  "exportBulkFormatXlsx": "Excel",
+  "@exportBulkFormatXlsx": {
+    "description": "Bulk export format segment: Excel (.xlsx) workbooks."
+  },
   "exportBulkManifestSubtitle": "Lists the selected level books, generated files and station counts.",
   "exportBulkManifestTitle": "Include submission package manifest",
   "exportBulkNothingToExport": "No selected level book has data to export",
-  "exportBulkProOnlyBody": "Share several level books as PDF/CSV at once.",
+  "exportBulkProOnlyBody": "Share several level books as PDF/CSV/Excel at once.",
   "exportBulkProOnlyTitle": "Pro feature",
   "exportBulkProRequired": "Available with Lv Book Pro (one-time purchase).",
   "@exportBulkProRequired": {
@@ -491,6 +495,10 @@
   "@exportFieldMemo": {
     "description": "Exported document field: level book memo."
   },
+  "exportFieldProject": "Project",
+  "@exportFieldProject": {
+    "description": "Excel header field: project name."
+  },
   "exportFieldReductionMethod": "Reduction method",
   "@exportFieldReductionMethod": {
     "description": "Header/CSV metadata label: HI or rise and fall. CsvImporter accepts both languages."
@@ -695,6 +703,10 @@
   },
   "exportShareCsvTooltip": "Share CSV",
   "exportSharePdfTooltip": "Share PDF",
+  "exportShareXlsxTooltip": "Share Excel (.xlsx)",
+  "@exportShareXlsxTooltip": {
+    "description": "Export screen app bar button: share the level book as an Excel workbook."
+  },
   "exportSignatureApproved": "Approved",
   "@exportSignatureApproved": {
     "description": "PDF signature box."
@@ -714,6 +726,18 @@
   "exportSummaryNoSelection": "Select level books to summarize.",
   "@exportSummaryNoSelection": {
     "description": "Summary report error."
+  },
+  "exportXlsxError": "Couldn't create the Excel file: {error}",
+  "@exportXlsxError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "exportXlsxSheetName": "Level book",
+  "@exportXlsxSheetName": {
+    "description": "Excel worksheet (tab) name of the level book. Max 31 characters, no []:*?/\\."
   },
   "fieldbookAddTenRowsTooltip": "Add 10 rows",
   "fieldbookArithmeticCheckResult": "Arithmetic check: {result}",

@@ -289,7 +289,7 @@
     }
   },
   "exportBulkProOnlyTitle": "Pro feature",
-  "exportBulkProOnlyBody": "Share several level books as PDF/CSV at once.",
+  "exportBulkProOnlyBody": "Share several level books as PDF/CSV/Excel at once.",
   "exportBulkFormatBoth": "Both",
   "@exportBulkFormatBoth": {
     "description": "Bulk export format segment: PDF and CSV."
@@ -411,5 +411,15 @@
   "exportCutLetter": "C",
   "@exportCutLetter": {"description": "PDF prefix of a cut value ('C 0.125')."},
   "exportFillLetter": "F",
-  "@exportFillLetter": {"description": "PDF prefix of a fill value ('F 0.040')."}
+  "@exportFillLetter": {"description": "PDF prefix of a fill value ('F 0.040')."},
+  "exportShareXlsxTooltip": "Share Excel (.xlsx)",
+  "@exportShareXlsxTooltip": {"description": "Export screen app bar button: share the level book as an Excel workbook."},
+  "exportXlsxError": "Couldn't create the Excel file: {error}",
+  "@exportXlsxError": {"placeholders": {"error": {"type": "String"}}},
+  "exportXlsxSheetName": "Level book",
+  "@exportXlsxSheetName": {"description": "Excel worksheet (tab) name of the level book. Max 31 characters, no []:*?/\\."},
+  "exportFieldProject": "Project",
+  "@exportFieldProject": {"description": "Excel header field: project name."},
+  "exportBulkFormatXlsx": "Excel",
+  "@exportBulkFormatXlsx": {"description": "Bulk export format segment: Excel (.xlsx) workbooks."}
 }

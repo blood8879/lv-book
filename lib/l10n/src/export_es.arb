@@ -61,7 +61,7 @@
   "exportBulkSelectAll": "Todas",
   "exportBulkShareButton": "{count, plural, =1{Compartir 1 libreta} other{Compartir {count} libretas}}",
   "exportBulkProOnlyTitle": "Función Pro",
-  "exportBulkProOnlyBody": "Comparta varias libretas en PDF/CSV a la vez.",
+  "exportBulkProOnlyBody": "Comparta varias libretas en PDF/CSV/Excel a la vez.",
   "exportBulkFormatBoth": "Ambos",
   "exportBulkManifestTitle": "Incluir manifiesto del paquete de entrega",
   "exportBulkManifestSubtitle": "Enumera las libretas seleccionadas, los archivos generados y el número de puntos.",
@@ -100,5 +100,10 @@
   "exportColumnDesign": "Cota de proyecto",
   "exportColumnCutFill": "Corte(+)/Relleno(−)",
   "exportCutLetter": "C",
-  "exportFillLetter": "R"
+  "exportFillLetter": "R",
+  "exportShareXlsxTooltip": "Compartir Excel (.xlsx)",
+  "exportXlsxError": "No se pudo crear el archivo de Excel: {error}",
+  "exportXlsxSheetName": "Libreta",
+  "exportFieldProject": "Proyecto",
+  "exportBulkFormatXlsx": "Excel"
 }

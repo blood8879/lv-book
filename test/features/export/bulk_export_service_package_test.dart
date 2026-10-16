@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:archive/archive.dart';
+import 'package:excel_community/excel_community.dart' as xl;
+import 'package:flutter/widgets.dart' show Locale;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lv_book/features/ads/ad_settings_repository.dart';
 import 'package:lv_book/features/benchmark/data/benchmark_repository.dart';
@@ -89,6 +91,74 @@ void main() {
       );
     },
   );
+
+  test('shareFieldBooks writes one decodable .xlsx per level book', () async {
+    final tempDir = await Directory.systemTemp.createTemp('lvbook_bulk_xlsx_');
+    final sharedFiles = <XFile>[];
+    addTearDown(() async {
+      if (await tempDir.exists()) await tempDir.delete(recursive: true);
+    });
+    final service = BulkExportService(
+      adSettingsRepository: _ProAdSettingsRepository(),
+      proSettingsRepository: ProSettingsRepository(
+        store: MemoryProSettingsStore(),
+      ),
+      measurementRepository: _MemoryMeasurementRepository({
+        for (final id in [1, 2])
+          id: [
+            Measurement(
+              fieldBookId: id,
+              orderIndex: 0,
+              stationName: 'BM.1',
+              bs: 1,
+              gh: 100,
+            ),
+            Measurement(
+              fieldBookId: id,
+              orderIndex: 1,
+              stationName: 'END',
+              fs: 1.25,
+              gh: 99.75,
+            ),
+          ],
+      }),
+      benchMarkRepository: _MemoryBenchMarkRepository(),
+      temporaryDirectoryProvider: () async => tempDir,
+      shareFiles: (files) async => sharedFiles.addAll(files),
+    );
+
+    final count = await service.shareFieldBooks(
+      projectName: 'Site',
+      fieldBooks: [
+        for (final id in [1, 2])
+          FieldBook(
+            id: id,
+            projectId: 1,
+            title: 'Book $id',
+            date: DateTime(2026, 10, 16),
+            startElevation: 100,
+          ),
+      ],
+      format: BulkExportFormat.xlsx,
+      l10n: l10nFor(const Locale('en')),
+    );
+
+    expect(count, 2);
+    expect(sharedFiles.map((f) => f.name), ['Book 1.xlsx', 'Book 2.xlsx']);
+    final excel = xl.Excel.decodeBytes(
+      await File(sharedFiles.first.path).readAsBytes(),
+    );
+    final rows = excel.tables['Level book']!.rows;
+    expect(
+      rows.any(
+        (row) =>
+            row.length > 6 &&
+            row[1]?.value.toString() == 'END' &&
+            row[6]?.value is xl.DoubleCellValue,
+      ),
+      isTrue,
+    );
+  });
 }
 
 class _ProAdSettingsRepository extends AdSettingsRepository {

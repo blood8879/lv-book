@@ -184,21 +184,20 @@ class _BulkExportScreenState extends ConsumerState<BulkExportScreen> {
   Widget _buildFormatSelector() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
+      // Text-only segments: four icons + labels do not fit a 360 px phone
+      // in Spanish ("Ambos").
       child: SegmentedButton<BulkExportFormat>(
+        showSelectedIcon: false,
         segments: [
-          const ButtonSegment(
-            value: BulkExportFormat.pdf,
-            icon: Icon(Icons.picture_as_pdf),
-            label: Text('PDF'),
-          ),
-          const ButtonSegment(
-            value: BulkExportFormat.csv,
-            icon: Icon(Icons.table_chart),
-            label: Text('CSV'),
+          const ButtonSegment(value: BulkExportFormat.pdf, label: Text('PDF')),
+          const ButtonSegment(value: BulkExportFormat.csv, label: Text('CSV')),
+          ButtonSegment(
+            value: BulkExportFormat.xlsx,
+            label: Text(context.l10n.exportBulkFormatXlsx),
           ),
           ButtonSegment(
             value: BulkExportFormat.both,
-            icon: const Icon(Icons.folder_copy_outlined),
+            tooltip: 'PDF + CSV',
             label: Text(context.l10n.exportBulkFormatBoth),
           ),
         ],

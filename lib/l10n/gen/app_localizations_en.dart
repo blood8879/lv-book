@@ -319,6 +319,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exportBulkFormatBoth => 'Both';
 
   @override
+  String get exportBulkFormatXlsx => 'Excel';
+
+  @override
   String get exportBulkManifestSubtitle =>
       'Lists the selected level books, generated files and station counts.';
 
@@ -331,7 +334,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exportBulkProOnlyBody =>
-      'Share several level books as PDF/CSV at once.';
+      'Share several level books as PDF/CSV/Excel at once.';
 
   @override
   String get exportBulkProOnlyTitle => 'Pro feature';
@@ -516,6 +519,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exportFieldMemo => 'Memo';
 
   @override
+  String get exportFieldProject => 'Project';
+
+  @override
   String get exportFieldReductionMethod => 'Reduction method';
 
   @override
@@ -655,6 +661,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exportSharePdfTooltip => 'Share PDF';
 
   @override
+  String get exportShareXlsxTooltip => 'Share Excel (.xlsx)';
+
+  @override
   String get exportSignatureApproved => 'Approved';
 
   @override
@@ -668,6 +677,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exportSummaryNoSelection => 'Select level books to summarize.';
+
+  @override
+  String exportXlsxError(String error) {
+    return 'Couldn\'t create the Excel file: $error';
+  }
+
+  @override
+  String get exportXlsxSheetName => 'Level book';
 
   @override
   String get fieldbookAddTenRowsTooltip => 'Add 10 rows';

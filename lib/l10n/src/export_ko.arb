@@ -61,7 +61,7 @@
   "exportBulkSelectAll": "전체",
   "exportBulkShareButton": "{count}개 야장 공유",
   "exportBulkProOnlyTitle": "Pro 전용 기능",
-  "exportBulkProOnlyBody": "여러 야장을 한 번에 PDF/CSV로 공유할 수 있습니다.",
+  "exportBulkProOnlyBody": "여러 야장을 한 번에 PDF/CSV/엑셀로 공유할 수 있습니다.",
   "exportBulkFormatBoth": "둘 다",
   "exportBulkManifestTitle": "제출 패키지 manifest 포함",
   "exportBulkManifestSubtitle": "선택한 야장, 생성 파일, 측점 수를 함께 정리합니다.",
@@ -100,5 +100,10 @@
   "exportColumnDesign": "계획고",
   "exportColumnCutFill": "절토(+)/성토(−)",
   "exportCutLetter": "절",
-  "exportFillLetter": "성"
+  "exportFillLetter": "성",
+  "exportShareXlsxTooltip": "엑셀(.xlsx) 공유",
+  "exportXlsxError": "엑셀 파일 생성 실패: {error}",
+  "exportXlsxSheetName": "야장",
+  "exportFieldProject": "프로젝트",
+  "exportBulkFormatXlsx": "엑셀"
 }
