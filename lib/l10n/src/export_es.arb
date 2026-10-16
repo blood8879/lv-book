@@ -105,5 +105,6 @@
   "exportXlsxError": "No se pudo crear el archivo de Excel: {error}",
   "exportXlsxSheetName": "Libreta",
   "exportFieldProject": "Proyecto",
-  "exportBulkFormatXlsx": "Excel"
+  "exportBulkFormatXlsx": "Excel",
+  "exportColumnTarget": "Lectura objetivo"
 }

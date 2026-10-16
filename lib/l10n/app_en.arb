@@ -426,6 +426,10 @@
   "@exportColumnStation": {
     "description": "Measurement table column: station name."
   },
+  "exportColumnTarget": "Target reading",
+  "@exportColumnTarget": {
+    "description": "Measurement table column after Cut/Fill: stakeout target staff reading = HI of the current setup − design level. Not read back by CsvImporter (derived)."
+  },
   "exportCompanyNotSet": "Company name not set",
   "@exportCompanyNotSet": {
     "description": "PDF header when Pro branding is on but no company name was entered."
@@ -871,6 +875,10 @@
     "description": "Editor table header of the signed rise(+)/fall(−) column; must fit ~68 px."
   },
   "fieldbookColumnRl": "RL",
+  "fieldbookColumnTarget": "Target",
+  "@fieldbookColumnTarget": {
+    "description": "Editor table header of the read-only stakeout target staff reading (HI in effect − design level); must fit ~70 px."
+  },
   "fieldbookContinueButton": "Continue",
   "fieldbookCopyName": "{name} copy",
   "@fieldbookCopyName": {
@@ -922,7 +930,7 @@
   },
   "fieldbookDeleteRowTitle": "Delete row",
   "fieldbookDeleteTitle": "Delete level book",
-  "fieldbookDesignToggleHelp": "Adds a Design column. Cut/fill = RL − design: C (cut) when the ground is above design, F (fill) when below.",
+  "fieldbookDesignToggleHelp": "Adds a Design column. Cut/fill = RL − design: C (cut) when the ground is above design, F (fill) when below. Target = HI − design: the staff reading to stake out.",
   "@fieldbookDesignToggleHelp": {
     "description": "Helper under the design level switch."
   },

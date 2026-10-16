@@ -160,6 +160,55 @@ void main() {
     expect(find.text('성 0.276'), findsNothing);
     expect(tester.takeException(), isNull);
   });
+
+  String targetText(WidgetTester tester, int row) =>
+      tester.widget<Text>(find.byKey(ValueKey('cell-$row-target'))).data!;
+
+  testWidgets('target reading: HI in effect − design, also with no reading', (
+    tester,
+  ) async {
+    useNarrowPhone(tester);
+    await tester.pumpWidget(
+      editor(locale: const Locale('en'), showDesign: true),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Target'), findsOneWidget);
+    // No.1 (row 2) after TP-1: HI 102.164 − 100.099 = 2.065.
+    await tester.enterText(cell(2, 'dl'), '100.099');
+    // Row 6 has no reading yet: the HI after TP-2 (101.397) still applies.
+    await tester.enterText(cell(6, 'dl'), '100.5');
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pumpAndSettle();
+
+    expect(targetText(tester, 2), '2.065');
+    expect(targetText(tester, 6), '0.897');
+    // No design level: blank.
+    expect(targetText(tester, 0), '');
+    expect(targetText(tester, 4), '');
+    // The new column keeps the table scrollable on a 360 px phone.
+    expect(find.byKey(const ValueKey('design-table-scroll')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('target column fits in Korean and Spanish', (tester) async {
+    useNarrowPhone(tester);
+    for (final (locale, header) in [
+      (const Locale('ko'), '목표 시'),
+      (const Locale('es'), 'Lect. obj.'),
+    ]) {
+      await tester.pumpWidget(editor(locale: locale, showDesign: true));
+      await tester.pumpAndSettle();
+      expect(find.text(header), findsOneWidget);
+      // Header cells keep ≥ 75 pt in the scrolling design table.
+      final headerCell = find
+          .ancestor(of: find.text(header), matching: find.byType(Expanded))
+          .first;
+      expect(tester.getSize(headerCell).width, greaterThanOrEqualTo(75));
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+    }
+  });
 }
 
 class _FakeMeasurementRepository extends MeasurementRepository {

@@ -218,6 +218,7 @@ converted screen when cheap.
 | 표고 | **elevation** / **RL** | **cota** | "Cota (m)" in forms |
 | 계획고 | **Design level** (grid: "Design") | **Cota de proyecto** (grid: "Cota proy.") | |
 | 절토 / 성토 | **Cut** / **Fill** (C / F) | **Corte** / **Relleno** (C / R) | grid: "Corte(+)/Rell.(−)" |
+| 목표 시준값 (grid: 목표 시) | **Target reading** (grid: "Target") | **Lectura objetivo** (grid: "Lect. obj.") | stakeout: HI in effect − design level; 시 = 시준 as in 후시/전시 |
 | 검산 | **Arithmetic check** | **Comprobación aritmética** (short "Comp. arit.") | |
 | 폐합오차 / 오차 | **Misclosure** | **Error de cierre** | 4 decimals |
 | 허용오차 | **Tolerance** | **Tolerancia** | |

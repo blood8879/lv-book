@@ -438,6 +438,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get exportColumnStation => '측점명';
 
   @override
+  String get exportColumnTarget => '목표 시준값';
+
+  @override
   String get exportCompanyNotSet => '회사명 미입력';
 
   @override
@@ -780,6 +783,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get fieldbookColumnRl => 'GH';
 
   @override
+  String get fieldbookColumnTarget => '목표 시';
+
+  @override
   String get fieldbookContinueButton => '계속';
 
   @override
@@ -827,7 +833,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get fieldbookDesignToggleHelp =>
-      '계획고 열을 추가합니다. 절성토 = 지반고 − 계획고: 지반이 높으면 절(절토), 낮으면 성(성토).';
+      '계획고 열을 추가합니다. 절성토 = 지반고 − 계획고: 지반이 높으면 절(절토), 낮으면 성(성토). 목표 시 = 기계고 − 계획고: 측설할 때 찾을 표척 읽음값.';
 
   @override
   String get fieldbookDesignToggleLabel => '계획고·절성토 표시';

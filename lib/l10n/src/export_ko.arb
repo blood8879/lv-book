@@ -105,5 +105,6 @@
   "exportXlsxError": "엑셀 파일 생성 실패: {error}",
   "exportXlsxSheetName": "야장",
   "exportFieldProject": "프로젝트",
-  "exportBulkFormatXlsx": "엑셀"
+  "exportBulkFormatXlsx": "엑셀",
+  "exportColumnTarget": "목표 시준값"
 }

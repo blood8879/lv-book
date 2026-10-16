@@ -470,6 +470,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exportColumnStation => 'Station';
 
   @override
+  String get exportColumnTarget => 'Target reading';
+
+  @override
   String get exportCompanyNotSet => 'Company name not set';
 
   @override
@@ -822,6 +825,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fieldbookColumnRl => 'RL';
 
   @override
+  String get fieldbookColumnTarget => 'Target';
+
+  @override
   String get fieldbookContinueButton => 'Continue';
 
   @override
@@ -869,7 +875,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get fieldbookDesignToggleHelp =>
-      'Adds a Design column. Cut/fill = RL − design: C (cut) when the ground is above design, F (fill) when below.';
+      'Adds a Design column. Cut/fill = RL − design: C (cut) when the ground is above design, F (fill) when below. Target = HI − design: the staff reading to stake out.';
 
   @override
   String get fieldbookDesignToggleLabel => 'Design level & cut/fill';

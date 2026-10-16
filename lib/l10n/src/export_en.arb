@@ -421,5 +421,7 @@
   "exportFieldProject": "Project",
   "@exportFieldProject": {"description": "Excel header field: project name."},
   "exportBulkFormatXlsx": "Excel",
-  "@exportBulkFormatXlsx": {"description": "Bulk export format segment: Excel (.xlsx) workbooks."}
+  "@exportBulkFormatXlsx": {"description": "Bulk export format segment: Excel (.xlsx) workbooks."},
+  "exportColumnTarget": "Target reading",
+  "@exportColumnTarget": {"description": "Measurement table column after Cut/Fill: stakeout target staff reading = HI of the current setup − design level. Not read back by CsvImporter (derived)."}
 }

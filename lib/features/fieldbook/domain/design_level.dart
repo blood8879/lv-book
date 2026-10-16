@@ -58,3 +58,34 @@ bool exportsDesignColumns(
   List<Measurement> measurements,
 ) =>
     fieldBook.showDesignLevel && measurements.any((m) => m.designLevel != null);
+
+/// Height of instrument of the setup in effect at each row: RL + BS of the
+/// most recent row (at or before it) that has both, i.e. the start BS or a
+/// turning point's BS, so it is known for a row with no reading yet. Null
+/// before the first setup. A BS without an RL (ignored by the reduction)
+/// does not start a setup. Same for HI and rise-and-fall books.
+List<double?> setupHeightsOf(List<({double? bs, double? rl})> rows) {
+  double? hi;
+  return [
+    for (final row in rows)
+      if (row.bs != null && row.rl != null) hi = row.rl! + row.bs! else hi,
+  ];
+}
+
+/// Stakeout target staff reading (목표 시준값): the reading that puts the
+/// staff foot on design, HI − design level. Null without both.
+double? stakeoutTargetOf({required double? hi, required double? design}) {
+  if (hi == null || design == null) return null;
+  return hi - design;
+}
+
+/// [stakeoutTargetOf] per stored measurement, using [setupHeightsOf].
+List<double?> stakeoutTargetsOf(List<Measurement> measurements) {
+  final heights = setupHeightsOf([
+    for (final m in measurements) (bs: m.bs, rl: m.gh),
+  ]);
+  return [
+    for (var i = 0; i < measurements.length; i++)
+      stakeoutTargetOf(hi: heights[i], design: measurements[i].designLevel),
+  ];
+}

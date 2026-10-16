@@ -154,9 +154,10 @@
   "fieldbookSummarySumFall": "ΣDesc {value}",
   "fieldbookSummaryRiseMinusFall": "A − D {value}",
   "fieldbookDesignToggleLabel": "Cota de proyecto y corte/relleno",
-  "fieldbookDesignToggleHelp": "Agrega una columna de cota de proyecto. Corte/relleno = cota − proyecto: C (corte) si el terreno está por encima del proyecto, R (relleno) si está por debajo.",
+  "fieldbookDesignToggleHelp": "Agrega una columna de cota de proyecto. Corte/relleno = cota − proyecto: C (corte) si el terreno está por encima del proyecto, R (relleno) si está por debajo. Lect. obj. = AI − proyecto: la lectura de mira para replantear.",
   "fieldbookColumnDesign": "Cota proy.",
   "fieldbookColumnCutFill": "Corte(+)/Rell.(−)",
   "fieldbookCutLetter": "C",
-  "fieldbookFillLetter": "R"
+  "fieldbookFillLetter": "R",
+  "fieldbookColumnTarget": "Lect. obj."
 }

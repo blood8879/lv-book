@@ -479,6 +479,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get exportColumnStation => 'Punto';
 
   @override
+  String get exportColumnTarget => 'Lectura objetivo';
+
+  @override
   String get exportCompanyNotSet => 'Empresa sin definir';
 
   @override
@@ -831,6 +834,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get fieldbookColumnRl => 'Cota';
 
   @override
+  String get fieldbookColumnTarget => 'Lect. obj.';
+
+  @override
   String get fieldbookContinueButton => 'Continuar';
 
   @override
@@ -878,7 +884,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get fieldbookDesignToggleHelp =>
-      'Agrega una columna de cota de proyecto. Corte/relleno = cota − proyecto: C (corte) si el terreno está por encima del proyecto, R (relleno) si está por debajo.';
+      'Agrega una columna de cota de proyecto. Corte/relleno = cota − proyecto: C (corte) si el terreno está por encima del proyecto, R (relleno) si está por debajo. Lect. obj. = AI − proyecto: la lectura de mira para replantear.';
 
   @override
   String get fieldbookDesignToggleLabel => 'Cota de proyecto y corte/relleno';

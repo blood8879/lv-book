@@ -868,6 +868,12 @@ abstract class AppLocalizations {
   /// **'Station'**
   String get exportColumnStation;
 
+  /// Measurement table column after Cut/Fill: stakeout target staff reading = HI of the current setup − design level. Not read back by CsvImporter (derived).
+  ///
+  /// In en, this message translates to:
+  /// **'Target reading'**
+  String get exportColumnTarget;
+
   /// PDF header when Pro branding is on but no company name was entered.
   ///
   /// In en, this message translates to:
@@ -1486,6 +1492,12 @@ abstract class AppLocalizations {
   /// **'RL'**
   String get fieldbookColumnRl;
 
+  /// Editor table header of the read-only stakeout target staff reading (HI in effect − design level); must fit ~70 px.
+  ///
+  /// In en, this message translates to:
+  /// **'Target'**
+  String get fieldbookColumnTarget;
+
   /// No description provided for @fieldbookContinueButton.
   ///
   /// In en, this message translates to:
@@ -1561,7 +1573,7 @@ abstract class AppLocalizations {
   /// Helper under the design level switch.
   ///
   /// In en, this message translates to:
-  /// **'Adds a Design column. Cut/fill = RL − design: C (cut) when the ground is above design, F (fill) when below.'**
+  /// **'Adds a Design column. Cut/fill = RL − design: C (cut) when the ground is above design, F (fill) when below. Target = HI − design: the staff reading to stake out.'**
   String get fieldbookDesignToggleHelp;
 
   /// Switch in the editor's review panel that shows the Design / Cut-Fill columns for this level book.

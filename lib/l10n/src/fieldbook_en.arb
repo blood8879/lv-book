@@ -236,7 +236,7 @@
   "@fieldbookSummaryRiseMinusFall": {"description": "Caption under Diff: ΣRise − ΣFall, must equal Diff (short; ~100 px).", "placeholders": {"value": {"type": "String"}}},
   "fieldbookDesignToggleLabel": "Design level & cut/fill",
   "@fieldbookDesignToggleLabel": {"description": "Switch in the editor's review panel that shows the Design / Cut-Fill columns for this level book."},
-  "fieldbookDesignToggleHelp": "Adds a Design column. Cut/fill = RL − design: C (cut) when the ground is above design, F (fill) when below.",
+  "fieldbookDesignToggleHelp": "Adds a Design column. Cut/fill = RL − design: C (cut) when the ground is above design, F (fill) when below. Target = HI − design: the staff reading to stake out.",
   "@fieldbookDesignToggleHelp": {"description": "Helper under the design level switch."},
   "fieldbookColumnDesign": "Design",
   "@fieldbookColumnDesign": {"description": "Editor table header of the editable design level column; must fit ~68 px."},
@@ -245,5 +245,7 @@
   "fieldbookCutLetter": "C",
   "@fieldbookCutLetter": {"description": "One-letter prefix of a cut value in the editor ('C 0.125'): ground above design."},
   "fieldbookFillLetter": "F",
-  "@fieldbookFillLetter": {"description": "One-letter prefix of a fill value in the editor ('F 0.040'): ground below design."}
+  "@fieldbookFillLetter": {"description": "One-letter prefix of a fill value in the editor ('F 0.040'): ground below design."},
+  "fieldbookColumnTarget": "Target",
+  "@fieldbookColumnTarget": {"description": "Editor table header of the read-only stakeout target staff reading (HI in effect − design level); must fit ~70 px."}
 }

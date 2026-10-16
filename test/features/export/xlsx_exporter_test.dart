@@ -196,6 +196,7 @@ void main() {
   test('design columns only when the book shows design levels', () {
     final hidden = rowOf(decode(en), 'No.');
     expect(hidden, isNot(contains('Design level')));
+    expect(hidden, isNot(contains('Target reading')));
 
     for (final l10n in [en, ko, es]) {
       final sheet = decode(l10n, fieldBook: book(showDesign: true));
@@ -205,6 +206,8 @@ void main() {
       // PDF order: right after RL.
       expect(design, header.indexOf(l10n.exportColumnRl) + 1);
       expect(cutFill, design + 1);
+      final target = header.indexOf(l10n.exportColumnTarget);
+      expect(target, cutFill + 1);
 
       // No.1: RL 100.224 − design 100.099 = cut 0.125, stored signed with
       // the localized letters in the number format.
@@ -215,6 +218,12 @@ void main() {
       expect(no1[design]!.value, isA<xl.DoubleCellValue>());
       expect(valuesOf(no1)[design], 100.099);
       expect(valuesOf(no1)[cutFill] as double, closeTo(0.125, 1e-9));
+      // Target reading: HI 101.500 − 100.099; END uses the TP1 HI 101.700.
+      expect(no1[target]!.value, isA<xl.DoubleCellValue>());
+      expect(valuesOf(no1)[target] as double, closeTo(1.401, 1e-9));
+      final end = valuesOf(sheet.rows[headerIndex + 4]);
+      expect(end[target] as double, closeTo(1.06, 1e-9));
+      expect(valuesOf(sheet.rows[headerIndex + 1])[target], isNull);
       expect(
         no1[cutFill]!.cellStyle?.numberFormat.formatCode,
         '"${l10n.exportCutLetter} "0.000;"${l10n.exportFillLetter} "0.000;0.000',

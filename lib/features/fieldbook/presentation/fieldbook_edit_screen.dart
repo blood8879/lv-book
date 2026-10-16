@@ -41,14 +41,18 @@ const int _flexValue = 19;
 const int _flexAction = 10;
 
 /// Design levels are full RLs (e.g. 100.187), wider than BS/FS readings, and
-/// the cut/fill cell carries a C/F prefix.
+/// the cut/fill cell carries a C/F prefix. The target reading is a staff
+/// reading ('2.065'; negative when design is above the HI).
 const int _flexDesign = 26;
 const int _flexCutFill = 23;
+const int _flexTarget = 22;
 
 /// Narrowest table that keeps the numeric columns at their usual ≈68 pt when
-/// the Design / Cut-Fill columns are shown (flex 149 instead of 100); on
-/// narrower screens the table scrolls horizontally.
-const double _designTableMinWidth = 540;
+/// the Design / Cut-Fill / Target columns are shown (flex 171 instead of
+/// 100, ≈3.7 pt per flex): '100.187', 'C 12.345' and the Spanish header
+/// "Lect. obj." are never squeezed; on narrower screens the table scrolls
+/// horizontally.
+const double _designTableMinWidth = 640;
 
 /// Cell column ids (focus/controller keys are `'<row>_<col>'`).
 const String _colBs = 'bs';
@@ -70,6 +74,10 @@ class _RowData {
 
   /// Rise (+) / fall (−) for rise-and-fall books (see [LevelRun.riseFall]).
   double? riseFall;
+
+  /// HI of the instrument setup in effect at this row ([setupHeightsOf]),
+  /// also for rows with no reading yet and in rise-and-fall books.
+  double? setupHi;
   bool isTP;
   bool manualTp;
   int? dbId;
@@ -99,6 +107,9 @@ class _RowData {
 
   /// Cut (+) / fill (−) = RL − design; null without both.
   double? get cutFill => cutFillOf(rl: gh, design: design);
+
+  /// Stakeout target staff reading = setup HI − design; null without both.
+  double? get target => stakeoutTargetOf(hi: setupHi, design: design);
 
   String textOf(String col) => switch (col) {
     _colBs => bsText,
@@ -352,6 +363,10 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
     ];
     final results = LevelRun.compute(_startElevation, inputs);
     final riseFall = LevelRun.riseFall(inputs);
+    final setupHeights = setupHeightsOf([
+      for (var i = 0; i < _rows.length; i++)
+        (bs: _rows[i].bs, rl: results[i].gh),
+    ]);
     for (int i = 0; i < _rows.length; i++) {
       final row = _rows[i];
       final result = results[i];
@@ -359,6 +374,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
       row.ih = result.ih;
       row.gh = result.gh;
       row.riseFall = riseFall[i];
+      row.setupHi = setupHeights[i];
     }
     setState(() {});
   }
@@ -1175,6 +1191,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
           if (_showDesignLevel) ...[
             _headerCell(l10n.fieldbookColumnDesign, flex: _flexDesign),
             _headerCell(l10n.fieldbookColumnCutFill, flex: _flexCutFill),
+            _headerCell(l10n.fieldbookColumnTarget, flex: _flexTarget),
           ],
           _headerCell('', flex: _flexAction), // TP/비고
         ],
@@ -1339,6 +1356,8 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
               ),
               // Cut/fill (read-only)
               Expanded(flex: _flexCutFill, child: _cutFillCell(row)),
+              // Stakeout target reading (read-only)
+              Expanded(flex: _flexTarget, child: _targetCell(index, row)),
             ],
             // TP indicator and row actions
             Expanded(
@@ -1456,6 +1475,32 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
               CutFillKind.fill => colors.blue,
               _ => colors.subtext,
             },
+            fontFeatures: AppTypography.tabularFeatures,
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Staff reading that puts the staff on design (HI in effect − design);
+  /// blank before the first setup or without a design level.
+  Widget _targetCell(int index, _RowData row) {
+    final colors = context.appColors;
+    final value = row.target;
+    return Container(
+      alignment: Alignment.centerRight,
+      padding: const EdgeInsets.only(right: 8),
+      color: colors.blueSoft,
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.centerRight,
+        child: Text(
+          value?.toStringAsFixed(3) ?? '',
+          key: ValueKey('cell-$index-target'),
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: colors.blue,
             fontFeatures: AppTypography.tabularFeatures,
           ),
         ),

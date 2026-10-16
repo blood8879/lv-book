@@ -52,6 +52,99 @@ void main() {
     showDesignLevel: show,
   );
 
+  group('stakeout target reading', () {
+    test('HI in effect − design; rows after a TP use the new HI', () {
+      // Sample: HI 101.425 (BM-1), 102.164 after TP-1, 101.397 after TP-2.
+      final targets = stakeoutTargetsOf(withDesign());
+      expect(targets[2], closeTo(102.164 - 100.099, 1e-9)); // No.1: 2.065
+      expect(targets[4], closeTo(101.397 - 100.187, 1e-9)); // No.2: 1.210
+      // Same as the reading that would show cut/fill 0: FS + cut/fill.
+      expect(targets[2], closeTo(1.94 + 0.125, 1e-9));
+      // Rows without a design level get none.
+      expect(
+        [targets[0], targets[1], targets[3], targets[5]],
+        [null, null, null, null],
+      );
+    });
+
+    test('setup HI comes from RL + BS; TP rows start the new setup', () {
+      final heights = setupHeightsOf([
+        (bs: null, rl: null), // before the first BS
+        (bs: 1.5, rl: 100.0), // BM: HI 101.5
+        (bs: null, rl: 100.3), // IS
+        (bs: 1.2, rl: 100.5), // TP: HI 101.7
+        (bs: null, rl: null), // no reading yet
+        (bs: 0.9, rl: null), // BS the reduction ignores
+      ]);
+      expect(heights[0], isNull);
+      expect(heights[1], closeTo(101.5, 1e-9));
+      expect(heights[2], closeTo(101.5, 1e-9));
+      expect(heights[3], closeTo(101.7, 1e-9));
+      expect(heights[4], closeTo(101.7, 1e-9));
+      expect(heights[5], closeTo(101.7, 1e-9));
+    });
+
+    test('an IS row with no FS still gets a target (stakeout)', () {
+      final rows = [
+        Measurement(
+          fieldBookId: 1,
+          orderIndex: 0,
+          stationName: 'BM',
+          bs: 1.5,
+          ih: 101.5,
+          gh: 100,
+        ),
+        // Design entered ahead of the reading: no FS, no RL.
+        Measurement(
+          fieldBookId: 1,
+          orderIndex: 1,
+          stationName: 'P1',
+          designLevel: 100.25,
+        ),
+      ];
+      final targets = stakeoutTargetsOf(rows);
+      expect(targets.first, isNull);
+      expect(targets.last, closeTo(1.25, 1e-9));
+    });
+
+    test('a design level before any HI gets none', () {
+      final rows = [
+        Measurement(
+          fieldBookId: 1,
+          orderIndex: 0,
+          stationName: 'P0',
+          designLevel: 100,
+        ),
+        Measurement(
+          fieldBookId: 1,
+          orderIndex: 1,
+          stationName: 'BM',
+          bs: 1.5,
+          gh: 100,
+        ),
+      ];
+      expect(stakeoutTargetsOf(rows), [null, null]);
+      expect(stakeoutTargetOf(hi: null, design: 100), isNull);
+      expect(stakeoutTargetOf(hi: 101.5, design: null), isNull);
+    });
+
+    test('rise-and-fall books use the same setup HI', () {
+      final rows = SampleProjectService.buildMeasurements(fieldBookId: 1);
+      // Rise and fall only changes the presentation; RL + BS is the same.
+      final heights = setupHeightsOf([
+        for (final m in rows) (bs: m.bs, rl: m.gh),
+      ]);
+      expect(heights[2], closeTo(102.164, 1e-9));
+      final (headers, table) = PdfExporter.tableForTest(
+        withDesign(),
+        ReductionMethod.riseAndFall,
+        en,
+        design: true,
+      );
+      expect(table[2][headers.indexOf('Target reading')], '2.065');
+    });
+  });
+
   group('cut/fill math', () {
     test('cut is RL above design (+), fill below (−)', () {
       expect(cutFillOf(rl: 100.224, design: 100.099), closeTo(0.125, 1e-9));
@@ -390,26 +483,27 @@ void main() {
       }
     });
 
-    test('adds design level and signed cut/fill at the end', () {
+    test('adds design level, signed cut/fill and target at the end', () {
       final source = csv(book(), withDesign(), en);
       expect(
         tableHeader(source),
-        'No.,Station,BS,IS,FS,HI,RL,Remarks,Design level,Cut(+)/Fill(−)',
+        'No.,Station,BS,IS,FS,HI,RL,Remarks,Design level,Cut(+)/Fill(−),'
+        'Target reading',
       );
       final lines = source.split('\r\n');
       expect(
         lines.firstWhere((l) => l.startsWith('3,No.1')),
-        endsWith(',100.099,0.125'),
+        endsWith(',100.099,0.125,2.065'),
       );
       expect(
         lines.firstWhere((l) => l.startsWith('5,No.2')),
-        endsWith(',100.187,-0.040'),
+        endsWith(',100.187,-0.040,1.210'),
       );
-      // Rows without a design level leave both cells empty.
-      expect(lines.firstWhere((l) => l.startsWith('1,BM-1')), endsWith(',,'));
+      // Rows without a design level leave the three cells empty.
+      expect(lines.firstWhere((l) => l.startsWith('1,BM-1')), endsWith(',,,'));
       expect(
         tableHeader(csv(book(), withDesign(), ko)),
-        endsWith('비고,계획고,절토(+)/성토(−)'),
+        endsWith('비고,계획고,절토(+)/성토(−),목표 시준값'),
       );
     });
 
@@ -473,11 +567,12 @@ void main() {
         'RL',
         'Design level',
         'Cut(+)/Fill(−)',
+        'Target reading',
         'Remarks',
       ]);
-      expect(rows[2].sublist(7, 9), ['100.099', 'C 0.125']);
-      expect(rows[4].sublist(7, 9), ['100.187', 'F 0.040']);
-      expect(rows[0].sublist(7, 9), ['-', '-']);
+      expect(rows[2].sublist(7, 10), ['100.099', 'C 0.125', '2.065']);
+      expect(rows[4].sublist(7, 10), ['100.187', 'F 0.040', '1.210']);
+      expect(rows[0].sublist(7, 10), ['-', '-', '-']);
 
       final (koHeaders, koRows) = PdfExporter.tableForTest(
         withDesign(),
@@ -485,7 +580,7 @@ void main() {
         ko,
         design: true,
       );
-      expect(koHeaders, contains('절토(+)/성토(−)'));
+      expect(koHeaders, containsAllInOrder(['절토(+)/성토(−)', '목표 시준값']));
       expect(koRows[2], contains('절 0.125'));
       expect(koRows[4], contains('성 0.040'));
     });

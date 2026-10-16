@@ -42,6 +42,10 @@ enum ExportColumn {
 
   /// Cut (+) / fill (−) = RL − design level.
   cutFill,
+
+  /// Stakeout target staff reading = setup HI − design level
+  /// ([stakeoutTargetsOf]).
+  target,
 }
 
 /// English and Spanish exports use the standard level book layout
@@ -52,7 +56,7 @@ bool exportUsesIntermediateColumn(AppLocalizations l10n) =>
     !l10n.localeName.startsWith('ko');
 
 /// No. / Station / BS / [IS] / FS / HI or Rise, Fall / RL / Remarks.
-/// With [design] (see `exportsDesignColumns`), Design / Cut-Fill follow
+/// With [design] (see `exportsDesignColumns`), Design / Cut-Fill / Target follow
 /// Remarks at the end (CSV, so older importers' column positions never
 /// shift) or, with [designBeforeRemarks], sit next to RL (PDF).
 List<ExportColumn> exportTableColumns({
@@ -75,11 +79,13 @@ List<ExportColumn> exportTableColumns({
   if (design && designBeforeRemarks) ...[
     ExportColumn.design,
     ExportColumn.cutFill,
+    ExportColumn.target,
   ],
   ExportColumn.remarks,
   if (design && !designBeforeRemarks) ...[
     ExportColumn.design,
     ExportColumn.cutFill,
+    ExportColumn.target,
   ],
 ];
 
@@ -97,6 +103,7 @@ String exportColumnHeader(AppLocalizations l10n, ExportColumn column) =>
       ExportColumn.remarks => l10n.exportColumnRemarks,
       ExportColumn.design => l10n.exportColumnDesign,
       ExportColumn.cutFill => l10n.exportColumnCutFill,
+      ExportColumn.target => l10n.exportColumnTarget,
     };
 
 /// Measurement table headers (defaults: No. / Station / BS / FS / HI / RL /
@@ -118,7 +125,7 @@ List<String> exportTableHeaders(
 /// is a [double] or null when the row has no value. With an IS column,
 /// intermediate sights ([intermediateSightFlags]) move from FS to IS. Rise
 /// and fall are unsigned in their own column (0 counts as a rise); cut/fill
-/// is signed (cut +, fill −).
+/// is signed (cut +, fill −); the target reading is HI in effect − design.
 List<List<Object?>> exportTableValues(
   List<Measurement> measurements, {
   required List<ExportColumn> columns,
@@ -127,6 +134,9 @@ List<List<Object?>> exportTableValues(
   final intermediate = columns.contains(ExportColumn.intermediate)
       ? intermediateSightFlags(measurements)
       : List.filled(measurements.length, false);
+  final targets = columns.contains(ExportColumn.target)
+      ? stakeoutTargetsOf(measurements)
+      : List<double?>.filled(measurements.length, null);
   return [
     for (var i = 0; i < measurements.length; i++)
       [
@@ -148,6 +158,7 @@ List<List<Object?>> exportTableValues(
               measurements[i].type == MeasurementType.tp ? 'TP' : '',
             ExportColumn.design => measurements[i].designLevel,
             ExportColumn.cutFill => measurementCutFill(measurements[i]),
+            ExportColumn.target => targets[i],
           },
       ],
   ];
