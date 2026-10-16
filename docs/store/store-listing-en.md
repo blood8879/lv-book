@@ -72,5 +72,5 @@ Your data stays on your device. Back it up any time as a JSON file.
 
 ```
 • Excel (.xlsx) import: open level books exported by Lv Book, or your own sheets with Station / BS / IS / FS / Remarks columns
-• Smaller, faster app (optimized resource shrinking)
+• Lighter app package (optimized resource shrinking)
 ```

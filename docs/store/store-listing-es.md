@@ -80,5 +80,5 @@ Sus datos se quedan en su dispositivo. Haga una copia de seguridad en cualquier 
 
 ```
 • Importación de Excel (.xlsx): abra libretas exportadas por Lv Book o sus propias hojas con columnas Punto / VAt / VI / VAd / Observaciones
-• App más ligera y rápida (reducción de recursos optimizada)
+• App más ligera (reducción de recursos optimizada)
 ```
