@@ -25,11 +25,12 @@ AUTOMATIC REDUCTION
 • Turning points (TP) are detected automatically; mark one manually when needed
 • Intermediate sights handled correctly in the arithmetic check
 • Optional design level column with cut/fill for every station (C/F), for formation and setting-out checks
+• Stakeout: the target staff reading (HI − design) for each design level, even before you take the reading
 
 BUILT-IN CHECKS
 • Arithmetic check: ΣBS − ΣFS = (ΣRise − ΣFall) = Final RL − Start RL
 • Real misclosure against your closing BM (loop, another BM or a known RL)
-• Tolerance you choose: fixed or c·√n, with a clear "Within tolerance" / "Check required" result
+• Tolerance you choose: fixed, c·√n (setups) or K·√L (route length, K presets 2.5–20 mm·√km), with a clear "Within tolerance" / "Check required" result
 • Validation before export: first BS, last FS, TP complete, empty rows, arithmetic check, tolerance
 
 TWO-PEG TEST (COLLIMATION CHECK)
@@ -40,7 +41,8 @@ TWO-PEG TEST (COLLIMATION CHECK)
 SUBMISSION-READY EXPORT (FREE)
 • Standard BS | IS | FS level book PDF with company name, surveyor, check box and signature fields
 • Hand-drawn signature, watermark, document templates and file-naming rules
-• CSV export that opens cleanly in Excel, and CSV import to restore or move records
+• Native Excel (.xlsx) export with real numbers, the header and the arithmetic check
+• CSV export, and CSV import to restore or move records
 
 BENCHMARKS (BM / TBM)
 • Register benchmarks with status (Usable / Possibly damaged / Out of service)
@@ -50,7 +52,7 @@ BENCHMARKS (BM / TBM)
 BUILT FOR THE FIELD
 • Works offline, no account or login
 • Spreadsheet-style entry with large cells for gloves and sunlight
-• Metres or feet, autosave, light and dark mode
+• Metres or feet, autosave, undo for deleted rows, light and dark mode
 • Project → level book → benchmark organisation, search and quick reuse of surveyor/instrument/weather
 
 TRY IT IN SECONDS
@@ -59,17 +61,20 @@ Open the sample project from the first screen to see HI/RL reduction and the ari
 LV BOOK PRO — ONE-TIME PURCHASE (NOT A SUBSCRIPTION)
 • Remove all ads
 • Benchmark photos and coordinates
-• Bulk export of many level books at once, with a submission package and summary CSV
+• Bulk export of many level books at once (PDF, CSV or Excel), with a submission package and summary CSV
 
-All calculations, checks, the two-peg test, single PDF/CSV export, CSV import and document settings are free.
+All calculations, checks, the two-peg test, single PDF/Excel/CSV export, CSV import and document settings are free.
 
 Your data stays on your device. Back it up any time as a JSON file.
 ```
 
-## Release notes (en-US)
+## Release notes (en-US) — 2.0.0 (27)
 
 ```
-• New: Design level and cut/fill columns — turn on per level book in Review
-• Cut/fill included in PDF and CSV exports
-• Two-peg test records with PDF (1.7.0)
+• Spanish language
+• Excel (.xlsx) export with real numbers, header and arithmetic check (free)
+• Stakeout: target staff reading (HI − design) next to cut/fill
+• Undo after deleting a row
+• Decimal comma accepted in number fields
+• K·√L misclosure tolerance by route length, with K presets
 ```

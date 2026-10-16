@@ -32,11 +32,12 @@ CÁLCULO AUTOMÁTICO
 • Los puntos de cambio (TP) se detectan automáticamente; también puede marcarlos a mano
 • Las vistas intermedias se tratan correctamente en la comprobación aritmética
 • Columna opcional de cota de proyecto con corte/relleno en cada punto (C/R), para controlar rasantes y replanteos
+• Replanteo: la lectura objetivo de mira (AI − proyecto) para cada cota de proyecto, incluso antes de leer
 
 CONTROLES INCLUIDOS
 • Comprobación aritmética: ΣVAt − ΣVAd = (ΣAsc − ΣDesc) = cota final − cota inicial
 • Error de cierre real contra su BM de cierre (circuito cerrado, otro BM o una cota conocida)
-• Tolerancia a su elección: fija o c·√n, con un resultado claro "Dentro de tolerancia" / "Requiere revisión"
+• Tolerancia a su elección: fija, c·√n (estaciones) o K·√L (longitud del itinerario, K de 2.5 a 20 mm·√km), con un resultado claro "Dentro de tolerancia" / "Requiere revisión"
 • Validación antes de exportar: primera VAt, última VAd, TP completos, filas vacías, comprobación aritmética y tolerancia
 
 PRUEBA DE DOS ESTACAS (COLIMACIÓN)
@@ -48,7 +49,8 @@ PRUEBA DE DOS ESTACAS (COLIMACIÓN)
 EXPORTACIÓN LISTA PARA ENTREGAR (GRATIS)
 • PDF de libreta estándar VAt | VI | VAd con empresa, topógrafo, cuadro de comprobación y casillas de firma
 • Firma manuscrita, marca de agua, plantillas de documento y reglas de nombre de archivo
-• Exportación CSV que se abre bien en Excel, e importación CSV para restaurar o mover registros
+• Exportación nativa a Excel (.xlsx) con números reales, encabezado y comprobación aritmética
+• Exportación CSV, e importación CSV para restaurar o mover registros
 
 BANCOS DE NIVEL (BM / TBM)
 • Registre bancos de nivel con su estado (Utilizable / Posible daño / Fuera de servicio)
@@ -58,7 +60,7 @@ BANCOS DE NIVEL (BM / TBM)
 HECHA PARA EL CAMPO
 • Funciona sin conexión, sin cuenta ni inicio de sesión
 • Ingreso tipo hoja de cálculo con celdas grandes, para usar con guantes y a pleno sol
-• Metros o pies, guardado automático, modo claro y oscuro
+• Metros o pies, guardado automático, deshacer al eliminar filas, modo claro y oscuro
 • Organización por proyecto → libreta → banco de nivel, búsqueda y reutilización rápida de topógrafo, instrumento y clima
 
 PRUÉBELA EN SEGUNDOS
@@ -67,18 +69,20 @@ Abra el proyecto de ejemplo desde la primera pantalla para ver el cálculo de AI
 LV BOOK PRO: PAGO ÚNICO (SIN SUSCRIPCIÓN)
 • Sin anuncios
 • Fotos y coordenadas de los bancos de nivel
-• Exportación de muchas libretas a la vez, con paquete de entrega y CSV resumen
+• Exportación de muchas libretas a la vez (PDF, CSV o Excel), con paquete de entrega y CSV resumen
 
-Todos los cálculos, controles, la prueba de dos estacas, la exportación individual a PDF/CSV, la importación CSV y los ajustes de documento son gratuitos.
+Todos los cálculos, controles, la prueba de dos estacas, la exportación individual a PDF/Excel/CSV, la importación CSV y los ajustes de documento son gratuitos.
 
 Sus datos se quedan en su dispositivo. Haga una copia de seguridad en cualquier momento como archivo JSON.
 ```
 
-## Release notes (es-419)
+## Release notes (es-419) — 2.0.0 (27)
 
 ```
-• Nuevo: Lv Book ahora está en español
-• Columnas de cota de proyecto y corte/relleno: actívelas en cada libreta desde Revisión
-• Corte/relleno incluido en los PDF y CSV exportados
-• Registros de la prueba de dos estacas con PDF
+• Nuevo idioma: español
+• Exportación a Excel (.xlsx) con números reales, encabezado y comprobación (gratis)
+• Replanteo: lectura objetivo de mira (AI − proyecto) junto al corte/relleno
+• Deshacer al eliminar una fila
+• Se acepta la coma decimal en los campos numéricos
+• Tolerancia K·√L según la longitud del itinerario, con valores de K predefinidos
 ```
