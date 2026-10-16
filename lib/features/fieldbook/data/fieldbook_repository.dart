@@ -68,6 +68,17 @@ class FieldBookRepository {
     );
   }
 
+  /// Persists only the route length (K·√L tolerance).
+  Future<int> updateRouteLength(FieldBook fieldBook) async {
+    final db = await _dbHelper.database;
+    return await db.update(
+      'field_books',
+      {'route_length': fieldBook.routeLength},
+      where: 'id = ?',
+      whereArgs: [fieldBook.id],
+    );
+  }
+
   /// Persists only the Design / Cut-Fill column flag.
   Future<int> updateShowDesignLevel(FieldBook fieldBook) async {
     final db = await _dbHelper.database;

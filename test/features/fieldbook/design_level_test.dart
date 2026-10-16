@@ -243,7 +243,7 @@ void main() {
     test(
       'v11 → v12 adds design_level / show_design_level, keeps data',
       () async {
-        expect(AppConstants.dbVersion, 12);
+        expect(AppConstants.dbVersion, greaterThanOrEqualTo(12));
         final dir = await Directory.systemTemp.createTemp('lvbook_v11');
         final path = '${dir.path}/v11.db';
         try {
@@ -322,7 +322,7 @@ void main() {
             options: helper.openDatabaseOptions(),
           );
           helper.setDatabaseForTesting(legacy);
-          expect(await legacy.getVersion(), 12);
+          expect(await legacy.getVersion(), AppConstants.dbVersion);
 
           final repo = FieldBookRepository();
           final old = (await repo.getById(bookId))!;

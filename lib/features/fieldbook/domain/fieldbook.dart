@@ -58,6 +58,10 @@ class FieldBook {
   /// Off for every book created before the feature; turning it off hides the
   /// columns but keeps the stored design levels.
   final bool showDesignLevel;
+
+  /// One-way route length L of the run for the K·√L tolerance, in km
+  /// (metres) or mi (feet); null when not entered.
+  final double? routeLength;
   final String? memo;
   final String? surveyor;
   final String? checker;
@@ -82,6 +86,7 @@ class FieldBook {
     this.closingElevation,
     this.reductionMethod = ReductionMethod.heightOfInstrument,
     this.showDesignLevel = false,
+    this.routeLength,
     this.memo,
     this.surveyor,
     this.checker,
@@ -108,6 +113,7 @@ class FieldBook {
       'closing_elevation': closingElevation,
       'reduction_method': reductionMethod.name,
       'show_design_level': showDesignLevel ? 1 : 0,
+      'route_length': routeLength,
       'memo': memo,
       'surveyor': surveyor,
       'checker': checker,
@@ -138,6 +144,8 @@ class FieldBook {
       reductionMethod: ReductionMethod.parse(map['reduction_method']),
       // Absent in rows/backups written before design levels existed: off.
       showDesignLevel: _parseFlag(map['show_design_level']),
+      // Absent in rows/backups written before the K·√L tolerance: none.
+      routeLength: (map['route_length'] as num?)?.toDouble(),
       memo: map['memo'] as String?,
       surveyor: map['surveyor'] as String?,
       checker: map['checker'] as String?,
@@ -181,6 +189,7 @@ class FieldBook {
     Object? closingElevation = _unset,
     ReductionMethod? reductionMethod,
     bool? showDesignLevel,
+    Object? routeLength = _unset,
     String? memo,
     String? surveyor,
     String? checker,
@@ -209,6 +218,9 @@ class FieldBook {
           : closingElevation as double?,
       reductionMethod: reductionMethod ?? this.reductionMethod,
       showDesignLevel: showDesignLevel ?? this.showDesignLevel,
+      routeLength: identical(routeLength, _unset)
+          ? this.routeLength
+          : routeLength as double?,
       memo: memo ?? this.memo,
       surveyor: surveyor ?? this.surveyor,
       checker: checker ?? this.checker,

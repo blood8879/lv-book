@@ -301,6 +301,10 @@
   "@exportCheckAllowed": {
     "description": "Allowed misclosure label, value like '±0.0050'."
   },
+  "exportCheckAllowedUnavailable": "n/a (enter the route length)",
+  "@exportCheckAllowedUnavailable": {
+    "description": "Allowed misclosure value when the K·√L rule has no route length."
+  },
   "exportCheckDifference": "Difference",
   "@exportCheckDifference": {
     "description": "Arithmetic check: ΣBS − ΣFS."
@@ -356,6 +360,10 @@
   "exportCheckTitleWithClosure": "Arithmetic check and misclosure",
   "@exportCheckTitleWithClosure": {
     "description": "PDF check box title when a closing RL is known."
+  },
+  "exportCheckToleranceRule": "Tolerance rule",
+  "@exportCheckToleranceRule": {
+    "description": "Check box label before the formula, e.g. '±10 mm·√2.40 km = ±15.5 mm'."
   },
   "exportCheckValue": "{label} = {value}",
   "@exportCheckValue": {
@@ -519,6 +527,10 @@
   "@exportFieldReviewStatus": {
     "description": "Exported document field."
   },
+  "exportFieldRouteLength": "Route length",
+  "@exportFieldRouteLength": {
+    "description": "Header/CSV metadata: one-way route length L of the run (km for metres, mi for feet) used by the K·√L tolerance. CsvImporter matches it in every language."
+  },
   "exportFieldSection": "Section",
   "@exportFieldSection": {
     "description": "Exported document field: work section."
@@ -603,6 +615,10 @@
   "exportImportUtf8Only": "Only UTF-8 CSV is supported. Some characters are garbled, so the file can't be imported. In Excel, save it again as \"CSV UTF-8 (Comma delimited)\".",
   "@exportImportUtf8Only": {
     "description": "CSV import error: not UTF-8."
+  },
+  "exportJudgementToleranceUnavailable": "Tolerance unavailable — enter the route length",
+  "@exportJudgementToleranceUnavailable": {
+    "description": "Result when the K·√L tolerance cannot be computed (no route length). Never a pass/fail word."
   },
   "exportLabelValue": "{label}: {value}",
   "@exportLabelValue": {
@@ -975,6 +991,10 @@
   "@fieldbookIssueRiseFallMismatch": {
     "description": "Validation warning for rise-and-fall books."
   },
+  "fieldbookIssueRouteLengthMissing": "Enter the route length to judge the misclosure (K·√L).",
+  "@fieldbookIssueRouteLengthMissing": {
+    "description": "Validation message when the K·√L tolerance has no route length."
+  },
   "fieldbookIssueTpIncomplete": "TP rows need both BS and FS.",
   "fieldbookJobNumberLabel": "Job no.",
   "fieldbookMisclosureCheckResult": "Misclosure: {result}",
@@ -1026,6 +1046,19 @@
   "@fieldbookReviewedOn": {
     "placeholders": {
       "date": {
+        "type": "String"
+      }
+    }
+  },
+  "fieldbookRouteLengthHelper": "One-way length of the run, used by the K·√L tolerance.",
+  "@fieldbookRouteLengthHelper": {
+    "description": "Helper under the route length input."
+  },
+  "fieldbookRouteLengthLabel": "Route length ({unit})",
+  "@fieldbookRouteLengthLabel": {
+    "description": "Review panel input: one-way length L of the run for the K·√L tolerance. unit: km or mi.",
+    "placeholders": {
+      "unit": {
         "type": "String"
       }
     }
@@ -1092,6 +1125,10 @@
       }
     }
   },
+  "fieldbookSummaryAllowedUnavailable": "Enter route length",
+  "@fieldbookSummaryAllowedUnavailable": {
+    "description": "Caption under the misclosure when the K·√L tolerance has no route length; keep short."
+  },
   "fieldbookSummaryArithmetic": "Arith. check",
   "@fieldbookSummaryArithmetic": {
     "description": "Editor summary cell label when no closing RL is set: arithmetic check residual (not a misclosure). Keep short."
@@ -1151,6 +1188,15 @@
   "fieldbookTitleHint": "Level book title",
   "fieldbookTitleLabel": "Level book title *",
   "fieldbookToleranceCheckTitle": "Tolerance check required",
+  "fieldbookToleranceFormula": "Tolerance {formula}",
+  "@fieldbookToleranceFormula": {
+    "description": "Review panel line with the tolerance formula and numbers, e.g. 'Tolerance ±10 mm·√2.40 km = ±15.5 mm'.",
+    "placeholders": {
+      "formula": {
+        "type": "String"
+      }
+    }
+  },
   "fieldbookUndoAction": "Undo",
   "@fieldbookUndoAction": {
     "description": "Snack bar action that restores the deleted row."
@@ -1779,6 +1825,49 @@
       }
     }
   },
+  "settingsToleranceDistanceHelper": "Allowed = K × √L {unit}, L = route length in {routeUnit}, entered per level book in Review.",
+  "@settingsToleranceDistanceHelper": {
+    "description": "Helper for the K·√L rule.",
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      },
+      "routeUnit": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsToleranceDistanceLabel": "K ({unit}·√{routeUnit})",
+  "@settingsToleranceDistanceLabel": {
+    "description": "Input label, K·√L rule.",
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      },
+      "routeUnit": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsToleranceDistancePresets": "Common K values",
+  "@settingsToleranceDistancePresets": {
+    "description": "Caption above the K preset chips (m: survey orders 2.5–20 mm·√km; ft: typical US values)."
+  },
+  "settingsToleranceDistanceSummary": "{value} {unit} × √L (L = route length, {routeUnit})",
+  "@settingsToleranceDistanceSummary": {
+    "description": "Tile subtitle for the K·√L rule. unit: mm or ft; routeUnit: km or mi.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      },
+      "routeUnit": {
+        "type": "String"
+      }
+    }
+  },
   "settingsToleranceFixedHelper": "Allowed |misclosure| for every level book.",
   "@settingsToleranceFixedHelper": {
     "description": "Helper for the fixed rule."
@@ -1818,6 +1907,10 @@
         "type": "String"
       }
     }
+  },
+  "settingsToleranceModeDistance": "K·√L",
+  "@settingsToleranceModeDistance": {
+    "description": "Segment: K times square root of the route length."
   },
   "settingsToleranceModeFixed": "Fixed",
   "@settingsToleranceModeFixed": {

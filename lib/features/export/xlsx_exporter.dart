@@ -99,6 +99,7 @@ class XlsxExporter {
       exportReductionMethodLabel(l10n, method),
     );
     writer.pair(l10n.exportFieldUnit, tolerance.unit.symbol);
+    writer.pair(l10n.exportFieldRouteLength, fieldBook.routeLength);
     final closingElevation = fieldBook.closingElevationFor(startElevation);
     if (closingElevation != null) {
       writer.pair(l10n.exportFieldClosingBm, switch (fieldBook.closingMode) {
@@ -136,6 +137,7 @@ class XlsxExporter {
       closingElevation: closingElevation,
       tolerance: tolerance,
       method: method,
+      routeLength: fieldBook.routeLength,
     );
     for (final (label, value, format) in checkItems(closure, l10n: l10n)) {
       if (value == null) {
@@ -148,7 +150,7 @@ class XlsxExporter {
     if (proSettings?.includeCheckJudgement ?? true) {
       writer.row([
         l10n.exportCheckResult,
-        ExportJudgement.labelFor(closure.isSuitable, l10n: l10n),
+        ExportJudgement.labelForClosure(closure, l10n: l10n),
       ], style: _boldStyle);
     }
 
@@ -208,7 +210,15 @@ class XlsxExporter {
       else ...[
         (l10n.exportFieldClosingRl, closure.closingElevation!, null),
         (l10n.exportCheckMisclosure, _round(misclosure, 4), _misclosure),
-        (l10n.exportCheckAllowed, _round(closure.allowed, 4), _allowed),
+        closure.allowed == null
+            ? (
+                l10n.exportCheckAllowed,
+                l10n.exportCheckAllowedUnavailable,
+                null,
+              )
+            : (l10n.exportCheckAllowed, _round(closure.allowed!, 4), _allowed),
+        if (closure.allowedFormula != null)
+          (l10n.exportCheckToleranceRule, closure.allowedFormula!, null),
       ],
     ];
   }

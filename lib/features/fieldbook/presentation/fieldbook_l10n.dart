@@ -38,12 +38,18 @@ extension MeasurementIssueL10n on MeasurementIssue {
     MeasurementIssue.arithmeticMismatch =>
       l10n.fieldbookIssueArithmeticMismatch,
     MeasurementIssue.riseFallMismatch => l10n.fieldbookIssueRiseFallMismatch,
+    MeasurementIssue.routeLengthMissing =>
+      l10n.fieldbookIssueRouteLengthMissing,
   };
 }
 
 extension MeasurementValidationResultL10n on MeasurementValidationResult {
-  /// "Within tolerance" / "Check required" (적합 / 확인 필요).
-  String localizedJudgement(AppLocalizations l10n) => canExport
+  /// "Within tolerance" / "Check required" (적합 / 확인 필요), or
+  /// "Tolerance unavailable" for a K·√L rule without a route length.
+  String localizedJudgement(AppLocalizations l10n) =>
+      closure?.toleranceUnavailable == true
+      ? l10n.exportJudgementToleranceUnavailable
+      : canExport
       ? l10n.coreJudgementWithinTolerance
       : l10n.coreJudgementCheckRequired;
 

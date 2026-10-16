@@ -390,6 +390,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get exportCheckAllowed => 'Tolerancia';
 
   @override
+  String get exportCheckAllowedUnavailable =>
+      'n/d (ingrese la longitud del itinerario)';
+
+  @override
   String get exportCheckDifference => 'Diferencia';
 
   @override
@@ -431,6 +435,9 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get exportCheckTitleWithClosure =>
       'Comprobación aritmética y error de cierre';
+
+  @override
+  String get exportCheckToleranceRule => 'Fórmula de tolerancia';
 
   @override
   String exportCheckValue(String label, String value) {
@@ -546,6 +553,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get exportFieldReviewStatus => 'Estado de revisión';
 
   @override
+  String get exportFieldRouteLength => 'Longitud del itinerario';
+
+  @override
   String get exportFieldSection => 'Tramo';
 
   @override
@@ -596,6 +606,10 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get exportImportUtf8Only =>
       'Solo se admite CSV en UTF-8. Algunos caracteres están dañados, así que no se puede importar el archivo. En Excel, guárdelo de nuevo como \"CSV UTF-8 (delimitado por comas)\".';
+
+  @override
+  String get exportJudgementToleranceUnavailable =>
+      'Tolerancia no disponible: ingrese la longitud del itinerario';
 
   @override
   String exportLabelValue(String label, String value) {
@@ -962,6 +976,10 @@ class AppLocalizationsEs extends AppLocalizations {
       'ΣAsc − ΣDesc no coincide con ΣVAt − ΣVAd. Revise las lecturas.';
 
   @override
+  String get fieldbookIssueRouteLengthMissing =>
+      'Ingrese la longitud del itinerario para evaluar el error de cierre (K·√L).';
+
+  @override
   String get fieldbookIssueTpIncomplete => 'Las filas TP necesitan VAt y VAd.';
 
   @override
@@ -1029,6 +1047,15 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String fieldbookReviewedOn(String date) {
     return 'Revisado el $date';
+  }
+
+  @override
+  String get fieldbookRouteLengthHelper =>
+      'Longitud de ida del itinerario, para la tolerancia K·√L.';
+
+  @override
+  String fieldbookRouteLengthLabel(String unit) {
+    return 'Longitud del itinerario ($unit)';
   }
 
   @override
@@ -1127,6 +1154,9 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get fieldbookSummaryAllowedUnavailable => 'Ingrese la longitud';
+
+  @override
   String get fieldbookSummaryArithmetic => 'Comp. arit.';
 
   @override
@@ -1181,6 +1211,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get fieldbookToleranceCheckTitle => 'Revise la tolerancia';
+
+  @override
+  String fieldbookToleranceFormula(String formula) {
+    return 'Tolerancia $formula';
+  }
 
   @override
   String get fieldbookUndoAction => 'Deshacer';
@@ -1965,6 +2000,28 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String settingsToleranceDistanceHelper(String unit, String routeUnit) {
+    return 'Tolerancia = K × √L $unit, L = longitud del itinerario en $routeUnit, ingresada en cada libreta desde Revisión.';
+  }
+
+  @override
+  String settingsToleranceDistanceLabel(String unit, String routeUnit) {
+    return 'K ($unit·√$routeUnit)';
+  }
+
+  @override
+  String get settingsToleranceDistancePresets => 'Valores de K habituales';
+
+  @override
+  String settingsToleranceDistanceSummary(
+    String value,
+    String unit,
+    String routeUnit,
+  ) {
+    return '$value $unit × √L (L = longitud del itinerario, $routeUnit)';
+  }
+
+  @override
   String get settingsToleranceFixedHelper =>
       '|Error de cierre| admisible para todas las libretas.';
 
@@ -1982,6 +2039,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String settingsToleranceInvalid(String min, String max, String unit) {
     return 'Ingrese $min–$max $unit.';
   }
+
+  @override
+  String get settingsToleranceModeDistance => 'K·√L';
 
   @override
   String get settingsToleranceModeFixed => 'Fija';

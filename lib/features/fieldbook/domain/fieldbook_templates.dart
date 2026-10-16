@@ -30,6 +30,7 @@ class FieldBookTemplates {
       closingElevation: source.closingElevation,
       reductionMethod: source.reductionMethod,
       showDesignLevel: source.showDesignLevel,
+      routeLength: source.routeLength,
       memo: source.memo,
       surveyor: source.surveyor,
       checker: source.checker,

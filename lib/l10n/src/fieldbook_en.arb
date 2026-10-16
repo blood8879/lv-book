@@ -251,5 +251,15 @@
   "fieldbookRowDeletedMessage": "Row deleted",
   "@fieldbookRowDeletedMessage": {"description": "Snack bar after deleting a level book row; offers Undo."},
   "fieldbookUndoAction": "Undo",
-  "@fieldbookUndoAction": {"description": "Snack bar action that restores the deleted row."}
+  "@fieldbookUndoAction": {"description": "Snack bar action that restores the deleted row."},
+  "fieldbookRouteLengthLabel": "Route length ({unit})",
+  "@fieldbookRouteLengthLabel": {"description": "Review panel input: one-way length L of the run for the K·√L tolerance. unit: km or mi.", "placeholders": {"unit": {"type": "String"}}},
+  "fieldbookRouteLengthHelper": "One-way length of the run, used by the K·√L tolerance.",
+  "@fieldbookRouteLengthHelper": {"description": "Helper under the route length input."},
+  "fieldbookToleranceFormula": "Tolerance {formula}",
+  "@fieldbookToleranceFormula": {"description": "Review panel line with the tolerance formula and numbers, e.g. 'Tolerance ±10 mm·√2.40 km = ±15.5 mm'.", "placeholders": {"formula": {"type": "String"}}},
+  "fieldbookIssueRouteLengthMissing": "Enter the route length to judge the misclosure (K·√L).",
+  "@fieldbookIssueRouteLengthMissing": {"description": "Validation message when the K·√L tolerance has no route length."},
+  "fieldbookSummaryAllowedUnavailable": "Enter route length",
+  "@fieldbookSummaryAllowedUnavailable": {"description": "Caption under the misclosure when the K·√L tolerance has no route length; keep short."}
 }

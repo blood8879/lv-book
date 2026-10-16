@@ -6,8 +6,8 @@ import '../fieldbook/domain/misclosure.dart';
 
 /// App-level misclosure tolerance and length unit, stored in `app_settings`
 /// next to the ads / Pro settings. Missing or invalid stored values fall back
-/// to the defaults (metres, fixed 1 mm, c = 5 mm), so older installs keep the
-/// 0.001 m behaviour.
+/// to the defaults (metres, fixed 1 mm, c = 5 mm, K = 10 mm·√km), so older
+/// installs keep the 0.001 m behaviour.
 class MisclosureToleranceRepository {
   static const modeKey = 'misclosure_tolerance_mode';
   static const fixedMmKey = 'misclosure_tolerance_fixed_mm';
@@ -15,6 +15,8 @@ class MisclosureToleranceRepository {
   static const unitKey = 'length_unit';
   static const fixedFtKey = 'misclosure_tolerance_fixed_ft';
   static const coefficientFtKey = 'misclosure_tolerance_coefficient_ft';
+  static const distanceKMmKey = 'misclosure_tolerance_distance_k_mm';
+  static const distanceKFtKey = 'misclosure_tolerance_distance_k_ft';
 
   static const _keys = [
     modeKey,
@@ -23,6 +25,8 @@ class MisclosureToleranceRepository {
     unitKey,
     fixedFtKey,
     coefficientFtKey,
+    distanceKMmKey,
+    distanceKFtKey,
   ];
 
   final DatabaseHelper _dbHelper;
@@ -68,6 +72,16 @@ class MisclosureToleranceRepository {
         LengthUnit.feet,
         MisclosureTolerance.defaultCoefficientFt,
       ),
+      distanceKMm: entry(
+        distanceKMmKey,
+        LengthUnit.metres,
+        MisclosureTolerance.defaultDistanceKMm,
+      ),
+      distanceKFt: entry(
+        distanceKFtKey,
+        LengthUnit.feet,
+        MisclosureTolerance.defaultDistanceKFt,
+      ),
     );
   }
 
@@ -79,6 +93,11 @@ class MisclosureToleranceRepository {
         !MisclosureTolerance.isValidEntry(tolerance.fixedFt, LengthUnit.feet) ||
         !MisclosureTolerance.isValidEntry(
           tolerance.coefficientFt,
+          LengthUnit.feet,
+        ) ||
+        !MisclosureTolerance.isValidMm(tolerance.distanceKMm) ||
+        !MisclosureTolerance.isValidEntry(
+          tolerance.distanceKFt,
           LengthUnit.feet,
         )) {
       throw ArgumentError.value(tolerance, 'tolerance', 'out of range');
@@ -92,6 +111,8 @@ class MisclosureToleranceRepository {
       unitKey: tolerance.unit.name,
       fixedFtKey: tolerance.fixedFt.toString(),
       coefficientFtKey: tolerance.coefficientFt.toString(),
+      distanceKMmKey: tolerance.distanceKMm.toString(),
+      distanceKFtKey: tolerance.distanceKFt.toString(),
     }.entries) {
       batch.insert('app_settings', {
         'key': entry.key,

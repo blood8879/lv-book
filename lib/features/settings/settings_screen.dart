@@ -416,6 +416,11 @@ String misclosureToleranceSummary(
     formatToleranceValue(tolerance.coefficientEntry),
     tolerance.unit.toleranceSymbol,
   ),
+  MisclosureToleranceMode.sqrtDistance => l10n.settingsToleranceDistanceSummary(
+    formatToleranceValue(tolerance.distanceKEntry),
+    tolerance.unit.toleranceSymbol,
+    tolerance.unit.routeSymbol,
+  ),
 };
 
 /// 'Metres (m)' / 'Feet (ft)'.
@@ -591,6 +596,9 @@ class _MisclosureToleranceDialogState extends State<MisclosureToleranceDialog> {
   late final _coefficientController = TextEditingController(
     text: formatToleranceValue(widget.initial.coefficientEntry),
   );
+  late final _distanceController = TextEditingController(
+    text: formatToleranceValue(widget.initial.distanceKEntry),
+  );
   bool _showErrors = false;
 
   LengthUnit get _unit => widget.initial.unit;
@@ -599,13 +607,15 @@ class _MisclosureToleranceDialogState extends State<MisclosureToleranceDialog> {
   void dispose() {
     _fixedController.dispose();
     _coefficientController.dispose();
+    _distanceController.dispose();
     super.dispose();
   }
 
-  TextEditingController get _activeController =>
-      _mode == MisclosureToleranceMode.fixed
-      ? _fixedController
-      : _coefficientController;
+  TextEditingController get _activeController => switch (_mode) {
+    MisclosureToleranceMode.fixed => _fixedController,
+    MisclosureToleranceMode.sqrtSetups => _coefficientController,
+    MisclosureToleranceMode.sqrtDistance => _distanceController,
+  };
 
   void _submit() {
     final value = MisclosureTolerance.parseEntry(_activeController.text, _unit);
@@ -620,8 +630,8 @@ class _MisclosureToleranceDialogState extends State<MisclosureToleranceDialog> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final colors = context.appColors;
-    final isFixed = _mode == MisclosureToleranceMode.fixed;
     final symbol = _unit.toleranceSymbol;
+    final route = _unit.routeSymbol;
     final invalid =
         _showErrors &&
         MisclosureTolerance.parseEntry(_activeController.text, _unit) == null;
@@ -642,6 +652,10 @@ class _MisclosureToleranceDialogState extends State<MisclosureToleranceDialog> {
                   value: MisclosureToleranceMode.sqrtSetups,
                   label: Text(l10n.settingsToleranceModeSqrt),
                 ),
+                ButtonSegment(
+                  value: MisclosureToleranceMode.sqrtDistance,
+                  label: Text(l10n.settingsToleranceModeDistance),
+                ),
               ],
               selected: {_mode},
               showSelectedIcon: false,
@@ -660,12 +674,22 @@ class _MisclosureToleranceDialogState extends State<MisclosureToleranceDialog> {
                 decimal: true,
               ),
               decoration: InputDecoration(
-                labelText: isFixed
-                    ? l10n.settingsToleranceFixedLabel(symbol)
-                    : l10n.settingsToleranceCoefficientLabel(symbol),
-                helperText: isFixed
-                    ? l10n.settingsToleranceFixedHelper
-                    : l10n.settingsToleranceSqrtHelper(symbol),
+                labelText: switch (_mode) {
+                  MisclosureToleranceMode.fixed =>
+                    l10n.settingsToleranceFixedLabel(symbol),
+                  MisclosureToleranceMode.sqrtSetups =>
+                    l10n.settingsToleranceCoefficientLabel(symbol),
+                  MisclosureToleranceMode.sqrtDistance =>
+                    l10n.settingsToleranceDistanceLabel(symbol, route),
+                },
+                helperText: switch (_mode) {
+                  MisclosureToleranceMode.fixed =>
+                    l10n.settingsToleranceFixedHelper,
+                  MisclosureToleranceMode.sqrtSetups =>
+                    l10n.settingsToleranceSqrtHelper(symbol),
+                  MisclosureToleranceMode.sqrtDistance =>
+                    l10n.settingsToleranceDistanceHelper(symbol, route),
+                },
                 helperMaxLines: 3,
                 errorText: invalid
                     ? l10n.settingsToleranceInvalid(
@@ -679,11 +703,44 @@ class _MisclosureToleranceDialogState extends State<MisclosureToleranceDialog> {
                       )
                     : null,
               ),
-              onChanged: (_) {
-                if (_showErrors) setState(() {});
-              },
+              // Redraws the error and the selected K preset chip.
+              onChanged: (_) => setState(() {}),
               onSubmitted: (_) => _submit(),
             ),
+            if (_mode == MisclosureToleranceMode.sqrtDistance) ...[
+              const SizedBox(height: 12),
+              Text(
+                l10n.settingsToleranceDistancePresets,
+                style: TextStyle(fontSize: 12.5, color: colors.subtext),
+              ),
+              const SizedBox(height: 6),
+              // Survey-order K values (mm·√km) or typical US values
+              // (ft·√mi); they only fill the field, custom values stay
+              // allowed.
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  for (final preset in MisclosureTolerance.distancePresets(
+                    _unit,
+                  ))
+                    ChoiceChip(
+                      key: ValueKey('tolerance-k-preset-$preset'),
+                      label: Text('${formatToleranceValue(preset)} $symbol'),
+                      selected:
+                          MisclosureTolerance.parseEntry(
+                            _distanceController.text,
+                            _unit,
+                          ) ==
+                          preset,
+                      onSelected: (_) => setState(() {
+                        _distanceController.text = formatToleranceValue(preset);
+                        _showErrors = false;
+                      }),
+                    ),
+                ],
+              ),
+            ],
             const SizedBox(height: 12),
             Text(
               l10n.settingsToleranceNote,

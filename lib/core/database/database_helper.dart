@@ -93,6 +93,7 @@ class DatabaseHelper {
         closing_elevation REAL,
         reduction_method TEXT NOT NULL DEFAULT 'heightOfInstrument',
         show_design_level INTEGER NOT NULL DEFAULT 0,
+        route_length REAL,
         memo TEXT,
         surveyor TEXT,
         checker TEXT,
@@ -200,6 +201,22 @@ class DatabaseHelper {
     }
     if (oldVersion < 12) {
       await _addDesignLevel(db);
+    }
+    if (oldVersion < 13) {
+      await _addRouteLength(db);
+    }
+  }
+
+  /// v13: optional one-way route length per book (km or mi) for the K·√L
+  /// misclosure tolerance; existing books get none. Idempotent like
+  /// [_addDesignLevel].
+  Future<void> _addRouteLength(Database db) async {
+    final columns = {
+      for (final row in await db.rawQuery('PRAGMA table_info(field_books)'))
+        row['name'] as String,
+    };
+    if (!columns.contains('route_length')) {
+      await db.execute('ALTER TABLE field_books ADD COLUMN route_length REAL');
     }
   }
 

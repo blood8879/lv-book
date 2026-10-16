@@ -161,5 +161,10 @@
   "fieldbookFillLetter": "성",
   "fieldbookColumnTarget": "목표 시",
   "fieldbookRowDeletedMessage": "행을 삭제했습니다",
-  "fieldbookUndoAction": "실행 취소"
+  "fieldbookUndoAction": "실행 취소",
+  "fieldbookRouteLengthLabel": "노선 연장 ({unit})",
+  "fieldbookRouteLengthHelper": "편도 노선 길이입니다. K·√L 허용오차에 사용합니다.",
+  "fieldbookToleranceFormula": "허용오차 {formula}",
+  "fieldbookIssueRouteLengthMissing": "폐합오차를 판정하려면 노선 연장을 입력하세요 (K·√L).",
+  "fieldbookSummaryAllowedUnavailable": "노선 연장 입력"
 }

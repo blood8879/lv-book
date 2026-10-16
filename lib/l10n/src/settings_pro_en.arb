@@ -253,5 +253,15 @@
   "settingsRateAppSubtitle": "Open the Google Play listing to leave a review.",
   "@settingsRateAppSubtitle": {"description": "Subtitle of the rate-app tile."},
   "settingsToolsSection": "Tools",
-  "@settingsToolsSection": {"description": "Settings section header for field tools (e.g. the two-peg test)."}
+  "@settingsToolsSection": {"description": "Settings section header for field tools (e.g. the two-peg test)."},
+  "settingsToleranceModeDistance": "K·√L",
+  "@settingsToleranceModeDistance": {"description": "Segment: K times square root of the route length."},
+  "settingsToleranceDistanceSummary": "{value} {unit} × √L (L = route length, {routeUnit})",
+  "@settingsToleranceDistanceSummary": {"description": "Tile subtitle for the K·√L rule. unit: mm or ft; routeUnit: km or mi.", "placeholders": {"value": {"type": "String"}, "unit": {"type": "String"}, "routeUnit": {"type": "String"}}},
+  "settingsToleranceDistanceLabel": "K ({unit}·√{routeUnit})",
+  "@settingsToleranceDistanceLabel": {"description": "Input label, K·√L rule.", "placeholders": {"unit": {"type": "String"}, "routeUnit": {"type": "String"}}},
+  "settingsToleranceDistanceHelper": "Allowed = K × √L {unit}, L = route length in {routeUnit}, entered per level book in Review.",
+  "@settingsToleranceDistanceHelper": {"description": "Helper for the K·√L rule.", "placeholders": {"unit": {"type": "String"}, "routeUnit": {"type": "String"}}},
+  "settingsToleranceDistancePresets": "Common K values",
+  "@settingsToleranceDistancePresets": {"description": "Caption above the K preset chips (m: survey orders 2.5–20 mm·√km; ft: typical US values)."}
 }

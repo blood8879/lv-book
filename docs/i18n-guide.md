@@ -222,6 +222,8 @@ converted screen when cheap.
 | 검산 | **Arithmetic check** | **Comprobación aritmética** (short "Comp. arit.") | |
 | 폐합오차 / 오차 | **Misclosure** | **Error de cierre** | 4 decimals |
 | 허용오차 | **Tolerance** | **Tolerancia** | |
+| 노선 연장 | **Route length** | **Longitud del itinerario** | one-way L of K·√L (km for metres, mi for feet); `exportFieldRouteLength` |
+| K·√L / c·√n | **K·√L** / **c·√n** | **K·√L** / **c·√n** | tokens; K presets 2.5/5/10/15/20 mm·√km, typical US 0.017/0.035/0.05 ft·√mi |
 | 판정 | **Result** | **Resultado** | |
 | 적합 | **Within tolerance** (short: **OK**) | **Dentro de tolerancia** (short: **OK**) | `coreJudgement*` |
 | 확인 필요 | **Check required** | **Requiere revisión** | warning, not error |

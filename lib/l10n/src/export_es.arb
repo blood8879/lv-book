@@ -106,5 +106,9 @@
   "exportXlsxSheetName": "Libreta",
   "exportFieldProject": "Proyecto",
   "exportBulkFormatXlsx": "Excel",
-  "exportColumnTarget": "Lectura objetivo"
+  "exportColumnTarget": "Lectura objetivo",
+  "exportFieldRouteLength": "Longitud del itinerario",
+  "exportCheckToleranceRule": "Fórmula de tolerancia",
+  "exportCheckAllowedUnavailable": "n/d (ingrese la longitud del itinerario)",
+  "exportJudgementToleranceUnavailable": "Tolerancia no disponible: ingrese la longitud del itinerario"
 }

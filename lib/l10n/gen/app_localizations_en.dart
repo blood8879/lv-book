@@ -382,6 +382,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exportCheckAllowed => 'Allowed';
 
   @override
+  String get exportCheckAllowedUnavailable => 'n/a (enter the route length)';
+
+  @override
   String get exportCheckDifference => 'Difference';
 
   @override
@@ -422,6 +425,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exportCheckTitleWithClosure => 'Arithmetic check and misclosure';
+
+  @override
+  String get exportCheckToleranceRule => 'Tolerance rule';
 
   @override
   String exportCheckValue(String label, String value) {
@@ -537,6 +543,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get exportFieldReviewStatus => 'Review status';
 
   @override
+  String get exportFieldRouteLength => 'Route length';
+
+  @override
   String get exportFieldSection => 'Section';
 
   @override
@@ -587,6 +596,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get exportImportUtf8Only =>
       'Only UTF-8 CSV is supported. Some characters are garbled, so the file can\'t be imported. In Excel, save it again as \"CSV UTF-8 (Comma delimited)\".';
+
+  @override
+  String get exportJudgementToleranceUnavailable =>
+      'Tolerance unavailable — enter the route length';
 
   @override
   String exportLabelValue(String label, String value) {
@@ -952,6 +965,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'ΣRise − ΣFall does not match ΣBS − ΣFS. Check the readings.';
 
   @override
+  String get fieldbookIssueRouteLengthMissing =>
+      'Enter the route length to judge the misclosure (K·√L).';
+
+  @override
   String get fieldbookIssueTpIncomplete => 'TP rows need both BS and FS.';
 
   @override
@@ -1019,6 +1036,15 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String fieldbookReviewedOn(String date) {
     return 'Reviewed $date';
+  }
+
+  @override
+  String get fieldbookRouteLengthHelper =>
+      'One-way length of the run, used by the K·√L tolerance.';
+
+  @override
+  String fieldbookRouteLengthLabel(String unit) {
+    return 'Route length ($unit)';
   }
 
   @override
@@ -1117,6 +1143,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get fieldbookSummaryAllowedUnavailable => 'Enter route length';
+
+  @override
   String get fieldbookSummaryArithmetic => 'Arith. check';
 
   @override
@@ -1171,6 +1200,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get fieldbookToleranceCheckTitle => 'Tolerance check required';
+
+  @override
+  String fieldbookToleranceFormula(String formula) {
+    return 'Tolerance $formula';
+  }
 
   @override
   String get fieldbookUndoAction => 'Undo';
@@ -1946,6 +1980,28 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String settingsToleranceDistanceHelper(String unit, String routeUnit) {
+    return 'Allowed = K × √L $unit, L = route length in $routeUnit, entered per level book in Review.';
+  }
+
+  @override
+  String settingsToleranceDistanceLabel(String unit, String routeUnit) {
+    return 'K ($unit·√$routeUnit)';
+  }
+
+  @override
+  String get settingsToleranceDistancePresets => 'Common K values';
+
+  @override
+  String settingsToleranceDistanceSummary(
+    String value,
+    String unit,
+    String routeUnit,
+  ) {
+    return '$value $unit × √L (L = route length, $routeUnit)';
+  }
+
+  @override
   String get settingsToleranceFixedHelper =>
       'Allowed |misclosure| for every level book.';
 
@@ -1963,6 +2019,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String settingsToleranceInvalid(String min, String max, String unit) {
     return 'Enter $min–$max $unit.';
   }
+
+  @override
+  String get settingsToleranceModeDistance => 'K·√L';
 
   @override
   String get settingsToleranceModeFixed => 'Fixed';

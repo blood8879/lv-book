@@ -34,6 +34,9 @@ enum MeasurementIssue {
   exceedsTolerance,
   arithmeticMismatch,
   riseFallMismatch,
+
+  /// K·√L tolerance without the book's route length (a warning).
+  routeLengthMissing,
 }
 
 const _koCheckLabels = {
@@ -78,6 +81,7 @@ const _koIssueMessages = {
   MeasurementIssue.exceedsTolerance: '허용오차를 초과했습니다.',
   MeasurementIssue.arithmeticMismatch: '검산이 맞지 않습니다.',
   MeasurementIssue.riseFallMismatch: '승강 검산이 맞지 않습니다.',
+  MeasurementIssue.routeLengthMissing: '폐합오차를 판정하려면 노선 연장을 입력하세요 (K·√L).',
 };
 
 class MeasurementValidationItem {
@@ -162,6 +166,7 @@ class MeasurementValidation {
     double? closingElevation,
     MisclosureTolerance tolerance = MisclosureTolerance.defaults,
     ReductionMethod method = ReductionMethod.heightOfInstrument,
+    double? routeLength,
   }) {
     final issues = <MeasurementIssue>[];
     final rows = trimTrailingUnmeasured(
@@ -202,6 +207,7 @@ class MeasurementValidation {
       closingElevation: closingElevation,
       tolerance: tolerance,
       method: method,
+      routeLength: routeLength,
     );
     final isRiseFall = method == ReductionMethod.riseAndFall;
     final withinTolerance = closure.withinTolerance;
@@ -214,6 +220,9 @@ class MeasurementValidation {
     }
     if (structuralOk && withinTolerance == false) {
       issues.add(MeasurementIssue.exceedsTolerance);
+    }
+    if (structuralOk && closure.toleranceUnavailable) {
+      issues.add(MeasurementIssue.routeLengthMissing);
     }
     final isSuitable = structuralOk && closure.isSuitable;
 
@@ -247,10 +256,11 @@ class MeasurementValidation {
           check: MeasurementCheck.riseFall,
           passed: closure.riseFallOk,
         ),
-      if (withinTolerance != null)
+      // Unavailable (K·√L without a route length) shows as not passed.
+      if (withinTolerance != null || closure.toleranceUnavailable)
         MeasurementValidationItem(
           check: MeasurementCheck.tolerance,
-          passed: withinTolerance,
+          passed: withinTolerance ?? false,
         ),
     ];
 

@@ -690,6 +690,8 @@ class ProjectBackupService {
       reductionMethod: fieldBook.reductionMethod,
       // Older backups have no design flag: restored off.
       showDesignLevel: fieldBook.showDesignLevel,
+      // Older backups have no route length: none.
+      routeLength: fieldBook.routeLength,
       memo: fieldBook.memo,
       surveyor: fieldBook.surveyor,
       checker: fieldBook.checker,

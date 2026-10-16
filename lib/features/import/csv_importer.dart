@@ -38,6 +38,9 @@ enum _CsvField {
   closingRl,
   reductionMethod,
   unit,
+
+  /// Route length (km or mi) of the K·√L tolerance.
+  routeLength,
 }
 
 /// Imports CSV files exported by Lv Book in any app language.
@@ -72,6 +75,7 @@ class CsvImporter {
       _normalize(strings.exportFieldClosingRl): _CsvField.closingRl,
       _normalize(strings.exportFieldReductionMethod): _CsvField.reductionMethod,
       _normalize(strings.exportFieldUnit): _CsvField.unit,
+      _normalize(strings.exportFieldRouteLength): _CsvField.routeLength,
     },
   };
 
@@ -266,6 +270,7 @@ class CsvImporter {
     double? closingElevation;
     ReductionMethod? reductionMethod;
     LengthUnit? fileUnit;
+    double? routeLength;
     final metadata = <_CsvField, String>{};
     var tableHeaderIndex = -1;
 
@@ -308,6 +313,11 @@ class CsvImporter {
               : ReductionMethod.heightOfInstrument;
         case _CsvField.unit:
           fileUnit = _unitValues[value.toLowerCase()];
+        case _CsvField.routeLength:
+          final parsed = double.tryParse(value.replaceAll(',', '.'));
+          if (MisclosureTolerance.isValidRouteLength(parsed)) {
+            routeLength = parsed;
+          }
         case _CsvField.startBm || _CsvField.closingBm:
           if (value.isNotEmpty) metadata[field] = value;
         case _CsvField.surveyor ||
@@ -402,6 +412,7 @@ class CsvImporter {
         // Files with design levels (a Design column with values) show the
         // design column; every other file imports exactly as before.
         showDesignLevel: measurements.any((m) => m.designLevel != null),
+        routeLength: routeLength,
         surveyor: metadata[_CsvField.surveyor],
         checker: metadata[_CsvField.checker],
         instrument: metadata[_CsvField.instrument],

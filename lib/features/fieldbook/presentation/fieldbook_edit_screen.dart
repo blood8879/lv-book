@@ -182,6 +182,11 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
   /// Design / Cut-Fill columns shown (persisted on change, see
   /// [_applyShowDesignLevel]).
   late bool _showDesignLevel;
+
+  /// Route length L (km / mi) of the K·√L tolerance (persisted on change,
+  /// see [_applyRouteLength]).
+  double? _routeLength;
+  late final TextEditingController _routeLengthController;
   final int _initialRowCount = 20;
   final ScrollController _scrollController = ScrollController();
 
@@ -277,6 +282,10 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
     _closingElevation = widget.fieldBook.closingElevation;
     _reductionMethod = widget.fieldBook.reductionMethod;
     _showDesignLevel = widget.fieldBook.showDesignLevel;
+    _routeLength = widget.fieldBook.routeLength;
+    _routeLengthController = TextEditingController(
+      text: _routeLength == null ? '' : formatReadingText(_routeLength!),
+    );
     _loadData();
   }
 
@@ -308,6 +317,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
       f.dispose();
     }
     _reviewMemoController.dispose();
+    _routeLengthController.dispose();
     super.dispose();
   }
 
@@ -514,6 +524,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
       closingElevation: _closingElevation,
       reductionMethod: _reductionMethod,
       showDesignLevel: _showDesignLevel,
+      routeLength: _routeLength,
       memo: widget.fieldBook.memo,
       surveyor: widget.fieldBook.surveyor,
       checker: widget.fieldBook.checker,
@@ -734,6 +745,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
         closingElevation: _closingRl,
         tolerance: tolerance,
         method: _reductionMethod,
+        routeLength: _routeLength,
       );
 
   @override
@@ -1050,6 +1062,77 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
     }
   }
 
+  /// Saves a typed route length (empty clears it); invalid text is ignored
+  /// until it parses. Only the column is written, like the method/flag.
+  Future<void> _applyRouteLength(String text) async {
+    final trimmed = text.trim();
+    final value = trimmed.isEmpty
+        ? null
+        : double.tryParse(trimmed.replaceAll(',', '.'));
+    if (trimmed.isNotEmpty && !MisclosureTolerance.isValidRouteLength(value)) {
+      return;
+    }
+    if (value == _routeLength) return;
+    final l10n = context.l10n;
+    setState(() => _routeLength = value);
+    try {
+      await _container
+          .read(fieldBookRepositoryProvider)
+          .updateRouteLength(_fieldBookWithReviewMetadata());
+      _container.invalidate(fieldBookListProvider(widget.projectId));
+    } catch (error) {
+      if (mounted) {
+        AppSnackbar.error(context, l10n.coreErrorWithDetail('$error'));
+      }
+    }
+  }
+
+  /// Route length input and, below it, the allowance with its numbers
+  /// ('Tolerance ±10 mm·√2.40 km = ±15.5 mm') or the prompt to enter it.
+  List<Widget> _toleranceFields() {
+    final l10n = context.l10n;
+    final colors = context.appColors;
+    final tolerance = _tolerance;
+    final closure = LevelClosureCheck.compute(
+      _toMeasurements(),
+      startElevation: _startElevation,
+      closingElevation: _closingRl,
+      tolerance: tolerance,
+      method: _reductionMethod,
+      routeLength: _routeLength,
+    );
+    final formula = closure.allowedFormula;
+    final unavailable = tolerance.needsRouteLength && _routeLength == null;
+    return [
+      TextField(
+        key: const ValueKey('route-length-field'),
+        controller: _routeLengthController,
+        inputFormatters: const [DecimalCommaFormatter()],
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        decoration: InputDecoration(
+          labelText: l10n.fieldbookRouteLengthLabel(tolerance.unit.routeSymbol),
+          helperText: l10n.fieldbookRouteLengthHelper,
+          helperMaxLines: 2,
+        ),
+        onChanged: _applyRouteLength,
+      ),
+      if (formula != null || unavailable) ...[
+        const SizedBox(height: 6),
+        Text(
+          unavailable
+              ? l10n.fieldbookIssueRouteLengthMissing
+              : l10n.fieldbookToleranceFormula(formula!),
+          key: const ValueKey('tolerance-formula'),
+          style: TextStyle(
+            fontSize: 12.5,
+            color: unavailable ? colors.err : colors.subtext,
+            fontFeatures: AppTypography.tabularFeatures,
+          ),
+        ),
+      ],
+    ];
+  }
+
   bool get _isRiseFall => _reductionMethod == ReductionMethod.riseAndFall;
 
   Widget _buildReviewPanel() {
@@ -1160,6 +1243,8 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
           ),
         ],
       ),
+      const SizedBox(height: 12),
+      ..._toleranceFields(),
       // Set once per book; changing it only changes the presentation.
       const SizedBox(height: 12),
       ReductionMethodSelector(
@@ -1557,6 +1642,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
       closingElevation: _closingRl,
       tolerance: tolerance,
       method: _reductionMethod,
+      routeLength: _routeLength,
     );
     final sums = closure.sums;
     final hasData = _rows.any((row) => row.gh != null);
@@ -1635,9 +1721,11 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
                   l10n.fieldbookSummaryMisclosure,
                   formatMisclosure(misclosure),
                   valueColor: judged(closure.withinTolerance ?? false),
-                  caption: l10n.fieldbookSummaryAllowed(
-                    formatAllowedMisclosure(closure.allowed),
-                  ),
+                  caption: closure.allowed == null
+                      ? l10n.fieldbookSummaryAllowedUnavailable
+                      : l10n.fieldbookSummaryAllowed(
+                          formatAllowedMisclosure(closure.allowed!),
+                        ),
                 )
               else
                 _summaryItem(

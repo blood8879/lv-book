@@ -106,5 +106,9 @@
   "exportXlsxSheetName": "야장",
   "exportFieldProject": "프로젝트",
   "exportBulkFormatXlsx": "엑셀",
-  "exportColumnTarget": "목표 시준값"
+  "exportColumnTarget": "목표 시준값",
+  "exportFieldRouteLength": "노선 연장",
+  "exportCheckToleranceRule": "허용오차 식",
+  "exportCheckAllowedUnavailable": "없음 (노선 연장 입력 필요)",
+  "exportJudgementToleranceUnavailable": "허용오차 계산 불가 — 노선 연장을 입력하세요"
 }

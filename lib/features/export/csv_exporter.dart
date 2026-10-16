@@ -78,6 +78,11 @@ class CsvExporter {
       exportReductionMethodLabel(l10n, method),
     ]);
     rows.add([l10n.exportFieldUnit, tolerance.unit.symbol]);
+    // km (metres) or mi (feet); read back by `CsvImporter`.
+    final routeLength = fieldBook.routeLength;
+    if (routeLength != null) {
+      rows.add([l10n.exportFieldRouteLength, routeLength.toStringAsFixed(3)]);
+    }
     // Closing reference (absent when none). A loop writes the start BM name
     // with the start RL, which `CsvImporter` reads back as a loop.
     final closingElevation = fieldBook.closingElevationFor(startElevation);
@@ -114,6 +119,7 @@ class CsvExporter {
       closingElevation: closingElevation,
       tolerance: tolerance,
       method: method,
+      routeLength: fieldBook.routeLength,
     );
     final sums = closure.sums;
     rows.add([]);
@@ -149,14 +155,20 @@ class CsvExporter {
         ]);
       } else {
         rows.add([l10n.exportCheckMisclosure, formatMisclosure(misclosure)]);
+        final allowed = closure.allowed;
         rows.add([
           l10n.exportCheckAllowed,
-          formatAllowedMisclosure(closure.allowed),
+          allowed == null
+              ? l10n.exportCheckAllowedUnavailable
+              : formatAllowedMisclosure(allowed),
         ]);
+        if (closure.allowedFormula != null) {
+          rows.add([l10n.exportCheckToleranceRule, closure.allowedFormula!]);
+        }
       }
       rows.add([
         l10n.exportCheckResult,
-        ExportJudgement.labelFor(closure.isSuitable, l10n: l10n),
+        ExportJudgement.labelForClosure(closure, l10n: l10n),
       ]);
     }
 

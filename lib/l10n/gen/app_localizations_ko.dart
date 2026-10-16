@@ -350,6 +350,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get exportCheckAllowed => '허용';
 
   @override
+  String get exportCheckAllowedUnavailable => '없음 (노선 연장 입력 필요)';
+
+  @override
   String get exportCheckDifference => 'ΣBS - ΣFS';
 
   @override
@@ -390,6 +393,9 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get exportCheckTitleWithClosure => '검산 및 폐합오차';
+
+  @override
+  String get exportCheckToleranceRule => '허용오차 식';
 
   @override
   String exportCheckValue(String label, String value) {
@@ -505,6 +511,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get exportFieldReviewStatus => '검토 상태';
 
   @override
+  String get exportFieldRouteLength => '노선 연장';
+
+  @override
   String get exportFieldSection => '작업구간';
 
   @override
@@ -554,6 +563,9 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String get exportImportUtf8Only =>
       'UTF-8 CSV만 지원합니다. 글자가 깨진 문자가 있어 가져올 수 없습니다. Excel에서 \"CSV UTF-8(쉼표로 분리)\" 형식으로 다시 저장해 주세요.';
+
+  @override
+  String get exportJudgementToleranceUnavailable => '허용오차 계산 불가 — 노선 연장을 입력하세요';
 
   @override
   String exportLabelValue(String label, String value) {
@@ -906,6 +918,10 @@ class AppLocalizationsKo extends AppLocalizations {
       '승강 검산(Σ승 − Σ강)이 ΣBS − ΣFS와 맞지 않습니다. 관측값을 확인하세요.';
 
   @override
+  String get fieldbookIssueRouteLengthMissing =>
+      '폐합오차를 판정하려면 노선 연장을 입력하세요 (K·√L).';
+
+  @override
   String get fieldbookIssueTpIncomplete => 'TP 행에는 후시(BS)와 전시(FS)가 모두 필요합니다.';
 
   @override
@@ -973,6 +989,14 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String fieldbookReviewedOn(String date) {
     return '검토일 $date';
+  }
+
+  @override
+  String get fieldbookRouteLengthHelper => '편도 노선 길이입니다. K·√L 허용오차에 사용합니다.';
+
+  @override
+  String fieldbookRouteLengthLabel(String unit) {
+    return '노선 연장 ($unit)';
   }
 
   @override
@@ -1071,6 +1095,9 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String get fieldbookSummaryAllowedUnavailable => '노선 연장 입력';
+
+  @override
   String get fieldbookSummaryArithmetic => '검산 오차';
 
   @override
@@ -1125,6 +1152,11 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get fieldbookToleranceCheckTitle => '허용오차 확인 필요';
+
+  @override
+  String fieldbookToleranceFormula(String formula) {
+    return '허용오차 $formula';
+  }
 
   @override
   String get fieldbookUndoAction => '실행 취소';
@@ -1835,6 +1867,28 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String settingsToleranceDistanceHelper(String unit, String routeUnit) {
+    return '허용 = K × √L $unit, L = 노선 연장($routeUnit), 야장마다 검토 패널에서 입력합니다.';
+  }
+
+  @override
+  String settingsToleranceDistanceLabel(String unit, String routeUnit) {
+    return 'K ($unit·√$routeUnit)';
+  }
+
+  @override
+  String get settingsToleranceDistancePresets => '자주 쓰는 K 값';
+
+  @override
+  String settingsToleranceDistanceSummary(
+    String value,
+    String unit,
+    String routeUnit,
+  ) {
+    return '$value $unit × √L (L = 노선 연장, $routeUnit)';
+  }
+
+  @override
   String get settingsToleranceFixedHelper => '모든 야장에 같은 허용값을 적용합니다.';
 
   @override
@@ -1851,6 +1905,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String settingsToleranceInvalid(String min, String max, String unit) {
     return '$min–$max $unit 사이로 입력하세요.';
   }
+
+  @override
+  String get settingsToleranceModeDistance => 'K·√L';
 
   @override
   String get settingsToleranceModeFixed => '고정값';

@@ -34,6 +34,7 @@ class PdfExporter {
       closingElevation: closingElevation,
       tolerance: tolerance,
       method: fieldBook.reductionMethod,
+      routeLength: fieldBook.routeLength,
     );
     final unit = tolerance.unit;
 
@@ -296,6 +297,11 @@ class PdfExporter {
           exportReductionMethodLabel(l10n, fieldBook.reductionMethod),
         ),
       if (unit != LengthUnit.metres) item(l10n.exportFieldUnit, unit.symbol),
+      if (fieldBook.routeLength != null)
+        item(
+          l10n.exportFieldRouteLength,
+          '${fieldBook.routeLength!.toStringAsFixed(2)} ${unit.routeSymbol}',
+        ),
       item(
         l10n.exportFieldReviewStatus,
         exportReviewStatusLabel(l10n, fieldBook.reviewStatus),
@@ -423,8 +429,16 @@ class PdfExporter {
             closure.closingElevation!.toStringAsFixed(3),
           ),
           (l10n.exportCheckMisclosure, formatMisclosure(misclosure)),
-          (l10n.exportCheckAllowed, formatAllowedMisclosure(closure.allowed)),
+          (
+            l10n.exportCheckAllowed,
+            closure.allowed == null
+                ? l10n.exportCheckAllowedUnavailable
+                : formatAllowedMisclosure(closure.allowed!),
+          ),
         ],
+      // K·√L / c·√n with its numbers ('±10 mm·√2.40 km = ±15.5 mm').
+      if (misclosure != null && closure.allowedFormula != null)
+        [(l10n.exportCheckToleranceRule, closure.allowedFormula!)],
     ];
   }
 
@@ -443,7 +457,9 @@ class PdfExporter {
     );
 
     final riseFallRow = closure.method == ReductionMethod.riseAndFall ? 2 : -1;
-    final closingRow = rows.length - 1;
+    final closingRow = rows.indexWhere(
+      (row) => row.any((item) => item.$1 == l10n.exportCheckMisclosure),
+    );
     pw.Widget item(int row, int column) {
       final (label, value) = rows[row][column];
       // Judged values: Final − Start (arithmetic check), ΣRise − ΣFall and
@@ -452,7 +468,7 @@ class PdfExporter {
         (1, 2) => judged(closure.arithmeticOk),
         (_, 2) when row == riseFallRow => judged(closure.riseFallOk),
         (_, 1) when row == closingRow && closure.hasClosing => judged(
-          closure.withinTolerance ?? true,
+          closure.withinTolerance ?? false,
         ),
         _ => style,
       };
@@ -514,7 +530,7 @@ class PdfExporter {
               child: pw.Text(
                 l10n.exportLabelValue(
                   l10n.exportCheckResult,
-                  ExportJudgement.labelFor(isOk, l10n: l10n),
+                  ExportJudgement.labelForClosure(closure, l10n: l10n),
                 ),
                 style: pw.TextStyle(
                   font: ttf,

@@ -161,5 +161,10 @@
   "fieldbookFillLetter": "R",
   "fieldbookColumnTarget": "Lect. obj.",
   "fieldbookRowDeletedMessage": "Fila eliminada",
-  "fieldbookUndoAction": "Deshacer"
+  "fieldbookUndoAction": "Deshacer",
+  "fieldbookRouteLengthLabel": "Longitud del itinerario ({unit})",
+  "fieldbookRouteLengthHelper": "Longitud de ida del itinerario, para la tolerancia K·√L.",
+  "fieldbookToleranceFormula": "Tolerancia {formula}",
+  "fieldbookIssueRouteLengthMissing": "Ingrese la longitud del itinerario para evaluar el error de cierre (K·√L).",
+  "fieldbookSummaryAllowedUnavailable": "Ingrese la longitud"
 }

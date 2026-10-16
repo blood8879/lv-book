@@ -700,6 +700,12 @@ abstract class AppLocalizations {
   /// **'Allowed'**
   String get exportCheckAllowed;
 
+  /// Allowed misclosure value when the K·√L rule has no route length.
+  ///
+  /// In en, this message translates to:
+  /// **'n/a (enter the route length)'**
+  String get exportCheckAllowedUnavailable;
+
   /// Arithmetic check: ΣBS − ΣFS.
   ///
   /// In en, this message translates to:
@@ -783,6 +789,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Arithmetic check and misclosure'**
   String get exportCheckTitleWithClosure;
+
+  /// Check box label before the formula, e.g. '±10 mm·√2.40 km = ±15.5 mm'.
+  ///
+  /// In en, this message translates to:
+  /// **'Tolerance rule'**
+  String get exportCheckToleranceRule;
 
   /// An arithmetic-check line in the PDF, e.g. 'ΣBS = 2.700'. Value is preformatted.
   ///
@@ -994,6 +1006,12 @@ abstract class AppLocalizations {
   /// **'Review status'**
   String get exportFieldReviewStatus;
 
+  /// Header/CSV metadata: one-way route length L of the run (km for metres, mi for feet) used by the K·√L tolerance. CsvImporter matches it in every language.
+  ///
+  /// In en, this message translates to:
+  /// **'Route length'**
+  String get exportFieldRouteLength;
+
   /// Exported document field: work section.
   ///
   /// In en, this message translates to:
@@ -1077,6 +1095,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Only UTF-8 CSV is supported. Some characters are garbled, so the file can\'t be imported. In Excel, save it again as \"CSV UTF-8 (Comma delimited)\".'**
   String get exportImportUtf8Only;
+
+  /// Result when the K·√L tolerance cannot be computed (no route length). Never a pass/fail word.
+  ///
+  /// In en, this message translates to:
+  /// **'Tolerance unavailable — enter the route length'**
+  String get exportJudgementToleranceUnavailable;
 
   /// A label/value pair in an exported document.
   ///
@@ -1708,6 +1732,12 @@ abstract class AppLocalizations {
   /// **'ΣRise − ΣFall does not match ΣBS − ΣFS. Check the readings.'**
   String get fieldbookIssueRiseFallMismatch;
 
+  /// Validation message when the K·√L tolerance has no route length.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the route length to judge the misclosure (K·√L).'**
+  String get fieldbookIssueRouteLengthMissing;
+
   /// No description provided for @fieldbookIssueTpIncomplete.
   ///
   /// In en, this message translates to:
@@ -1833,6 +1863,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Reviewed {date}'**
   String fieldbookReviewedOn(String date);
+
+  /// Helper under the route length input.
+  ///
+  /// In en, this message translates to:
+  /// **'One-way length of the run, used by the K·√L tolerance.'**
+  String get fieldbookRouteLengthHelper;
+
+  /// Review panel input: one-way length L of the run for the K·√L tolerance. unit: km or mi.
+  ///
+  /// In en, this message translates to:
+  /// **'Route length ({unit})'**
+  String fieldbookRouteLengthLabel(String unit);
 
   /// No description provided for @fieldbookRowActionsTooltip.
   ///
@@ -2008,6 +2050,12 @@ abstract class AppLocalizations {
   /// **'Allowed {value}'**
   String fieldbookSummaryAllowed(String value);
 
+  /// Caption under the misclosure when the K·√L tolerance has no route length; keep short.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter route length'**
+  String get fieldbookSummaryAllowedUnavailable;
+
   /// Editor summary cell label when no closing RL is set: arithmetic check residual (not a misclosure). Keep short.
   ///
   /// In en, this message translates to:
@@ -2103,6 +2151,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tolerance check required'**
   String get fieldbookToleranceCheckTitle;
+
+  /// Review panel line with the tolerance formula and numbers, e.g. 'Tolerance ±10 mm·√2.40 km = ±15.5 mm'.
+  ///
+  /// In en, this message translates to:
+  /// **'Tolerance {formula}'**
+  String fieldbookToleranceFormula(String formula);
 
   /// Snack bar action that restores the deleted row.
   ///
@@ -3364,6 +3418,34 @@ abstract class AppLocalizations {
   /// **'c ({unit})'**
   String settingsToleranceCoefficientLabel(String unit);
 
+  /// Helper for the K·√L rule.
+  ///
+  /// In en, this message translates to:
+  /// **'Allowed = K × √L {unit}, L = route length in {routeUnit}, entered per level book in Review.'**
+  String settingsToleranceDistanceHelper(String unit, String routeUnit);
+
+  /// Input label, K·√L rule.
+  ///
+  /// In en, this message translates to:
+  /// **'K ({unit}·√{routeUnit})'**
+  String settingsToleranceDistanceLabel(String unit, String routeUnit);
+
+  /// Caption above the K preset chips (m: survey orders 2.5–20 mm·√km; ft: typical US values).
+  ///
+  /// In en, this message translates to:
+  /// **'Common K values'**
+  String get settingsToleranceDistancePresets;
+
+  /// Tile subtitle for the K·√L rule. unit: mm or ft; routeUnit: km or mi.
+  ///
+  /// In en, this message translates to:
+  /// **'{value} {unit} × √L (L = route length, {routeUnit})'**
+  String settingsToleranceDistanceSummary(
+    String value,
+    String unit,
+    String routeUnit,
+  );
+
   /// Helper for the fixed rule.
   ///
   /// In en, this message translates to:
@@ -3387,6 +3469,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Enter {min}–{max} {unit}.'**
   String settingsToleranceInvalid(String min, String max, String unit);
+
+  /// Segment: K times square root of the route length.
+  ///
+  /// In en, this message translates to:
+  /// **'K·√L'**
+  String get settingsToleranceModeDistance;
 
   /// Segment: fixed allowance.
   ///

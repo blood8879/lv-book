@@ -119,5 +119,10 @@
   "settingsFeedbackSection": "의견",
   "settingsRateAppTitle": "앱 평가하기",
   "settingsRateAppSubtitle": "Google Play 스토어에서 리뷰를 남길 수 있습니다.",
-  "settingsToolsSection": "도구"
+  "settingsToolsSection": "도구",
+  "settingsToleranceModeDistance": "K·√L",
+  "settingsToleranceDistanceSummary": "{value} {unit} × √L (L = 노선 연장, {routeUnit})",
+  "settingsToleranceDistanceLabel": "K ({unit}·√{routeUnit})",
+  "settingsToleranceDistanceHelper": "허용 = K × √L {unit}, L = 노선 연장({routeUnit}), 야장마다 검토 패널에서 입력합니다.",
+  "settingsToleranceDistancePresets": "자주 쓰는 K 값"
 }

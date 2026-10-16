@@ -119,5 +119,10 @@
   "settingsFeedbackSection": "Comentarios",
   "settingsRateAppTitle": "Calificar Lv Book",
   "settingsRateAppSubtitle": "Abra la ficha de Google Play para dejar una reseña.",
-  "settingsToolsSection": "Herramientas"
+  "settingsToolsSection": "Herramientas",
+  "settingsToleranceModeDistance": "K·√L",
+  "settingsToleranceDistanceSummary": "{value} {unit} × √L (L = longitud del itinerario, {routeUnit})",
+  "settingsToleranceDistanceLabel": "K ({unit}·√{routeUnit})",
+  "settingsToleranceDistanceHelper": "Tolerancia = K × √L {unit}, L = longitud del itinerario en {routeUnit}, ingresada en cada libreta desde Revisión.",
+  "settingsToleranceDistancePresets": "Valores de K habituales"
 }

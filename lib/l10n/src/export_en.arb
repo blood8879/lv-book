@@ -423,5 +423,13 @@
   "exportBulkFormatXlsx": "Excel",
   "@exportBulkFormatXlsx": {"description": "Bulk export format segment: Excel (.xlsx) workbooks."},
   "exportColumnTarget": "Target reading",
-  "@exportColumnTarget": {"description": "Measurement table column after Cut/Fill: stakeout target staff reading = HI of the current setup − design level. Not read back by CsvImporter (derived)."}
+  "@exportColumnTarget": {"description": "Measurement table column after Cut/Fill: stakeout target staff reading = HI of the current setup − design level. Not read back by CsvImporter (derived)."},
+  "exportFieldRouteLength": "Route length",
+  "@exportFieldRouteLength": {"description": "Header/CSV metadata: one-way route length L of the run (km for metres, mi for feet) used by the K·√L tolerance. CsvImporter matches it in every language."},
+  "exportCheckToleranceRule": "Tolerance rule",
+  "@exportCheckToleranceRule": {"description": "Check box label before the formula, e.g. '±10 mm·√2.40 km = ±15.5 mm'."},
+  "exportCheckAllowedUnavailable": "n/a (enter the route length)",
+  "@exportCheckAllowedUnavailable": {"description": "Allowed misclosure value when the K·√L rule has no route length."},
+  "exportJudgementToleranceUnavailable": "Tolerance unavailable — enter the route length",
+  "@exportJudgementToleranceUnavailable": {"description": "Result when the K·√L tolerance cannot be computed (no route length). Never a pass/fail word."}
 }

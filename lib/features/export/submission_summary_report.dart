@@ -135,6 +135,7 @@ class SubmissionSummaryReport {
       ),
       tolerance: tolerance,
       method: input.fieldBook.reductionMethod,
+      routeLength: input.fieldBook.routeLength,
     );
     return SubmissionSummaryRow(
       title: input.fieldBook.title,
@@ -146,7 +147,9 @@ class SubmissionSummaryReport {
       reviewMemo: input.fieldBook.reviewMemo?.trim() ?? '',
       reviewedAt: input.fieldBook.reviewedAt,
       misclosure: validation.misclosure,
-      judgement: validation.canExport
+      judgement: validation.closure?.toleranceUnavailable == true
+          ? l10n.exportJudgementToleranceUnavailable
+          : validation.canExport
           ? l10n.coreJudgementWithinTolerance
           : l10n.coreJudgementCheckRequired,
     );

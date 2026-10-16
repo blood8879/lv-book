@@ -145,7 +145,7 @@ void main() {
         tolerance: tolerance,
       );
       expect(check.allowed, closeTo(0.005 * 1.4142135623730951, 1e-12));
-      expect(formatAllowedMisclosure(check.allowed), '±0.0071');
+      expect(formatAllowedMisclosure(check.allowed!), '±0.0071');
       expect(check.misclosure, closeTo(0.007, 1e-9));
       expect(check.withinTolerance, isTrue);
     });
