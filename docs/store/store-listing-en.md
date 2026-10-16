@@ -12,7 +12,7 @@ Lv Book: Surveying Level Book
 ## Short description (≤ 80 chars)
 
 ```
-Level book for surveyors: HI or Rise & Fall, RL, misclosure, PDF & CSV export.
+Level book for surveyors: HI or Rise & Fall, RL, misclosure, PDF & Excel export.
 ```
 
 ## Full description (≤ 4000 chars)

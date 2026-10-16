@@ -19,7 +19,7 @@ Lv Book: libreta de nivelación
 ## Short description (≤ 80 chars)
 
 ```
-Libreta de nivelación: altura instrumental o ascensos, cotas, cierre, PDF y CSV
+Libreta de nivelación: altura instrumental o ascensos, cotas, cierre, PDF, Excel
 ```
 
 ## Full description (≤ 4000 chars)
