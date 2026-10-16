@@ -150,6 +150,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
   double _startElevation = 0;
   bool _loaded = false;
   bool _dirty = false;
+  bool _reviewPanelOpen = false;
   _SaveStatus _saveStatus = _SaveStatus.saved;
   Timer? _autosaveTimer;
 
@@ -813,8 +814,13 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
                     _buildStartElevationBar(),
                     _buildReviewPanel(),
                     Expanded(child: _buildTable()),
-                    _buildValidationBar(_validate(tolerance)),
-                    _buildSummary(tolerance),
+                    // Typing in the open review panel (memo, route length)
+                    // leaves too little height above the keyboard for the
+                    // checks and the summary; they return once it closes.
+                    if (!_editingReviewPanel) ...[
+                      _buildValidationBar(_validate(tolerance)),
+                      _buildSummary(tolerance),
+                    ],
                   ],
                 ),
         ),
@@ -1135,6 +1141,9 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
 
   bool get _isRiseFall => _reductionMethod == ReductionMethod.riseAndFall;
 
+  bool get _editingReviewPanel =>
+      _reviewPanelOpen && MediaQuery.viewInsetsOf(context).bottom > 0;
+
   Widget _buildReviewPanel() {
     final reviewedAt = _reviewedAt;
     final colors = context.appColors;
@@ -1143,6 +1152,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
       color: colors.panel,
       shape: Border(bottom: BorderSide(color: colors.line)),
       child: ExpansionTile(
+        onExpansionChanged: (open) => setState(() => _reviewPanelOpen = open),
         controlAffinity: ListTileControlAffinity.leading,
         tilePadding: const EdgeInsets.fromLTRB(8, 0, 16, 0),
         childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
@@ -1174,7 +1184,10 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
           // and the summary off a small screen.
           ConstrainedBox(
             constraints: BoxConstraints(
-              maxHeight: MediaQuery.sizeOf(context).height * 0.3,
+              maxHeight:
+                  (MediaQuery.sizeOf(context).height -
+                      MediaQuery.viewInsetsOf(context).bottom) *
+                  0.3,
             ),
             child: SingleChildScrollView(
               child: Column(
