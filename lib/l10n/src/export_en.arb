@@ -339,7 +339,7 @@
       }
     }
   },
-  "exportImportDateMissing": "The CSV has no date, so it was set to {date}.",
+  "exportImportDateMissing": "The file has no date, so it was set to {date}.",
   "@exportImportDateMissing": {
     "description": "CSV import warning.",
     "placeholders": {
@@ -350,7 +350,15 @@
   },
   "exportImportHeaderNotFound": "Couldn't find the measurement table header.",
   "@exportImportHeaderNotFound": {
-    "description": "CSV import error."
+    "description": "CSV/Excel import error."
+  },
+  "exportImportXlsxUnreadable": "Couldn't read this Excel file. It may be damaged. Open it in Excel and save it again as .xlsx.",
+  "@exportImportXlsxUnreadable": {
+    "description": "Excel import error: the .xlsx is damaged or not a workbook."
+  },
+  "exportImportXlsxLegacy": "Old .xls files and password-protected workbooks can't be read. In Excel, save it as .xlsx (Excel Workbook) without a password.",
+  "@exportImportXlsxLegacy": {
+    "description": "Excel import error: old binary .xls or an encrypted workbook."
   },
   "exportImportInvalidNumber": "Row {row}: {column} is not a valid number.",
   "@exportImportInvalidNumber": {

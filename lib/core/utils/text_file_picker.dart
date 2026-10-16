@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 
@@ -27,6 +28,16 @@ class TextFileEncodingException implements Exception {
 /// content (UTF-8). Returns null when the user cancels.
 class TextFilePicker {
   static Future<String?> pick({required List<String> extensions}) async {
+    final file = await pickBytes(extensions: extensions);
+    return file == null ? null : decodeUtf8(file.bytes);
+  }
+
+  /// Opens the platform file picker and returns the selected file's name
+  /// and raw bytes (for binary formats such as .xlsx). Returns null when the
+  /// user cancels or the file cannot be read.
+  static Future<({String name, Uint8List bytes})?> pickBytes({
+    required List<String> extensions,
+  }) async {
     final result = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: extensions,
@@ -36,9 +47,11 @@ class TextFilePicker {
     if (file == null) return null;
 
     final bytes = file.bytes;
-    if (bytes != null) return decodeUtf8(bytes);
+    if (bytes != null) return (name: file.name, bytes: bytes);
     final path = file.path;
-    if (path != null) return decodeUtf8(await File(path).readAsBytes());
+    if (path != null) {
+      return (name: file.name, bytes: await File(path).readAsBytes());
+    }
     return null;
   }
 

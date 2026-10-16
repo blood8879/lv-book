@@ -76,6 +76,8 @@
   "exportImportDateUnrecognized": "날짜 \"{value}\"를 인식할 수 없어 {date}로 설정했습니다.",
   "exportImportDateMissing": "날짜 항목이 없어 {date}로 설정했습니다.",
   "exportImportHeaderNotFound": "측량 표 헤더를 찾을 수 없습니다.",
+  "exportImportXlsxUnreadable": "Excel 파일을 읽을 수 없습니다. 파일이 손상되었을 수 있습니다. Excel에서 열어 .xlsx로 다시 저장해 주세요.",
+  "exportImportXlsxLegacy": "이전 .xls 형식이나 암호가 설정된 통합 문서는 읽을 수 없습니다. Excel에서 암호 없이 .xlsx(Excel 통합 문서)로 저장해 주세요.",
   "exportImportInvalidNumber": "{row}행 {column} 숫자 형식이 올바르지 않습니다.",
   "exportFieldClosingBm": "폐합 BM",
   "exportFieldClosingRl": "폐합 표고",

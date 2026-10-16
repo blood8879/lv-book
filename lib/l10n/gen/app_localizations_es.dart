@@ -578,7 +578,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String exportImportDateMissing(String date) {
-    return 'El CSV no tiene fecha; se usó $date.';
+    return 'El archivo no tiene fecha; se usó $date.';
   }
 
   @override
@@ -606,6 +606,14 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get exportImportUtf8Only =>
       'Solo se admite CSV en UTF-8. Algunos caracteres están dañados, así que no se puede importar el archivo. En Excel, guárdelo de nuevo como \"CSV UTF-8 (delimitado por comas)\".';
+
+  @override
+  String get exportImportXlsxLegacy =>
+      'No se pueden leer archivos .xls antiguos ni libros protegidos con contraseña. En Excel, guárdelo como .xlsx (Libro de Excel) sin contraseña.';
+
+  @override
+  String get exportImportXlsxUnreadable =>
+      'No se pudo leer este archivo de Excel. Puede estar dañado. Ábralo en Excel y guárdelo de nuevo como .xlsx.';
 
   @override
   String get exportJudgementToleranceUnavailable =>
@@ -768,7 +776,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get fieldbookChooseBackupFile => 'Elegir archivo de copia (.json)';
 
   @override
-  String get fieldbookChooseCsvFile => 'Elegir archivo CSV (.csv)';
+  String get fieldbookChooseCsvFile => 'Elegir archivo (.csv, .xlsx)';
 
   @override
   String get fieldbookClosingApply => 'Aplicar';
@@ -863,15 +871,15 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String fieldbookCsvImportError(String error) {
-    return 'No se pudo importar el CSV: $error';
+    return 'No se pudo importar: $error';
   }
 
   @override
-  String get fieldbookCsvImported => 'CSV importado';
+  String get fieldbookCsvImported => 'Libreta importada';
 
   @override
   String fieldbookCsvImportedWithWarnings(String warnings) {
-    return 'CSV importado. $warnings';
+    return 'Libreta importada. $warnings';
   }
 
   @override
@@ -919,7 +927,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get fieldbookEmptyMessage =>
-      'Toque + para crear una libreta\no importe registros existentes desde CSV.';
+      'Toque + para crear una libreta\no importe registros existentes desde CSV o Excel.';
 
   @override
   String get fieldbookEmptyTitle => 'Cree su primera libreta';
@@ -943,7 +951,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get fieldbookImportButton => 'Importar';
 
   @override
-  String get fieldbookImportCsv => 'Importar CSV';
+  String get fieldbookImportCsv => 'Importar CSV / Excel';
 
   @override
   String get fieldbookInstrumentLabel => 'Instrumento';

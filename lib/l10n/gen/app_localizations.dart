@@ -1057,7 +1057,7 @@ abstract class AppLocalizations {
   /// CSV import warning.
   ///
   /// In en, this message translates to:
-  /// **'The CSV has no date, so it was set to {date}.'**
+  /// **'The file has no date, so it was set to {date}.'**
   String exportImportDateMissing(String date);
 
   /// CSV import warning.
@@ -1072,7 +1072,7 @@ abstract class AppLocalizations {
   /// **'Imported level book'**
   String get exportImportDefaultTitle;
 
-  /// CSV import error.
+  /// CSV/Excel import error.
   ///
   /// In en, this message translates to:
   /// **'Couldn\'t find the measurement table header.'**
@@ -1095,6 +1095,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Only UTF-8 CSV is supported. Some characters are garbled, so the file can\'t be imported. In Excel, save it again as \"CSV UTF-8 (Comma delimited)\".'**
   String get exportImportUtf8Only;
+
+  /// Excel import error: old binary .xls or an encrypted workbook.
+  ///
+  /// In en, this message translates to:
+  /// **'Old .xls files and password-protected workbooks can\'t be read. In Excel, save it as .xlsx (Excel Workbook) without a password.'**
+  String get exportImportXlsxLegacy;
+
+  /// Excel import error: the .xlsx is damaged or not a workbook.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t read this Excel file. It may be damaged. Open it in Excel and save it again as .xlsx.'**
+  String get exportImportXlsxUnreadable;
 
   /// Result when the K·√L tolerance cannot be computed (no route length). Never a pass/fail word.
   ///
@@ -1369,7 +1381,7 @@ abstract class AppLocalizations {
   /// No description provided for @fieldbookChooseCsvFile.
   ///
   /// In en, this message translates to:
-  /// **'Choose CSV file (.csv)'**
+  /// **'Choose file (.csv, .xlsx)'**
   String get fieldbookChooseCsvFile;
 
   /// Bottom sheet button.
@@ -1543,19 +1555,19 @@ abstract class AppLocalizations {
   /// No description provided for @fieldbookCsvImportError.
   ///
   /// In en, this message translates to:
-  /// **'Couldn\'t import CSV: {error}'**
+  /// **'Couldn\'t import: {error}'**
   String fieldbookCsvImportError(String error);
 
   /// No description provided for @fieldbookCsvImported.
   ///
   /// In en, this message translates to:
-  /// **'CSV imported'**
+  /// **'Level book imported'**
   String get fieldbookCsvImported;
 
   /// No description provided for @fieldbookCsvImportedWithWarnings.
   ///
   /// In en, this message translates to:
-  /// **'CSV imported. {warnings}'**
+  /// **'Level book imported. {warnings}'**
   String fieldbookCsvImportedWithWarnings(String warnings);
 
   /// No description provided for @fieldbookCsvPasteHint.
@@ -1633,7 +1645,7 @@ abstract class AppLocalizations {
   /// No description provided for @fieldbookEmptyMessage.
   ///
   /// In en, this message translates to:
-  /// **'Tap + to create a level book,\nor import existing records from CSV.'**
+  /// **'Tap + to create a level book,\nor import existing records from CSV or Excel.'**
   String get fieldbookEmptyMessage;
 
   /// No description provided for @fieldbookEmptyTitle.
@@ -1681,7 +1693,7 @@ abstract class AppLocalizations {
   /// No description provided for @fieldbookImportCsv.
   ///
   /// In en, this message translates to:
-  /// **'Import CSV'**
+  /// **'Import CSV / Excel'**
   String get fieldbookImportCsv;
 
   /// No description provided for @fieldbookInstrumentLabel.

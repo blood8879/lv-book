@@ -82,7 +82,7 @@
   "fieldbookNoDataToExport": "No data to export",
   "fieldbookFabLabel": "Level book",
   "fieldbookNewTitle": "New level book",
-  "fieldbookImportCsv": "Import CSV",
+  "fieldbookImportCsv": "Import CSV / Excel",
   "fieldbookShareBackup": "Share project backup",
   "fieldbookRestoreBackupJson": "Restore backup JSON",
   "fieldbookShareBackupError": "Couldn't share backup: {error}",
@@ -126,20 +126,20 @@
   "@fieldbookDeleteConfirm": {
     "placeholders": { "title": { "type": "String" } }
   },
-  "fieldbookChooseCsvFile": "Choose CSV file (.csv)",
+  "fieldbookChooseCsvFile": "Choose file (.csv, .xlsx)",
   "fieldbookCsvPasteHint": "Or paste CSV exported from Lv Book.",
-  "fieldbookCsvImportError": "Couldn't import CSV: {error}",
+  "fieldbookCsvImportError": "Couldn't import: {error}",
   "@fieldbookCsvImportError": {
     "placeholders": { "error": { "type": "String" } }
   },
-  "fieldbookCsvImported": "CSV imported",
-  "fieldbookCsvImportedWithWarnings": "CSV imported. {warnings}",
+  "fieldbookCsvImported": "Level book imported",
+  "fieldbookCsvImportedWithWarnings": "Level book imported. {warnings}",
   "@fieldbookCsvImportedWithWarnings": {
     "placeholders": { "warnings": { "type": "String" } }
   },
   "fieldbookImportButton": "Import",
   "fieldbookEmptyTitle": "Create your first level book",
-  "fieldbookEmptyMessage": "Tap + to create a level book,\nor import existing records from CSV.",
+  "fieldbookEmptyMessage": "Tap + to create a level book,\nor import existing records from CSV or Excel.",
   "fieldbookSearchLabel": "Search level books",
   "fieldbookSearchHint": "Title, section, surveyor, date",
   "fieldbookBulkExportButton": "Bulk export",

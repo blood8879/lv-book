@@ -559,7 +559,7 @@
   "@exportFillLetter": {
     "description": "PDF prefix of a fill value ('F 0.040')."
   },
-  "exportImportDateMissing": "The CSV has no date, so it was set to {date}.",
+  "exportImportDateMissing": "The file has no date, so it was set to {date}.",
   "@exportImportDateMissing": {
     "description": "CSV import warning.",
     "placeholders": {
@@ -586,7 +586,7 @@
   },
   "exportImportHeaderNotFound": "Couldn't find the measurement table header.",
   "@exportImportHeaderNotFound": {
-    "description": "CSV import error."
+    "description": "CSV/Excel import error."
   },
   "exportImportInvalidNumber": "Row {row}: {column} is not a valid number.",
   "@exportImportInvalidNumber": {
@@ -615,6 +615,14 @@
   "exportImportUtf8Only": "Only UTF-8 CSV is supported. Some characters are garbled, so the file can't be imported. In Excel, save it again as \"CSV UTF-8 (Comma delimited)\".",
   "@exportImportUtf8Only": {
     "description": "CSV import error: not UTF-8."
+  },
+  "exportImportXlsxLegacy": "Old .xls files and password-protected workbooks can't be read. In Excel, save it as .xlsx (Excel Workbook) without a password.",
+  "@exportImportXlsxLegacy": {
+    "description": "Excel import error: old binary .xls or an encrypted workbook."
+  },
+  "exportImportXlsxUnreadable": "Couldn't read this Excel file. It may be damaged. Open it in Excel and save it again as .xlsx.",
+  "@exportImportXlsxUnreadable": {
+    "description": "Excel import error: the .xlsx is damaged or not a workbook."
   },
   "exportJudgementToleranceUnavailable": "Tolerance unavailable — enter the route length",
   "@exportJudgementToleranceUnavailable": {
@@ -790,7 +798,7 @@
   "fieldbookCheckTpComplete": "TP complete",
   "fieldbookCheckerLabel": "Checker",
   "fieldbookChooseBackupFile": "Choose backup file (.json)",
-  "fieldbookChooseCsvFile": "Choose CSV file (.csv)",
+  "fieldbookChooseCsvFile": "Choose file (.csv, .xlsx)",
   "fieldbookClosingApply": "Apply",
   "@fieldbookClosingApply": {
     "description": "Bottom sheet button."
@@ -906,7 +914,7 @@
     }
   },
   "fieldbookCreateButton": "Create",
-  "fieldbookCsvImportError": "Couldn't import CSV: {error}",
+  "fieldbookCsvImportError": "Couldn't import: {error}",
   "@fieldbookCsvImportError": {
     "placeholders": {
       "error": {
@@ -914,8 +922,8 @@
       }
     }
   },
-  "fieldbookCsvImported": "CSV imported",
-  "fieldbookCsvImportedWithWarnings": "CSV imported. {warnings}",
+  "fieldbookCsvImported": "Level book imported",
+  "fieldbookCsvImportedWithWarnings": "Level book imported. {warnings}",
   "@fieldbookCsvImportedWithWarnings": {
     "placeholders": {
       "warnings": {
@@ -965,7 +973,7 @@
   "fieldbookDuplicateStructure": "Duplicate structure",
   "fieldbookDuplicatedMessage": "Level book structure duplicated",
   "fieldbookEditStationTitle": "Edit station",
-  "fieldbookEmptyMessage": "Tap + to create a level book,\nor import existing records from CSV.",
+  "fieldbookEmptyMessage": "Tap + to create a level book,\nor import existing records from CSV or Excel.",
   "fieldbookEmptyTitle": "Create your first level book",
   "fieldbookEnterManually": "Enter manually",
   "fieldbookExportCheckTitle": "Check before export",
@@ -976,7 +984,7 @@
     "description": "One-letter prefix of a fill value in the editor ('F 0.040'): ground below design."
   },
   "fieldbookImportButton": "Import",
-  "fieldbookImportCsv": "Import CSV",
+  "fieldbookImportCsv": "Import CSV / Excel",
   "fieldbookInstrumentLabel": "Instrument",
   "fieldbookIssueArithmeticMismatch": "Arithmetic check doesn't balance — check the RLs.",
   "@fieldbookIssueArithmeticMismatch": {

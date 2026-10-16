@@ -568,7 +568,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String exportImportDateMissing(String date) {
-    return 'The CSV has no date, so it was set to $date.';
+    return 'The file has no date, so it was set to $date.';
   }
 
   @override
@@ -596,6 +596,14 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get exportImportUtf8Only =>
       'Only UTF-8 CSV is supported. Some characters are garbled, so the file can\'t be imported. In Excel, save it again as \"CSV UTF-8 (Comma delimited)\".';
+
+  @override
+  String get exportImportXlsxLegacy =>
+      'Old .xls files and password-protected workbooks can\'t be read. In Excel, save it as .xlsx (Excel Workbook) without a password.';
+
+  @override
+  String get exportImportXlsxUnreadable =>
+      'Couldn\'t read this Excel file. It may be damaged. Open it in Excel and save it again as .xlsx.';
 
   @override
   String get exportJudgementToleranceUnavailable =>
@@ -758,7 +766,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fieldbookChooseBackupFile => 'Choose backup file (.json)';
 
   @override
-  String get fieldbookChooseCsvFile => 'Choose CSV file (.csv)';
+  String get fieldbookChooseCsvFile => 'Choose file (.csv, .xlsx)';
 
   @override
   String get fieldbookClosingApply => 'Apply';
@@ -853,15 +861,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String fieldbookCsvImportError(String error) {
-    return 'Couldn\'t import CSV: $error';
+    return 'Couldn\'t import: $error';
   }
 
   @override
-  String get fieldbookCsvImported => 'CSV imported';
+  String get fieldbookCsvImported => 'Level book imported';
 
   @override
   String fieldbookCsvImportedWithWarnings(String warnings) {
-    return 'CSV imported. $warnings';
+    return 'Level book imported. $warnings';
   }
 
   @override
@@ -909,7 +917,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get fieldbookEmptyMessage =>
-      'Tap + to create a level book,\nor import existing records from CSV.';
+      'Tap + to create a level book,\nor import existing records from CSV or Excel.';
 
   @override
   String get fieldbookEmptyTitle => 'Create your first level book';
@@ -933,7 +941,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fieldbookImportButton => 'Import';
 
   @override
-  String get fieldbookImportCsv => 'Import CSV';
+  String get fieldbookImportCsv => 'Import CSV / Excel';
 
   @override
   String get fieldbookInstrumentLabel => 'Instrument';

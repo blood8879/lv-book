@@ -1,4 +1,5 @@
 import 'package:csv/csv.dart';
+import '../../core/utils/calculation.dart';
 import '../../l10n/l10n.dart';
 import '../export/export_labels.dart';
 import '../fieldbook/domain/fieldbook.dart';
@@ -237,6 +238,107 @@ class CsvImporter {
   static String _normalize(Object? cell) =>
       cell.toString().replaceAll('\ufeff', '').trim().toLowerCase();
 
+  /// [_normalize] without any whitespace: spreadsheet headers match
+  /// 'Back sight', '후시 (BS)' and 'backsight' alike.
+  static String _compact(Object? cell) =>
+      _normalize(cell).replaceAll(RegExp(r'\s+'), '');
+
+  /// Spreadsheet table headers ([_compact]ed): every CSV header plus the
+  /// labels people use in their own workbooks (space-separated lists).
+  static final Map<String, ExportColumn> _spreadsheetColumnAliases = {
+    for (final entry in _columnAliases.entries)
+      _compact(entry.key): entry.value,
+    for (final (labels, column) in const [
+      (
+        'station stn sta sta. point pt 측점 측점명 측점번호 지점 punto estación '
+            'estacion',
+        ExportColumn.station,
+      ),
+      ('no. no n.º nº n° # 번호', ExportColumn.no),
+      (
+        'bs b.s b.s. backsight 후시 vat v.at v.at. vistaatrás vistaatras',
+        ExportColumn.bs,
+      ),
+      (
+        'is i.s i.s. intermediatesight intermediate 중간시 중간점 vi v.i v.i. '
+            'vistaintermedia',
+        ExportColumn.intermediate,
+      ),
+      (
+        'fs f.s f.s. foresight 전시 vad v.ad v.ad. vistaadelante',
+        ExportColumn.fs,
+      ),
+      (
+        'remarks remark notes note comment comments 비고 메모 observaciones '
+            'observación observacion notas',
+        ExportColumn.remarks,
+      ),
+      ('designlevel 계획고 cotadeproyecto', ExportColumn.design),
+    ])
+      for (final label in labels.split(' ')) label: column,
+  };
+
+  /// Spreadsheet table columns of a header [row], or null when it is not a
+  /// table header (it needs a station — or, without one, a No. column — a BS
+  /// and an FS or IS column). A '(unit)' suffix such as 'BS (m)' is ignored.
+  static Map<ExportColumn, int>? spreadsheetColumnsOf(List<Object?> row) {
+    final columns = <ExportColumn, int>{};
+    for (var i = 0; i < row.length; i++) {
+      final key = _compact(row[i]);
+      if (key.isEmpty) continue;
+      final column =
+          _spreadsheetColumnAliases[key] ??
+          _spreadsheetColumnAliases[key.replaceAll(RegExp(r'\(.*?\)'), '')];
+      if (column != null) columns.putIfAbsent(column, () => i);
+    }
+    if (!columns.containsKey(ExportColumn.station) &&
+        columns.containsKey(ExportColumn.no)) {
+      columns[ExportColumn.station] = columns.remove(ExportColumn.no)!;
+    }
+    final isTable =
+        columns.containsKey(ExportColumn.station) &&
+        columns.containsKey(ExportColumn.bs) &&
+        (columns.containsKey(ExportColumn.fs) ||
+            columns.containsKey(ExportColumn.intermediate));
+    return isTable ? columns : null;
+  }
+
+  /// First cells that end a spreadsheet table: the check footer of our own
+  /// exports and the totals rows of hand-made sheets (CSV tables end at the
+  /// first blank row instead).
+  static final _spreadsheetFooterLabels = {
+    for (final strings in _allLanguages) ...{
+      _normalize(strings.exportCheckTitle),
+      _normalize(strings.exportCheckTitleWithClosure),
+    },
+    'total',
+    'totals',
+    'sum',
+    '합계',
+    'suma',
+  };
+
+  /// Closing BM written by spreadsheet exports for a loop ('BM.1 (loop)');
+  /// CSV writes the start BM name itself.
+  static bool _isLoopName(String closingBm, String startBm) =>
+      closingBm == startBm ||
+      _allLanguages.any(
+        (strings) => strings.exportClosingLoopName(startBm) == closingBm,
+      );
+
+  /// Reading/RL text: CSV takes plain numbers; a spreadsheet also accepts
+  /// text cells with a decimal comma ('1,234'), spaces and '−'.
+  static double? _parseNumber(String text, {required bool spreadsheet}) {
+    if (!spreadsheet) return double.tryParse(text);
+    var value = text.replaceAll(RegExp(r'\s+'), '').replaceAll('−', '-');
+    if (value.contains(',')) {
+      value = value.contains('.')
+          ? value.replaceAll(',', '')
+          : value.replaceAll(',', '.');
+    }
+    return double.tryParse(value);
+  }
+
   /// [appUnit] (the app's length unit) adds a warning when the file states
   /// another unit; numbers are never converted.
   static CsvImportResult parse(
@@ -261,6 +363,31 @@ class CsvImporter {
       shouldParseNumbers: false,
       eol: '\n',
     ).convert(normalizedCsv);
+    return parseRows(
+      rows,
+      projectId: projectId,
+      fallbackDate: fallbackDate,
+      l10n: l10n,
+      appUnit: appUnit,
+    );
+  }
+
+  /// Parses a level book from rows of cells (CSV lines or worksheet rows,
+  /// see `XlsxImporter`); row numbers in errors are 1-based [rows] indices.
+  ///
+  /// With [spreadsheet]: the table header is found by
+  /// [spreadsheetColumnsOf] (generic workbook headers; no legacy fixed
+  /// layout), blank rows inside the table are skipped, the table ends at a
+  /// check/totals footer, numbers may use a decimal comma, and the
+  /// calculated HI/RL columns are ignored: HI/RL are recomputed from BS/FS.
+  static CsvImportResult parseRows(
+    List<List<dynamic>> rows, {
+    required int projectId,
+    required DateTime fallbackDate,
+    required AppLocalizations l10n,
+    LengthUnit? appUnit,
+    bool spreadsheet = false,
+  }) {
     final errors = <String>[];
     final warnings = <String>[];
     String title = l10n.exportImportDefaultTitle;
@@ -278,8 +405,11 @@ class CsvImporter {
       final row = rows[i];
       if (row.isEmpty) continue;
       final label = _normalize(row.first);
-      if (_rowNumberHeaders.contains(label) ||
-          row.any((cell) => _stationHeaders.contains(_normalize(cell)))) {
+      final isHeader = spreadsheet
+          ? spreadsheetColumnsOf(row) != null
+          : _rowNumberHeaders.contains(label) ||
+                row.any((cell) => _stationHeaders.contains(_normalize(cell)));
+      if (isHeader) {
         tableHeaderIndex = i;
         break;
       }
@@ -304,9 +434,9 @@ class CsvImporter {
             );
           }
         case _CsvField.bmElevation:
-          startElevation = double.tryParse(value);
+          startElevation = _parseNumber(value, spreadsheet: spreadsheet);
         case _CsvField.closingRl:
-          closingElevation = double.tryParse(value);
+          closingElevation = _parseNumber(value, spreadsheet: spreadsheet);
         case _CsvField.reductionMethod:
           reductionMethod = _riseFallValues.contains(value.toLowerCase())
               ? ReductionMethod.riseAndFall
@@ -341,7 +471,9 @@ class CsvImporter {
       );
     }
 
-    final columns = _columnsOf(rows[tableHeaderIndex]);
+    final columns = spreadsheet
+        ? spreadsheetColumnsOf(rows[tableHeaderIndex])!
+        : _columnsOf(rows[tableHeaderIndex]);
     if (appUnit != null && fileUnit != null && fileUnit != appUnit) {
       warnings.add(
         l10n.exportImportUnitMismatch(fileUnit.symbol, appUnit.symbol),
@@ -351,9 +483,18 @@ class CsvImporter {
     for (var i = tableHeaderIndex + 1; i < rows.length; i++) {
       final row = rows[i];
       if (row.isEmpty || row.every((cell) => cell.toString().trim().isEmpty)) {
+        if (spreadsheet) continue;
         break;
       }
       if (row.first.toString().startsWith('Σ')) break;
+      if (spreadsheet) {
+        final first = _normalize(
+          row.firstWhere((cell) => cell.toString().trim().isNotEmpty),
+        );
+        if (first.startsWith('Σ') || _spreadsheetFooterLabels.contains(first)) {
+          break;
+        }
+      }
       final stationName = _cell(row, columns[ExportColumn.station]);
       if (stationName.isEmpty) continue;
 
@@ -364,6 +505,7 @@ class CsvImporter {
         orderIndex: measurements.length,
         fieldBookId: 0,
         l10n: l10n,
+        spreadsheet: spreadsheet,
       );
       if (parsed.error != null) {
         errors.add(parsed.error!);
@@ -372,6 +514,7 @@ class CsvImporter {
       }
     }
     _classifyTurningPoints(measurements);
+    if (spreadsheet) _recomputeLevels(measurements, startElevation ?? 0);
 
     if (errors.isNotEmpty) {
       return CsvImportResult(
@@ -386,7 +529,11 @@ class CsvImporter {
     final closingMode = closingElevation == null
         ? ClosingReferenceMode.none
         : metadata[_CsvField.closingBm] != null &&
-              metadata[_CsvField.closingBm] == metadata[_CsvField.startBm] &&
+              metadata[_CsvField.startBm] != null &&
+              _isLoopName(
+                metadata[_CsvField.closingBm]!,
+                metadata[_CsvField.startBm]!,
+              ) &&
               startElevation != null &&
               (closingElevation - startElevation).abs() <= toleranceEpsilon
         ? ClosingReferenceMode.loop
@@ -469,6 +616,24 @@ class CsvImporter {
     }
   }
 
+  /// HI/RL from BS/FS as the editor computes them (start RL 0 when the
+  /// file has none, like the editor).
+  static void _recomputeLevels(
+    List<Measurement> measurements,
+    double startElevation,
+  ) {
+    final results = LevelRun.compute(startElevation, [
+      for (final m in measurements)
+        LevelRunInput(bs: m.bs, fs: m.fs, manualTp: m.manualTp),
+    ]);
+    for (var i = 0; i < measurements.length; i++) {
+      measurements[i] = measurements[i].copyWith(
+        ih: results[i].ih,
+        gh: results[i].gh,
+      );
+    }
+  }
+
   static _ParsedMeasurement _parseMeasurementRow(
     List<dynamic> row, {
     required Map<ExportColumn, int> columns,
@@ -476,9 +641,19 @@ class CsvImporter {
     required int orderIndex,
     required int fieldBookId,
     required AppLocalizations l10n,
+    bool spreadsheet = false,
   }) {
+    // Spreadsheets: calculated columns are never read (recomputed later).
     _ParsedDouble number(ExportColumn column, String label) =>
-        _parseDouble(_cell(row, columns[column]), rowNumber, label, l10n);
+        spreadsheet && (column == ExportColumn.hi || column == ExportColumn.rl)
+        ? const _ParsedDouble.value(null)
+        : _parseDouble(
+            _cell(row, columns[column]),
+            rowNumber,
+            label,
+            l10n,
+            spreadsheet: spreadsheet,
+          );
 
     final bs = number(ExportColumn.bs, l10n.exportColumnBs);
     if (bs.error != null) return _ParsedMeasurement.error(bs.error!);
@@ -525,10 +700,11 @@ class CsvImporter {
     String value,
     int rowNumber,
     String label,
-    AppLocalizations l10n,
-  ) {
+    AppLocalizations l10n, {
+    bool spreadsheet = false,
+  }) {
     if (value.isEmpty) return const _ParsedDouble.value(null);
-    final parsed = double.tryParse(value);
+    final parsed = _parseNumber(value, spreadsheet: spreadsheet);
     if (parsed == null) {
       return _ParsedDouble.error(
         l10n.exportImportInvalidNumber(rowNumber, label),

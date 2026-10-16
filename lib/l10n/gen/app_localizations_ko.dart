@@ -565,6 +565,14 @@ class AppLocalizationsKo extends AppLocalizations {
       'UTF-8 CSV만 지원합니다. 글자가 깨진 문자가 있어 가져올 수 없습니다. Excel에서 \"CSV UTF-8(쉼표로 분리)\" 형식으로 다시 저장해 주세요.';
 
   @override
+  String get exportImportXlsxLegacy =>
+      '이전 .xls 형식이나 암호가 설정된 통합 문서는 읽을 수 없습니다. Excel에서 암호 없이 .xlsx(Excel 통합 문서)로 저장해 주세요.';
+
+  @override
+  String get exportImportXlsxUnreadable =>
+      'Excel 파일을 읽을 수 없습니다. 파일이 손상되었을 수 있습니다. Excel에서 열어 .xlsx로 다시 저장해 주세요.';
+
+  @override
   String get exportJudgementToleranceUnavailable => '허용오차 계산 불가 — 노선 연장을 입력하세요';
 
   @override
@@ -715,7 +723,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get fieldbookChooseBackupFile => '백업 파일 선택 (.json)';
 
   @override
-  String get fieldbookChooseCsvFile => 'CSV 파일 선택 (.csv)';
+  String get fieldbookChooseCsvFile => '파일 선택 (.csv, .xlsx)';
 
   @override
   String get fieldbookClosingApply => '적용';
@@ -810,15 +818,15 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String fieldbookCsvImportError(String error) {
-    return 'CSV 가져오기 실패: $error';
+    return '가져오기 실패: $error';
   }
 
   @override
-  String get fieldbookCsvImported => 'CSV를 가져왔습니다';
+  String get fieldbookCsvImported => '야장을 가져왔습니다';
 
   @override
   String fieldbookCsvImportedWithWarnings(String warnings) {
-    return 'CSV를 가져왔습니다. $warnings';
+    return '야장을 가져왔습니다. $warnings';
   }
 
   @override
@@ -866,7 +874,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get fieldbookEmptyMessage =>
-      '+ 버튼으로 새 야장을 만들거나\nCSV 가져오기로 기존 기록을 불러올 수 있습니다.';
+      '+ 버튼으로 새 야장을 만들거나\nCSV·Excel 가져오기로 기존 기록을 불러올 수 있습니다.';
 
   @override
   String get fieldbookEmptyTitle => '첫 야장을 만들어 보세요';
@@ -890,7 +898,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get fieldbookImportButton => '가져오기';
 
   @override
-  String get fieldbookImportCsv => 'CSV 가져오기';
+  String get fieldbookImportCsv => 'CSV / Excel 가져오기';
 
   @override
   String get fieldbookInstrumentLabel => '장비';

@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -21,6 +23,7 @@ import '../../backup/project_backup_providers.dart';
 import '../../backup/project_backup_service.dart';
 import '../../export/bulk_export_screen.dart';
 import '../../import/csv_importer.dart';
+import '../../import/xlsx_importer.dart';
 import '../../project/data/project_providers.dart';
 import 'fieldbook_edit_screen.dart';
 import 'reduction_method_selector.dart';
@@ -584,6 +587,8 @@ class FieldBookListScreen extends ConsumerWidget {
   void _showCsvImportDialog(BuildContext context, WidgetRef ref) {
     final csvController = TextEditingController();
     var importing = false;
+    // A picked .xlsx (by content: zip 'PK'); null imports the CSV text.
+    ({String name, Uint8List bytes})? workbook;
     final l10n = context.l10n;
     showDialog<void>(
       context: context,
@@ -601,10 +606,30 @@ class FieldBookListScreen extends ConsumerWidget {
                       ? null
                       : () async {
                           try {
-                            final content = await TextFilePicker.pick(
-                              extensions: const ['csv'],
+                            // .xls is offered only to explain that it must be
+                            // saved as .xlsx.
+                            final file = await TextFilePicker.pickBytes(
+                              extensions: const ['csv', 'xlsx', 'xls'],
                             );
-                            if (content != null) csvController.text = content;
+                            if (file == null) return;
+                            if (XlsxImporter.isXlsx(file.bytes)) {
+                              csvController.clear();
+                              setDialogState(() => workbook = file);
+                            } else if (XlsxImporter.isLegacyOrEncrypted(
+                              file.bytes,
+                            )) {
+                              if (context.mounted) {
+                                AppSnackbar.error(
+                                  context,
+                                  l10n.exportImportXlsxLegacy,
+                                );
+                              }
+                            } else {
+                              csvController.text = TextFilePicker.decodeUtf8(
+                                file.bytes,
+                              );
+                              setDialogState(() => workbook = null);
+                            }
                           } on TextFileEncodingException catch (error) {
                             if (context.mounted) {
                               AppSnackbar.error(
@@ -618,14 +643,22 @@ class FieldBookListScreen extends ConsumerWidget {
                   label: Text(l10n.fieldbookChooseCsvFile),
                 ),
                 const SizedBox(height: 10),
-                TextField(
-                  controller: csvController,
-                  maxLines: 10,
-                  decoration: InputDecoration(
-                    hintText: l10n.fieldbookCsvPasteHint,
-                    border: const OutlineInputBorder(),
+                if (workbook case final file?)
+                  _PickedWorkbookTile(
+                    name: file.name,
+                    onClear: importing
+                        ? null
+                        : () => setDialogState(() => workbook = null),
+                  )
+                else
+                  TextField(
+                    controller: csvController,
+                    maxLines: 10,
+                    decoration: InputDecoration(
+                      hintText: l10n.fieldbookCsvPasteHint,
+                      border: const OutlineInputBorder(),
+                    ),
                   ),
-                ),
               ],
             ),
           ),
@@ -638,13 +671,22 @@ class FieldBookListScreen extends ConsumerWidget {
               onPressed: importing
                   ? null
                   : () async {
-                      final result = CsvImporter.parse(
-                        csvController.text,
-                        projectId: projectId,
-                        fallbackDate: DateTime.now(),
-                        l10n: l10n,
-                        appUnit: ref.read(lengthUnitProvider),
-                      );
+                      final file = workbook;
+                      final result = file != null
+                          ? XlsxImporter.parse(
+                              file.bytes,
+                              projectId: projectId,
+                              fallbackDate: DateTime.now(),
+                              l10n: l10n,
+                              appUnit: ref.read(lengthUnitProvider),
+                            )
+                          : CsvImporter.parse(
+                              csvController.text,
+                              projectId: projectId,
+                              fallbackDate: DateTime.now(),
+                              l10n: l10n,
+                              appUnit: ref.read(lengthUnitProvider),
+                            );
                       if (result.fieldBook == null) {
                         AppSnackbar.error(context, result.errors.join('\n'));
                         return;
@@ -694,6 +736,45 @@ class FieldBookListScreen extends ConsumerWidget {
   String? _blankToNull(String value) {
     final trimmed = value.trim();
     return trimmed.isEmpty ? null : trimmed;
+  }
+}
+
+/// The picked Excel file in the import dialog (instead of the CSV text box).
+class _PickedWorkbookTile extends StatelessWidget {
+  final String name;
+  final VoidCallback? onClear;
+
+  const _PickedWorkbookTile({required this.name, required this.onClear});
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.appColors;
+    return Container(
+      padding: const EdgeInsets.only(left: 12),
+      decoration: BoxDecoration(
+        border: Border.all(color: colors.line),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.table_chart_outlined, size: 20, color: colors.subtext),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              name,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: colors.ink),
+            ),
+          ),
+          IconButton(
+            onPressed: onClear,
+            tooltip: MaterialLocalizations.of(context).deleteButtonTooltip,
+            icon: const Icon(Icons.close, size: 20),
+          ),
+        ],
+      ),
+    );
   }
 }
 
