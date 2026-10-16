@@ -184,6 +184,10 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
   late bool _showDesignLevel;
   final int _initialRowCount = 20;
   final ScrollController _scrollController = ScrollController();
+
+  /// "Row deleted · Undo" snack bar; closed on dispose so Undo never
+  /// outlives the editor.
+  ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? _undoSnackBar;
   final TextEditingController _reviewMemoController = TextEditingController();
 
   // Focus nodes for cell navigation
@@ -293,6 +297,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _undoSnackBar?.close();
     _flushPendingEdits();
     _autosaveTimer?.cancel();
     _scrollController.dispose();
@@ -537,14 +542,8 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
             ),
             FilledButton(
               onPressed: () {
-                // Remove controllers and focus nodes for this row
-                _disposeRowCells(index);
-                setState(() => _rows.removeAt(index));
-                // Rebuild controller/focus node keys
-                _rebuildControllerKeys();
-                _recalculate();
-                _scheduleAutosave();
                 Navigator.pop(ctx);
+                _removeRow(index);
               },
               style: FilledButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.error,
@@ -555,12 +554,55 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
         ),
       );
     } else {
-      _disposeRowCells(index);
-      setState(() => _rows.removeAt(index));
-      _rebuildControllerKeys();
-      _recalculate();
-      _scheduleAutosave();
+      _removeRow(index);
     }
+  }
+
+  /// Removes the row and, when it had content, offers Undo in a snack bar.
+  /// The deletion is autosaved like any edit, so undo re-inserts the same
+  /// row object (texts, manual TP, design level) at the same position and
+  /// saves again through the serialized save queue.
+  void _removeRow(int index) {
+    final removed = _rows[index];
+    // Remove controllers and focus nodes for this row
+    _disposeRowCells(index);
+    setState(() => _rows.removeAt(index));
+    // Rebuild controller/focus node keys
+    _rebuildControllerKeys();
+    _recalculate();
+    _scheduleAutosave();
+    if (removed.hasContent) _offerUndoDelete(index, removed);
+  }
+
+  void _offerUndoDelete(int index, _RowData row) {
+    final l10n = context.l10n;
+    final messenger = ScaffoldMessenger.of(context)..hideCurrentSnackBar();
+    final controller = messenger.showSnackBar(
+      SnackBar(
+        key: const ValueKey('row-deleted-snackbar'),
+        content: Text(l10n.fieldbookRowDeletedMessage),
+        duration: const Duration(seconds: 6),
+        action: SnackBarAction(
+          label: l10n.fieldbookUndoAction,
+          onPressed: () => _undoDelete(index, row),
+        ),
+      ),
+    );
+    _undoSnackBar = controller;
+    controller.closed.then((_) {
+      if (identical(_undoSnackBar, controller)) _undoSnackBar = null;
+    });
+  }
+
+  void _undoDelete(int index, _RowData row) {
+    if (!mounted) return;
+    setState(() => _rows.insert(index.clamp(0, _rows.length), row));
+    _rebuildControllerKeys();
+    _recalculate();
+    _scheduleAutosave();
+    // Persist now rather than after the debounce: the deletion is already
+    // saved, and the user may leave right after undoing.
+    _saveToDb(silent: true).catchError((Object _) {});
   }
 
   void _disposeRowCells(int index) {

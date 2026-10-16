@@ -159,5 +159,7 @@
   "fieldbookColumnCutFill": "Corte(+)/Rell.(−)",
   "fieldbookCutLetter": "C",
   "fieldbookFillLetter": "R",
-  "fieldbookColumnTarget": "Lect. obj."
+  "fieldbookColumnTarget": "Lect. obj.",
+  "fieldbookRowDeletedMessage": "Fila eliminada",
+  "fieldbookUndoAction": "Deshacer"
 }

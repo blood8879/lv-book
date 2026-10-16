@@ -247,5 +247,9 @@
   "fieldbookFillLetter": "F",
   "@fieldbookFillLetter": {"description": "One-letter prefix of a fill value in the editor ('F 0.040'): ground below design."},
   "fieldbookColumnTarget": "Target",
-  "@fieldbookColumnTarget": {"description": "Editor table header of the read-only stakeout target staff reading (HI in effect − design level); must fit ~70 px."}
+  "@fieldbookColumnTarget": {"description": "Editor table header of the read-only stakeout target staff reading (HI in effect − design level); must fit ~70 px."},
+  "fieldbookRowDeletedMessage": "Row deleted",
+  "@fieldbookRowDeletedMessage": {"description": "Snack bar after deleting a level book row; offers Undo."},
+  "fieldbookUndoAction": "Undo",
+  "@fieldbookUndoAction": {"description": "Snack bar action that restores the deleted row."}
 }

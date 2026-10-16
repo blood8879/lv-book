@@ -48,6 +48,29 @@ class MeasurementRowActions {
     return _reindex(next);
   }
 
+  /// Removes the row at [index]; returns the remaining rows (re-indexed)
+  /// and the removed row, which [restore] puts back for undo.
+  static (List<Measurement>, Measurement) delete(
+    List<Measurement> rows, {
+    required int index,
+  }) {
+    final next = List<Measurement>.from(rows);
+    final removed = next.removeAt(index);
+    return (_reindex(next), removed);
+  }
+
+  /// Undo of [delete]: re-inserts [row] at [index] (clamped to the end) with
+  /// its values, manual TP flag and design level unchanged.
+  static List<Measurement> restore(
+    List<Measurement> rows, {
+    required int index,
+    required Measurement row,
+  }) {
+    final next = List<Measurement>.from(rows)
+      ..insert(index.clamp(0, rows.length), row);
+    return _reindex(next);
+  }
+
   static List<Measurement> _reindex(List<Measurement> rows) {
     return [
       for (var i = 0; i < rows.length; i++) rows[i].copyWith(orderIndex: i),

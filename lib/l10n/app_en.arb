@@ -1031,6 +1031,10 @@
     }
   },
   "fieldbookRowActionsTooltip": "Row actions",
+  "fieldbookRowDeletedMessage": "Row deleted",
+  "@fieldbookRowDeletedMessage": {
+    "description": "Snack bar after deleting a level book row; offers Undo."
+  },
   "fieldbookRowDuplicate": "Duplicate row",
   "fieldbookRowInsertBelow": "Insert row below",
   "fieldbookRowSetManualTp": "Set manual TP",
@@ -1147,6 +1151,10 @@
   "fieldbookTitleHint": "Level book title",
   "fieldbookTitleLabel": "Level book title *",
   "fieldbookToleranceCheckTitle": "Tolerance check required",
+  "fieldbookUndoAction": "Undo",
+  "@fieldbookUndoAction": {
+    "description": "Snack bar action that restores the deleted row."
+  },
   "fieldbookWeatherLabel": "Weather",
   "fieldbookWorkSectionLabel": "Section",
   "pegTestAdjustInstruction": "Adjust the reticle until the B staff reads {reading} {unit}.",

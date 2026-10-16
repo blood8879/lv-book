@@ -159,5 +159,7 @@
   "fieldbookColumnCutFill": "절토(+)/성토(−)",
   "fieldbookCutLetter": "절",
   "fieldbookFillLetter": "성",
-  "fieldbookColumnTarget": "목표 시"
+  "fieldbookColumnTarget": "목표 시",
+  "fieldbookRowDeletedMessage": "행을 삭제했습니다",
+  "fieldbookUndoAction": "실행 취소"
 }

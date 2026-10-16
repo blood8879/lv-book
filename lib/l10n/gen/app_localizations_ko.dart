@@ -979,6 +979,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get fieldbookRowActionsTooltip => '행 작업';
 
   @override
+  String get fieldbookRowDeletedMessage => '행을 삭제했습니다';
+
+  @override
   String get fieldbookRowDuplicate => '행 복제';
 
   @override
@@ -1122,6 +1125,9 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get fieldbookToleranceCheckTitle => '허용오차 확인 필요';
+
+  @override
+  String get fieldbookUndoAction => '실행 취소';
 
   @override
   String get fieldbookWeatherLabel => '날씨';

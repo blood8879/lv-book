@@ -1840,6 +1840,12 @@ abstract class AppLocalizations {
   /// **'Row actions'**
   String get fieldbookRowActionsTooltip;
 
+  /// Snack bar after deleting a level book row; offers Undo.
+  ///
+  /// In en, this message translates to:
+  /// **'Row deleted'**
+  String get fieldbookRowDeletedMessage;
+
   /// No description provided for @fieldbookRowDuplicate.
   ///
   /// In en, this message translates to:
@@ -2097,6 +2103,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tolerance check required'**
   String get fieldbookToleranceCheckTitle;
+
+  /// Snack bar action that restores the deleted row.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get fieldbookUndoAction;
 
   /// No description provided for @fieldbookWeatherLabel.
   ///

@@ -1035,6 +1035,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get fieldbookRowActionsTooltip => 'Acciones de fila';
 
   @override
+  String get fieldbookRowDeletedMessage => 'Fila eliminada';
+
+  @override
   String get fieldbookRowDuplicate => 'Duplicar fila';
 
   @override
@@ -1178,6 +1181,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get fieldbookToleranceCheckTitle => 'Revise la tolerancia';
+
+  @override
+  String get fieldbookUndoAction => 'Deshacer';
 
   @override
   String get fieldbookWeatherLabel => 'Clima';
