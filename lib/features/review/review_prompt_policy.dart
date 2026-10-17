@@ -10,17 +10,16 @@ abstract class ReviewPromptStore {
 ///
 /// Play policy: never incentivise or pre-gate a rating, so the app only asks
 /// right after a value moment (a completed export share) and lets the native
-/// dialog do the rest. Pure Dart so it can be unit-tested with a fake clock.
+/// dialog do the rest. The platform enforces its own quota on top of this, so
+/// there is no lifetime cap here. Pure Dart so it can be unit-tested with a
+/// fake clock.
 class ReviewPromptPolicy {
-  static const firstLaunchAtKey = 'review_first_launch_at';
   static const exportCountKey = 'review_export_count';
   static const lastRequestedAtKey = 'review_last_requested_at';
   static const requestCountKey = 'review_request_count';
 
-  static const minExports = 3;
-  static const minInstallAge = Duration(days: 3);
-  static const requestCooldown = Duration(days: 120);
-  static const maxRequests = 3;
+  static const minExports = 2;
+  static const requestCooldown = Duration(days: 30);
 
   final ReviewPromptStore store;
   final DateTime Function() clock;
@@ -28,38 +27,25 @@ class ReviewPromptPolicy {
   ReviewPromptPolicy({required this.store, DateTime Function()? clock})
     : clock = clock ?? DateTime.now;
 
-  /// Stores the first-launch time once; later calls keep the original value.
-  Future<DateTime> ensureFirstLaunchRecorded() async {
-    final stored = DateTime.tryParse(await store.read(firstLaunchAtKey) ?? '');
-    if (stored != null) return stored;
-    final now = clock();
-    await store.write(firstLaunchAtKey, now.toIso8601String());
-    return now;
-  }
-
   Future<void> recordSuccessfulExport() async {
     final count = await _readInt(exportCountKey);
     await store.write(exportCountKey, '${count + 1}');
   }
 
   Future<bool> isEligible() async {
-    final now = clock();
     if (await _readInt(exportCountKey) < minExports) return false;
-    if (await _readInt(requestCountKey) >= maxRequests) return false;
-
-    final firstLaunch = await ensureFirstLaunchRecorded();
-    if (now.difference(firstLaunch) < minInstallAge) return false;
 
     final lastRequested = DateTime.tryParse(
       await store.read(lastRequestedAtKey) ?? '',
     );
     if (lastRequested != null &&
-        now.difference(lastRequested) < requestCooldown) {
+        clock().difference(lastRequested) < requestCooldown) {
       return false;
     }
     return true;
   }
 
+  /// Starts the cooldown. The request count is informational only.
   Future<void> recordRequested() async {
     final count = await _readInt(requestCountKey);
     await store.write(requestCountKey, '${count + 1}');
@@ -78,29 +64,76 @@ abstract class AppReviewClient {
 }
 
 /// Glue between export flows, [ReviewPromptPolicy] and [AppReviewClient].
+///
+/// None of the methods throw: a review prompt must never break an export.
 class ReviewPromptCoordinator {
   final ReviewPromptPolicy policy;
   final AppReviewClient client;
 
   ReviewPromptCoordinator({required this.policy, required this.client});
 
-  /// Call after an export share completed successfully.
+  /// Call after an export share completed successfully (not dismissed).
   ///
-  /// Always counts the export. When an interstitial ad was shown for this
-  /// share the review request is skipped (and not counted as a request), so
-  /// the two never stack. Never throws; returns whether a review was requested.
-  Future<bool> onExportShared({required bool interstitialShown}) async {
+  /// Counts the export and returns whether a review should be requested now
+  /// (policy eligible and the platform API available).
+  Future<bool> onExportSucceeded() async {
     try {
       await policy.recordSuccessfulExport();
-      if (interstitialShown) return false;
       if (!await policy.isEligible()) return false;
-      if (!await client.isAvailable()) return false;
-      await client.requestReview();
-      await policy.recordRequested();
-      return true;
+      return await client.isAvailable();
     } catch (_) {
-      // A review prompt must never break the export flow.
       return false;
     }
+  }
+
+  /// Asks the platform for the review dialog, then starts the cooldown.
+  ///
+  /// The cooldown is recorded once the request was attempted, even if the
+  /// plugin threw, so a broken review API cannot keep suppressing ads on every
+  /// export. Returns whether the request call completed without error.
+  Future<bool> requestReview() async {
+    var ok = false;
+    try {
+      await client.requestReview();
+      ok = true;
+    } catch (_) {
+      // Swallowed: see class doc.
+    }
+    try {
+      await policy.recordRequested();
+    } catch (_) {}
+    return ok;
+  }
+
+  /// Share-completion flow for screens that may show an interstitial.
+  ///
+  /// - Dismissed share sheet: not a value moment; no export is counted and no
+  ///   review is requested, but [showInterstitial] still runs as before.
+  /// - Successful share: review first. If a review will be requested, the
+  ///   interstitial is skipped this time so the two never stack; otherwise
+  ///   [showInterstitial] runs.
+  ///
+  /// Returns whether a review was requested.
+  Future<bool> handleShareResult({
+    required bool dismissed,
+    required Future<void> Function() showInterstitial,
+  }) async {
+    if (dismissed) {
+      await showInterstitial();
+      return false;
+    }
+    if (await onExportSucceeded()) {
+      await requestReview();
+      return true;
+    }
+    await showInterstitial();
+    return false;
+  }
+
+  /// Share-completion flow for screens without an interstitial (Pro bulk).
+  Future<bool> onExportSharedWithoutAd() async {
+    if (!await onExportSucceeded()) return false;
+    await requestReview();
+    return true;
   }
 }

@@ -105,33 +105,34 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
     }
   }
 
-  /// Returns true when an interstitial was actually shown.
-  Future<bool> _showInterstitialAd() async {
+  Future<void> _showInterstitialAd() async {
     final ad = _interstitialAd;
-    if (ad == null) return false;
+    if (ad == null) return;
 
     final settings = ref.read(adSettingsRepositoryProvider);
     if (!await settings.canShowInterstitial()) {
       await ad.dispose();
       _interstitialAd = null;
-      return false;
+      return;
     }
 
     await settings.recordInterstitialShown();
     await ad.show();
     _interstitialAd = null;
-    return true;
   }
 
-  /// Existing interstitial logic, then maybe an in-app review request.
-  /// A dismissed share sheet is not a value moment, so it neither counts as an
-  /// export nor triggers a review request.
+  /// Review first, then the interstitial (see
+  /// [ReviewPromptCoordinator.handleShareResult]). When a review is requested
+  /// the interstitial is skipped for this share and stays loaded for the next.
+  /// A dismissed share sheet neither counts as an export nor triggers a review,
+  /// but the interstitial behaves as before.
   Future<void> _afterShare(ShareResult result) async {
     // Read before awaiting: the screen may be closed while the ad is shown.
     final coordinator = ref.read(reviewPromptCoordinatorProvider);
-    final interstitialShown = await _showInterstitialAd();
-    if (result.status == ShareResultStatus.dismissed) return;
-    await coordinator.onExportShared(interstitialShown: interstitialShown);
+    await coordinator.handleShareResult(
+      dismissed: result.status == ShareResultStatus.dismissed,
+      showInterstitial: _showInterstitialAd,
+    );
   }
 
   @override

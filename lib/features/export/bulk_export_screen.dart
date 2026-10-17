@@ -296,7 +296,7 @@ class _BulkExportScreenState extends ConsumerState<BulkExportScreen> {
         if (mounted) {
           await ref
               .read(reviewPromptCoordinatorProvider)
-              .onExportShared(interstitialShown: false);
+              .onExportSharedWithoutAd();
         }
       }
     } catch (error) {

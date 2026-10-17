@@ -36,11 +36,11 @@ void main() {
   late _FakeClient client;
   late ReviewPromptCoordinator coordinator;
 
-  final installedAt = DateTime(2026, 1, 1, 9);
+  final start = DateTime(2026, 1, 1, 9);
 
   setUp(() {
     store = _MemoryStore();
-    now = installedAt;
+    now = start;
     policy = ReviewPromptPolicy(store: store, clock: () => now);
     client = _FakeClient();
     coordinator = ReviewPromptCoordinator(policy: policy, client: client);
@@ -53,113 +53,162 @@ void main() {
   }
 
   group('ReviewPromptPolicy', () {
-    test('first launch is recorded once and never overwritten', () async {
-      await policy.ensureFirstLaunchRecorded();
-      now = installedAt.add(const Duration(days: 10));
-      expect(await policy.ensureFirstLaunchRecorded(), installedAt);
-    });
-
-    test('needs at least 3 exports', () async {
-      await policy.ensureFirstLaunchRecorded();
-      now = installedAt.add(const Duration(days: 5));
-      await exports(2);
+    test('1 export is not eligible, 2 exports are', () async {
+      await exports(1);
       expect(await policy.isEligible(), isFalse);
       await exports(1);
       expect(await policy.isEligible(), isTrue);
     });
 
-    test('needs the app installed for at least 3 days', () async {
-      await policy.ensureFirstLaunchRecorded();
-      await exports(5);
-      now = installedAt.add(const Duration(days: 2, hours: 23));
-      expect(await policy.isEligible(), isFalse);
-      now = installedAt.add(const Duration(days: 3));
+    test('no install-age requirement (eligible on day one)', () async {
+      await exports(2);
       expect(await policy.isEligible(), isTrue);
     });
 
-    test('missing first-launch date starts the clock now', () async {
-      await exports(3);
+    test('30-day cooldown after a request', () async {
+      await exports(2);
+      await policy.recordRequested();
+      now = start.add(const Duration(days: 29, hours: 23));
       expect(await policy.isEligible(), isFalse);
-      expect(store.values[ReviewPromptPolicy.firstLaunchAtKey], isNotNull);
+      now = start.add(const Duration(days: 30));
+      expect(await policy.isEligible(), isTrue);
     });
 
-    test('120-day cooldown and at most 3 requests ever', () async {
-      await policy.ensureFirstLaunchRecorded();
-      await exports(3);
-      now = installedAt.add(const Duration(days: 3));
-
+    test('no lifetime cap on requests', () async {
+      await exports(2);
       for (var i = 0; i < 3; i++) {
         expect(await policy.isEligible(), isTrue, reason: 'request #$i');
         await policy.recordRequested();
-        now = now.add(const Duration(days: 119));
-        expect(await policy.isEligible(), isFalse);
-        now = now.add(const Duration(days: 1));
+        now = now.add(const Duration(days: 30));
       }
-      now = now.add(const Duration(days: 1000));
+      now = now.add(const Duration(days: 90));
+      expect(await policy.isEligible(), isTrue, reason: '4th request');
+      expect(store.values[ReviewPromptPolicy.requestCountKey], '3');
+    });
+
+    test('legacy stored values do not block eligibility', () async {
+      // Written by the old policy (install age + max 3 requests).
+      store.values['review_first_launch_at'] = now.toIso8601String();
+      store.values[ReviewPromptPolicy.requestCountKey] = '3';
+      store.values[ReviewPromptPolicy.lastRequestedAtKey] = start
+          .subtract(const Duration(days: 31))
+          .toIso8601String();
+      await exports(2);
+      expect(await policy.isEligible(), isTrue);
+    });
+
+    test('unparseable stored values are treated as missing', () async {
+      store.values[ReviewPromptPolicy.exportCountKey] = 'garbage';
+      store.values[ReviewPromptPolicy.lastRequestedAtKey] = 'garbage';
       expect(await policy.isEligible(), isFalse);
+      await exports(2);
+      expect(await policy.isEligible(), isTrue);
     });
   });
 
   group('ReviewPromptCoordinator', () {
-    Future<void> makeEligibleAfterNextExport() async {
-      await policy.ensureFirstLaunchRecorded();
-      await exports(2);
-      now = installedAt.add(const Duration(days: 4));
-    }
+    test('onExportSucceeded counts and reports eligibility', () async {
+      expect(await coordinator.onExportSucceeded(), isFalse);
+      expect(await coordinator.onExportSucceeded(), isTrue);
+      expect(store.values[ReviewPromptPolicy.exportCountKey], '2');
+      expect(client.requests, 0, reason: 'only reports, never requests');
+    });
 
-    test('requests a review after the qualifying export', () async {
-      await makeEligibleAfterNextExport();
-      expect(
-        await coordinator.onExportShared(interstitialShown: false),
-        isTrue,
+    test('onExportSucceeded is false when the API is unavailable', () async {
+      client.available = false;
+      await exports(1);
+      expect(await coordinator.onExportSucceeded(), isFalse);
+    });
+
+    test('onExportSucceeded swallows store errors', () async {
+      final throwing = ReviewPromptCoordinator(
+        policy: ReviewPromptPolicy(store: _ThrowingStore()),
+        client: client,
       );
+      expect(await throwing.onExportSucceeded(), isFalse);
+    });
+
+    test('requestReview records the cooldown after the request', () async {
+      expect(await coordinator.requestReview(), isTrue);
       expect(client.requests, 1);
-      expect(store.values[ReviewPromptPolicy.requestCountKey], '1');
-      // Cooldown blocks the next one.
       expect(
-        await coordinator.onExportShared(interstitialShown: false),
-        isFalse,
+        store.values[ReviewPromptPolicy.lastRequestedAtKey],
+        start.toIso8601String(),
       );
-      expect(client.requests, 1);
     });
 
     test(
-      'skips (without counting a request) when an interstitial showed',
+      'requestReview returns false without throwing when the client throws',
       () async {
-        await makeEligibleAfterNextExport();
-        expect(
-          await coordinator.onExportShared(interstitialShown: true),
-          isFalse,
-        );
-        expect(client.requests, 0);
-        expect(store.values[ReviewPromptPolicy.exportCountKey], '3');
-        expect(store.values[ReviewPromptPolicy.requestCountKey], isNull);
-        // Next ad-free share asks.
-        expect(
-          await coordinator.onExportShared(interstitialShown: false),
-          isTrue,
-        );
+        client.throwOnRequest = true;
+        expect(await coordinator.requestReview(), isFalse);
+        // Attempted, so the cooldown still starts (no ad suppression loop).
+        expect(store.values[ReviewPromptPolicy.lastRequestedAtKey], isNotNull);
       },
     );
 
-    test('does nothing when the review API is unavailable', () async {
-      await makeEligibleAfterNextExport();
-      client.available = false;
-      expect(
-        await coordinator.onExportShared(interstitialShown: false),
-        isFalse,
-      );
-      expect(store.values[ReviewPromptPolicy.requestCountKey], isNull);
+    group('handleShareResult', () {
+      late int adsShown;
+      Future<void> showAd() async => adsShown++;
+
+      setUp(() => adsShown = 0);
+
+      Future<bool> share({bool dismissed = false}) => coordinator
+          .handleShareResult(dismissed: dismissed, showInterstitial: showAd);
+
+      test('not eligible: interstitial shows, no review', () async {
+        expect(await share(), isFalse);
+        expect(adsShown, 1);
+        expect(client.requests, 0);
+        expect(store.values[ReviewPromptPolicy.exportCountKey], '1');
+      });
+
+      test('eligible: review is requested and the ad is skipped', () async {
+        await share();
+        expect(await share(), isTrue);
+        expect(client.requests, 1);
+        expect(adsShown, 1, reason: 'only the first share showed an ad');
+        // Cooldown: the next share shows the ad again.
+        expect(await share(), isFalse);
+        expect(adsShown, 2);
+        expect(client.requests, 1);
+      });
+
+      test('dismissed share: ad as before, no count, no review', () async {
+        await exports(5);
+        expect(await share(dismissed: true), isFalse);
+        expect(adsShown, 1);
+        expect(client.requests, 0);
+        expect(store.values[ReviewPromptPolicy.exportCountKey], '5');
+      });
+
+      test('client throwing: does not throw into the export flow', () async {
+        client.throwOnRequest = true;
+        await exports(1);
+        expect(await share(), isTrue);
+        expect(adsShown, 0);
+      });
+
+      test('API unavailable: falls back to the interstitial', () async {
+        client.available = false;
+        await exports(1);
+        expect(await share(), isFalse);
+        expect(adsShown, 1);
+      });
     });
 
-    test('swallows plugin errors', () async {
-      await makeEligibleAfterNextExport();
-      client.throwOnRequest = true;
-      expect(
-        await coordinator.onExportShared(interstitialShown: false),
-        isFalse,
-      );
-      expect(store.values[ReviewPromptPolicy.requestCountKey], isNull);
+    test('onExportSharedWithoutAd requests once eligible', () async {
+      expect(await coordinator.onExportSharedWithoutAd(), isFalse);
+      expect(await coordinator.onExportSharedWithoutAd(), isTrue);
+      expect(client.requests, 1);
     });
   });
+}
+
+class _ThrowingStore implements ReviewPromptStore {
+  @override
+  Future<String?> read(String key) => throw Exception('db closed');
+
+  @override
+  Future<void> write(String key, String value) => throw Exception('db closed');
 }
