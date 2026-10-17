@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Google Play graphics for the KOREAN listing (레벨 야장)
+# Google Play graphics for the KOREAN listing (레벨야장)
 # Source screenshots: en/raw/*.png captured from the real app (English locale)
 # via integration_test/store_screenshots_test.dart on an iPhone simulator.
 # 요구: ImageMagick 7 (magick), Pretendard 폰트
@@ -42,7 +42,7 @@ trap 'rm -rf "$TMP"' EXIT
 # 좌측 텍스트 + 우측 미니 표 장식을 한 번에 그린다.
 # 우측 장식: 측량 표 열을 암시하는 라운드 사각형(패널 + 컬러 헤더 열 4개 + 로우 구분선)
 magick -size 1024x500 "xc:$DARK" \
-  -font "$BOLD"  -pointsize 82 -fill white        -gravity NorthWest -annotate +64+150 '레벨 야장' \
+  -font "$BOLD"  -pointsize 82 -fill white        -gravity NorthWest -annotate +64+150 '레벨야장' \
   -font "$SEMI"  -pointsize 27 -fill "$TAGLINE"    -gravity NorthWest -annotate +66+258 '직접수준측량 야장, 계산부터 제출까지' \
   -fill "#181818" -stroke none -draw 'roundrectangle 690,120 968,392 18,18' \
   -fill "$GREEN"  -draw 'roundrectangle 712,146 772,240 8,8' \
@@ -123,11 +123,11 @@ render_shot () {
   magick identify "$out"
 }
 
-render_shot 01 'editor.png'        '측량 입력, 계산은 자동'      'BS·FS만 입력하면 IH·GH 즉시 계산'      0
-render_shot 02 'home.png'          '현장별 야장·BM을 한곳에'     '프로젝트로 정리되는 현장 기록'          0
-render_shot 03 'levelbooks.png'    '찾고, 복제하고, 내보내고'    '검색과 일괄 내보내기 지원'              0
-render_shot 04 'benchmarks.png'    '기준점 상태까지 관리'        '사용 가능·훼손 의심·사용 중지 표시'      0
-render_shot 05 'export.png'        '검산 판정이 담긴 제출용 PDF'  '폐합오차와 허용오차까지 한 장에'         0
+render_shot 01 'editor.png'        'BS·FS만 넣으면 기고식 자동 계산' 'IH·GH 즉시 계산, 검산과 폐합오차까지'   0
+render_shot 02 'export.png'        '바로 제출하는 PDF 야장'      '서명란·검산표·허용오차 판정까지 한 장에'  0
+render_shot 03 'home.png'          '현장별 야장·BM을 한곳에'     '프로젝트로 정리되는 현장 기록'          0
+render_shot 04 'levelbooks.png'    '찾고, 복제하고, 내보내고'    '검색과 일괄 내보내기 지원'              0
+render_shot 05 'benchmarks.png'    '기준점 상태까지 관리'        '사용 가능·훼손 의심·사용 중지 표시'      0
 render_shot 06 'pdfsettings.png'   '회사명·서명·워터마크'        '우리 회사 양식으로 제출'                0
 render_shot 07 'editor_dark.png'   '다크 모드 지원'             '야간·실내 작업도 편안하게'              1
 
