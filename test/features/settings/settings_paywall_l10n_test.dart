@@ -51,7 +51,7 @@ void main() {
 
       expect(find.text('설정'), findsOneWidget);
       expect(find.text(r'$4.99 · 일회성 구매'), findsOneWidget);
-      expect(find.text('레벨 야장 Pro 구매'), findsOneWidget);
+      expect(find.text('레벨야장 Pro 구매'), findsOneWidget);
     } finally {
       debugDefaultTargetPlatformOverride = null;
     }

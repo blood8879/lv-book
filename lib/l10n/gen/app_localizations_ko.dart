@@ -177,7 +177,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get benchmarkProLocationTitle => 'Pro 위치 기록';
 
   @override
-  String get benchmarkProRequired => '레벨 야장 Pro 구매 후 사용할 수 있습니다.';
+  String get benchmarkProRequired => '레벨야장 Pro 구매 후 사용할 수 있습니다.';
 
   @override
   String get benchmarkProtectionLabel => '보호/확인 메모';
@@ -231,10 +231,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get coreAdd => '추가';
 
   @override
-  String get coreAppName => '레벨 야장';
+  String get coreAppName => '레벨야장';
 
   @override
-  String get coreAppProName => '레벨 야장 Pro';
+  String get coreAppProName => '레벨야장 Pro';
 
   @override
   String get coreCancel => '취소';
@@ -322,7 +322,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get exportBulkProOnlyTitle => 'Pro 전용 기능';
 
   @override
-  String get exportBulkProRequired => '레벨 야장 Pro 구매 후 사용할 수 있습니다.';
+  String get exportBulkProRequired => '레벨야장 Pro 구매 후 사용할 수 있습니다.';
 
   @override
   String get exportBulkSelectAll => '전체';
@@ -602,7 +602,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get exportManifestSiteNotSet => '현장명 미입력';
 
   @override
-  String get exportManifestTitle => '레벨 야장 제출 패키지';
+  String get exportManifestTitle => '레벨야장 제출 패키지';
 
   @override
   String get exportPackageNoFieldBooks => '패키지로 만들 야장이 없습니다.';
@@ -830,7 +830,7 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get fieldbookCsvPasteHint => '또는 Lv Book에서 내보낸 CSV 내용을 붙여넣으세요.';
+  String get fieldbookCsvPasteHint => '또는 레벨야장에서 내보낸 CSV 내용을 붙여넣으세요.';
 
   @override
   String get fieldbookCutLetter => '절';
@@ -1368,7 +1368,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get proActiveTitle => 'Pro 활성화됨';
 
   @override
-  String get proBuyButton => '레벨 야장 Pro 구매';
+  String get proBuyButton => '레벨야장 Pro 구매';
 
   @override
   String get proFeatureBenchmarkPhotoLocation => 'TBM/BM 사진 좌표';
@@ -1719,7 +1719,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get purchasePendingMessage => '결제를 처리하는 중입니다.';
 
   @override
-  String get purchaseProActivatedMessage => '레벨 야장 Pro가 활성화되었습니다.';
+  String get purchaseProActivatedMessage => '레벨야장 Pro가 활성화되었습니다.';
 
   @override
   String purchaseProductLoadError(String error) {

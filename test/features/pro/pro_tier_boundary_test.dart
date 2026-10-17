@@ -19,6 +19,6 @@ void main() {
   });
 
   test('non Pro user cannot use batch or package export', () {
-    expect(BulkExportService.proRequiredMessage, '레벨 야장 Pro 구매 후 사용할 수 있습니다.');
+    expect(BulkExportService.proRequiredMessage, '레벨야장 Pro 구매 후 사용할 수 있습니다.');
   });
 }

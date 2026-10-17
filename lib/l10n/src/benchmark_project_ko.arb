@@ -92,7 +92,7 @@
   "benchmarkLocationPermissionDenied": "위치 권한이 거부되었습니다.",
   "benchmarkLocationPermissionDeniedForever": "위치 권한이 영구적으로 거부되었습니다. 앱 설정에서 권한을 허용하세요.",
   "benchmarkMapOpenError": "지도 앱을 열 수 없습니다. 좌표를 복사해 사용하세요.",
-  "benchmarkProRequired": "레벨 야장 Pro 구매 후 사용할 수 있습니다.",
+  "benchmarkProRequired": "레벨야장 Pro 구매 후 사용할 수 있습니다.",
   "benchmarkCopyCoordinateText": "위도 {latitude}, 경도 {longitude}",
   "benchmarkRecheckOutOfService": "사용 중지 BM입니다. 새 야장의 시작 BM으로 사용할 수 없습니다.",
   "benchmarkRecheckPossiblyDamaged": "훼손 의심 BM입니다. 사용 전 현장에서 재확인하세요.",

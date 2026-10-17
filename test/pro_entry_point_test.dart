@@ -14,7 +14,7 @@ void main() {
     await tester.pumpWidget(_buildProjectList(adsRemoved: false));
     await tester.pumpAndSettle();
 
-    expect(find.text('레벨 야장 Pro'), findsOneWidget);
+    expect(find.text('레벨야장 Pro'), findsOneWidget);
     expect(find.text('Pro 신청'), findsOneWidget);
     expect(find.textContaining('TBM/BM 사진'), findsOneWidget);
   });
@@ -29,7 +29,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('설정'), findsOneWidget);
-    expect(find.text('레벨 야장 Pro 구매'), findsOneWidget);
+    expect(find.text('레벨야장 Pro 구매'), findsOneWidget);
     expect(find.text('구매 복원'), findsOneWidget);
     expect(find.text('TBM/BM 사진 좌표'), findsOneWidget);
   });

@@ -496,7 +496,7 @@ abstract class AppLocalizations {
   /// **'Add'**
   String get coreAdd;
 
-  /// App name (MaterialApp title, app bar). Korean: 레벨 야장.
+  /// App name (MaterialApp title, app bar). Korean: 레벨야장.
   ///
   /// In en, this message translates to:
   /// **'Lv Book'**

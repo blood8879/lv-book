@@ -40,7 +40,7 @@ void main() {
 
   testWidgets('app shell on a Korean device is Korean', (tester) async {
     await pumpShell(tester, const Locale('ko', 'KR'));
-    expect(appTitle(tester), '레벨 야장');
+    expect(appTitle(tester), '레벨야장');
     expect(materialBackTooltip(tester), '뒤로');
   });
 

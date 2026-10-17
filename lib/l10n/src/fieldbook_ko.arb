@@ -93,7 +93,7 @@
   "fieldbookDeleteTitle": "야장 삭제",
   "fieldbookDeleteConfirm": "\"{title}\" 야장을 삭제하시겠습니까?",
   "fieldbookChooseCsvFile": "파일 선택 (.csv, .xlsx)",
-  "fieldbookCsvPasteHint": "또는 Lv Book에서 내보낸 CSV 내용을 붙여넣으세요.",
+  "fieldbookCsvPasteHint": "또는 레벨야장에서 내보낸 CSV 내용을 붙여넣으세요.",
   "fieldbookCsvImportError": "가져오기 실패: {error}",
   "fieldbookCsvImported": "야장을 가져왔습니다",
   "fieldbookCsvImportedWithWarnings": "야장을 가져왔습니다. {warnings}",

@@ -11,6 +11,6 @@ void main() {
     addTearDown(tester.platformDispatcher.clearLocalesTestValue);
     await tester.pumpWidget(const ProviderScope(child: LvBookApp()));
 
-    expect(find.text('레벨 야장'), findsOneWidget);
+    expect(find.text('레벨야장'), findsOneWidget);
   });
 }

@@ -115,7 +115,7 @@ void main() {
 
     test('l10nFor returns strings without a BuildContext', () {
       expect(l10nFor(const Locale('en')).coreAppName, 'Lv Book');
-      expect(l10nFor(const Locale('ko', 'KR')).coreAppName, '레벨 야장');
+      expect(l10nFor(const Locale('ko', 'KR')).coreAppName, '레벨야장');
       expect(l10nFor(const Locale('fr')).coreAppName, 'Lv Book');
       expect(l10nKo.coreCancel, '취소');
     });
