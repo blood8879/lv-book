@@ -76,9 +76,8 @@ Todos los cálculos, controles, la prueba de dos estacas, la exportación indivi
 Sus datos se quedan en su dispositivo. Haga una copia de seguridad en cualquier momento como archivo JSON.
 ```
 
-## Release notes (es-419) — 2.1.0 (28)
+## Release notes (es-419) — 2.2.0 (29)
 
 ```
-• Importación de Excel (.xlsx): abra libretas exportadas por Lv Book o sus propias hojas con columnas Punto / VAt / VI / VAd / Observaciones
-• App más ligera (reducción de recursos optimizada)
+• Flujo más fluido después de exportar
 ```

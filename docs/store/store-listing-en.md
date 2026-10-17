@@ -68,9 +68,8 @@ All calculations, checks, the two-peg test, single PDF/Excel/CSV export, CSV/Exc
 Your data stays on your device. Back it up any time as a JSON file.
 ```
 
-## Release notes (en-US) — 2.1.0 (28)
+## Release notes (en-US) — 2.2.0 (29)
 
 ```
-• Excel (.xlsx) import: open level books exported by Lv Book, or your own sheets with Station / BS / IS / FS / Remarks columns
-• Lighter app package (optimized resource shrinking)
+• Smoother flow after exporting
 ```
