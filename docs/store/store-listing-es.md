@@ -76,8 +76,8 @@ Todos los cálculos, controles, la prueba de dos estacas, la exportación indivi
 Sus datos se quedan en su dispositivo. Haga una copia de seguridad en cualquier momento como archivo JSON.
 ```
 
-## Release notes (es-419) — 2.2.0 (29)
+## Release notes (es-419) — 2.3.0 (30)
 
 ```
-• Flujo más fluido después de exportar
+• Confirmación y restauración de la compra Pro más fiables
 ```

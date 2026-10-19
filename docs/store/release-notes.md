@@ -1,25 +1,24 @@
 # 출시 노트 (Play 콘솔 '새로운 기능' 입력용)
 
-이번 릴리스: **버전 2.2.0 (29)** — 한국어 앱 이름 '레벨야장' 통일, 내보내기 후 흐름 정리.
+이번 릴리스: **버전 2.3.0 (30)** — Pro 구매 확인·복원 안정성 개선(앱 시작 시 Play 보유 내역 동기화).
 각 언어 500자 이하. en/es 문구는 `store-listing-en.md` / `store-listing-es.md`의 Release notes와 같습니다.
 
 ## en-US
 
 ```
-• Smoother flow after exporting
+• More reliable Pro purchase confirmation and restore
 ```
 
 ## ko-KR
 
 ```
-• 앱 이름 표기를 '레벨야장'으로 통일했습니다.
-• 내보내기 후 화면 흐름을 다듬었습니다.
+• Pro 구매 확인과 구매 복원이 더 안정적으로 동작합니다.
 ```
 
 ## es-419
 
 ```
-• Flujo más fluido después de exportar
+• Confirmación y restauración de la compra Pro más fiables
 ```
 
-*버전 2.2.0 | 작성: 2026년 10월*
+*버전 2.3.0 | 작성: 2026년 10월*

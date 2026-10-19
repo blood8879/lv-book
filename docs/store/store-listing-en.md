@@ -68,8 +68,8 @@ All calculations, checks, the two-peg test, single PDF/Excel/CSV export, CSV/Exc
 Your data stays on your device. Back it up any time as a JSON file.
 ```
 
-## Release notes (en-US) — 2.2.0 (29)
+## Release notes (en-US) — 2.3.0 (30)
 
 ```
-• Smoother flow after exporting
+• More reliable Pro purchase confirmation and restore
 ```
