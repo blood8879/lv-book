@@ -5,6 +5,9 @@ import 'package:in_app_purchase/in_app_purchase.dart';
 
 import '../../l10n/l10n.dart';
 import '../ads/ad_settings_repository.dart';
+import 'owned_purchases_source.dart';
+
+export 'owned_purchases_source.dart';
 
 /// What happened in the last purchase/restore step. The controller stores a
 /// code (plus optional technical detail); the UI renders it with
@@ -101,6 +104,16 @@ class PurchaseController extends ChangeNotifier {
   /// restore finished. Stores deliver nothing when there is nothing to restore.
   final Duration restoreGracePeriod;
 
+  /// Upper bound for the owned-purchases query (startup sync and Android
+  /// restore). A timeout counts as a failed query: nothing changes.
+  final Duration ownedPurchasesTimeout;
+
+  OwnedPurchasesSource? _ownedPurchasesSource;
+
+  /// Bumped whenever the purchase stream grants Pro, so an owned-purchases
+  /// snapshot taken before that grant never revokes it.
+  int _grantEpoch = 0;
+
   Timer? _restoreTimer;
   bool _restoreInProgress = false;
   int _messageSerial = 0;
@@ -118,7 +131,15 @@ class PurchaseController extends ChangeNotifier {
     this.onEntitlementChanged,
     this.restoreTimeout = const Duration(seconds: 30),
     this.restoreGracePeriod = const Duration(seconds: 3),
-  }) : _inAppPurchase = inAppPurchase ?? InAppPurchase.instance;
+    this.ownedPurchasesTimeout = const Duration(seconds: 15),
+    OwnedPurchasesSource? ownedPurchasesSource,
+  }) : _inAppPurchase = inAppPurchase ?? InAppPurchase.instance,
+       _ownedPurchasesSource = ownedPurchasesSource;
+
+  /// Android reports currently-owned purchases (refunds excluded) directly;
+  /// iOS keeps the restore-stream behaviour.
+  static bool get _usesOwnedPurchasesQuery =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
 
   static bool get supportsStorePurchases {
     if (kIsWeb) return false;
@@ -215,6 +236,71 @@ class PurchaseController extends ChangeNotifier {
 
     _loading = false;
     _notify();
+
+    if (_storeAvailable && _usesOwnedPurchasesQuery) {
+      await _syncEntitlementWithStore();
+    }
+  }
+
+  /// Silently aligns the local Pro flag with what Google Play says the account
+  /// owns right now: delivers (and acknowledges) purchases that completed
+  /// while the app was closed, and revokes refunded ones. A failed query
+  /// changes nothing. Never throws.
+  Future<void> _syncEntitlementWithStore() async {
+    final epoch = _grantEpoch;
+    final result = await _queryOwnedPurchases();
+    if (_disposed || !result.succeeded) return;
+    await _applyOwnedPurchases(result, epochAtQuery: epoch);
+  }
+
+  /// Queries owned purchases; exceptions and timeouts become failures.
+  Future<OwnedPurchasesResult> _queryOwnedPurchases() async {
+    try {
+      final source = _ownedPurchasesSource ??= AndroidOwnedPurchasesSource(
+        _inAppPurchase,
+      );
+      return await source.query().timeout(ownedPurchasesTimeout);
+    } on TimeoutException {
+      return const OwnedPurchasesResult.failure('timeout');
+    } catch (error) {
+      return OwnedPurchasesResult.failure('$error');
+    }
+  }
+
+  /// Applies a successful owned-purchases snapshot to the local flag.
+  /// Returns the resulting entitlement: true (owned), false (absent), or
+  /// null when the Pro purchase is still pending (flag left untouched).
+  Future<bool?> _applyOwnedPurchases(
+    OwnedPurchasesResult result, {
+    required int epochAtQuery,
+  }) async {
+    final pro = result.purchases
+        .where((p) => p.productID == proProductId)
+        .toList();
+    final owned = pro
+        .where((p) => p.status == PurchaseStatus.purchased)
+        .firstOrNull;
+    try {
+      final wasRemoved = await adSettingsRepository.areAdsRemoved();
+      if (owned != null) {
+        if (!wasRemoved) await adSettingsRepository.setAdsRemoved(true);
+        if (owned.pendingCompletePurchase) {
+          await _inAppPurchase.completePurchase(owned);
+        }
+        if (!wasRemoved && !_disposed) onEntitlementChanged?.call();
+        return true;
+      }
+      if (pro.any((p) => p.status == PurchaseStatus.pending)) return null;
+      // A grant from the purchase stream after the snapshot was taken wins.
+      if (wasRemoved && _grantEpoch == epochAtQuery) {
+        await adSettingsRepository.setAdsRemoved(false);
+        if (!_disposed) onEntitlementChanged?.call();
+      }
+      return _grantEpoch == epochAtQuery ? false : true;
+    } catch (error) {
+      debugPrint('Pro entitlement sync failed: $error');
+      return owned != null ? true : null;
+    }
   }
 
   Future<void> buyPro() async {
@@ -262,6 +348,11 @@ class PurchaseController extends ChangeNotifier {
     _setMessage(null);
     _notify();
 
+    if (_usesOwnedPurchasesQuery) {
+      await _restoreFromOwnedPurchases();
+      return;
+    }
+
     try {
       await _inAppPurchase.restorePurchases().timeout(restoreTimeout);
     } on TimeoutException {
@@ -289,6 +380,34 @@ class PurchaseController extends ChangeNotifier {
     });
   }
 
+  /// Android restore: decide from the store's actual owned purchases instead
+  /// of waiting a fixed time for restore events.
+  Future<void> _restoreFromOwnedPurchases() async {
+    final epoch = _grantEpoch;
+    final result = await _queryOwnedPurchases();
+    // A purchase event (e.g. a pending purchase completing) already finished
+    // this restore, or the controller went away.
+    if (!_restoreInProgress || _disposed) return;
+    _finishRestore();
+    _purchasePending = false;
+    if (!result.succeeded) {
+      _setMessage(
+        PurchaseNotice(PurchaseNoticeCode.restoreError, result.error),
+      );
+      _notify();
+      return;
+    }
+    final entitled = await _applyOwnedPurchases(result, epochAtQuery: epoch);
+    _setMessage(
+      PurchaseNotice(switch (entitled) {
+        true => PurchaseNoticeCode.proActivated,
+        null => PurchaseNoticeCode.pending,
+        false => PurchaseNoticeCode.nothingToRestore,
+      }),
+    );
+    _notify();
+  }
+
   void _finishRestore() {
     _restoreInProgress = false;
     _restoreTimer?.cancel();
@@ -307,6 +426,7 @@ class PurchaseController extends ChangeNotifier {
         case PurchaseStatus.purchased:
         case PurchaseStatus.restored:
           if (purchase.productID == proProductId) {
+            _grantEpoch++;
             await adSettingsRepository.setAdsRemoved(true);
             entitlementChanged = true;
             _setMessage(const PurchaseNotice(PurchaseNoticeCode.proActivated));

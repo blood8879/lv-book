@@ -7,7 +7,9 @@ import 'package:lv_book/features/ads/ad_settings_repository.dart';
 import 'package:lv_book/features/purchase/purchase_controller.dart';
 
 void main() {
-  setUp(() => debugDefaultTargetPlatformOverride = TargetPlatform.android);
+  // The grace-period restore path is the iOS path; Android decides restores
+  // from the owned-purchases query (see purchase_entitlement_sync_test.dart).
+  setUp(() => debugDefaultTargetPlatformOverride = TargetPlatform.iOS);
   tearDown(() => debugDefaultTargetPlatformOverride = null);
 
   test(
