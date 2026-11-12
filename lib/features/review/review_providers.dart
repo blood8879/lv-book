@@ -3,6 +3,7 @@ import 'package:in_app_review/in_app_review.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../../core/database/database_helper.dart';
+import '../analytics/analytics_providers.dart';
 import 'review_prompt_policy.dart';
 
 /// [ReviewPromptStore] backed by the shared `app_settings` table.
@@ -57,5 +58,6 @@ final reviewPromptCoordinatorProvider = Provider<ReviewPromptCoordinator>(
   (ref) => ReviewPromptCoordinator(
     policy: ref.watch(reviewPromptPolicyProvider),
     client: ref.watch(appReviewClientProvider),
+    analytics: ref.watch(analyticsServiceProvider),
   ),
 );

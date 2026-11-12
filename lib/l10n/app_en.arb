@@ -1810,6 +1810,10 @@
   },
   "settingsPdfSettingsSubtitle": "Set company name, template, watermark and signature.",
   "settingsPdfSettingsTitle": "Submission PDF settings",
+  "settingsPrivacySection": "Privacy",
+  "@settingsPrivacySection": {
+    "description": "Settings section header for the usage statistics switch."
+  },
   "settingsPurchaseStatusSection": "Purchase status",
   "settingsRateAppSubtitle": "Open the Google Play listing to leave a review.",
   "@settingsRateAppSubtitle": {
@@ -1976,5 +1980,13 @@
   "settingsUnitTitle": "Units",
   "@settingsUnitTitle": {
     "description": "Settings tile/dialog title: length unit of readings."
+  },
+  "settingsUsageStatsSubtitle": "Sends anonymous usage statistics to help improve the app. Your survey data is never sent.",
+  "@settingsUsageStatsSubtitle": {
+    "description": "Subtitle of the usage statistics switch; must say that entered survey data is not sent."
+  },
+  "settingsUsageStatsTitle": "Share usage statistics",
+  "@settingsUsageStatsTitle": {
+    "description": "Switch that turns anonymous Google Analytics usage statistics on or off (default on)."
   }
 }

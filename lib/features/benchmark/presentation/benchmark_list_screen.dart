@@ -13,6 +13,8 @@ import '../domain/benchmark.dart';
 import '../../../shared/widgets/banner_ad_widget.dart';
 import '../../ads/ad_manager.dart';
 import '../../ads/ad_providers.dart';
+import '../../analytics/analytics_events.dart';
+import '../../analytics/analytics_providers.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../l10n/l10n.dart';
 import '../../settings/misclosure_tolerance_repository.dart';
@@ -549,6 +551,13 @@ class BenchmarkListScreen extends ConsumerWidget {
     var current = benchmark;
     var isCapturing = false;
     String? errorMessage;
+    // Pro promo shown to a user known not to own Pro.
+    if (ref.read(adsRemovedProvider).valueOrNull == false) {
+      ref.read(analyticsServiceProvider).logEvent(
+        AnalyticsEvents.proPaywallView,
+        {AnalyticsParams.source: AnalyticsValues.sourceBenchmarkLocation},
+      );
+    }
 
     showModalBottomSheet<void>(
       context: context,

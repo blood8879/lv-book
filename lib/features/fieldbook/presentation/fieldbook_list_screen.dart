@@ -11,10 +11,14 @@ import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/skeleton.dart';
 import '../../../shared/widgets/native_ad_card.dart';
 import '../data/fieldbook_providers.dart';
+import '../../analytics/analytics_events.dart';
+import '../../analytics/analytics_mappers.dart';
+import '../../analytics/analytics_providers.dart';
 import '../domain/fieldbook.dart';
 import '../domain/fieldbook_quick_start.dart';
 import '../domain/fieldbook_search.dart';
 import '../domain/fieldbook_templates.dart';
+import '../domain/reduction.dart';
 import '../domain/measurement.dart';
 import '../../benchmark/data/benchmark_providers.dart';
 import '../../benchmark/domain/benchmark.dart';
@@ -191,7 +195,16 @@ class FieldBookListScreen extends ConsumerWidget {
       );
       if (source == null || source.trim().isEmpty) return;
 
-      await ref.read(projectBackupServiceProvider).restoreAsNewProject(source);
+      final restored = await ref
+          .read(projectBackupServiceProvider)
+          .restoreAsNewProject(source);
+      ref
+          .read(analyticsServiceProvider)
+          .logEvent(AnalyticsEvents.backupRestored, {
+            AnalyticsParams.fieldBookCount: AnalyticsBuckets.count(
+              restored.fieldBookIdMap.length,
+            ),
+          });
       ref.invalidate(fieldBookListProvider(projectId));
       ref.invalidate(projectListProvider);
       if (context.mounted) {
@@ -465,12 +478,20 @@ class FieldBookListScreen extends ConsumerWidget {
                             final id = await ref
                                 .read(fieldBookListProvider(projectId).notifier)
                                 .addFieldBook(fb);
+                            _logFieldBookCreated(
+                              ref,
+                              AnalyticsValues.blank,
+                              reductionMethod,
+                            );
                             if (!sheetContext.mounted) return;
                             Navigator.pop(sheetContext);
                             if (!context.mounted) return;
                             Navigator.push(
                               context,
                               MaterialPageRoute(
+                                settings: const RouteSettings(
+                                  name: AnalyticsScreens.fieldbookEdit,
+                                ),
                                 builder: (_) => FieldBookEditScreen(
                                   fieldBook: fb.copyWith(id: id),
                                   projectId: projectId,
@@ -549,6 +570,11 @@ class FieldBookListScreen extends ConsumerWidget {
     await _insertFieldBookWithMeasurements(
       duplicate.fieldBook,
       duplicate.measurements,
+    );
+    _logFieldBookCreated(
+      ref,
+      AnalyticsValues.copy,
+      duplicate.fieldBook.reductionMethod,
     );
     ref.invalidate(fieldBookListProvider(projectId));
     if (!context.mounted) return;
@@ -672,6 +698,10 @@ class FieldBookListScreen extends ConsumerWidget {
                   ? null
                   : () async {
                       final file = workbook;
+                      final format = file != null
+                          ? AnalyticsValues.xlsx
+                          : AnalyticsValues.csv;
+                      final analytics = ref.read(analyticsServiceProvider);
                       final result = file != null
                           ? XlsxImporter.parse(
                               file.bytes,
@@ -688,6 +718,10 @@ class FieldBookListScreen extends ConsumerWidget {
                               appUnit: ref.read(lengthUnitProvider),
                             );
                       if (result.fieldBook == null) {
+                        analytics.logEvent(AnalyticsEvents.importFailed, {
+                          AnalyticsParams.format: format,
+                          AnalyticsParams.stage: AnalyticsValues.parse,
+                        });
                         AppSnackbar.error(context, result.errors.join('\n'));
                         return;
                       }
@@ -699,6 +733,10 @@ class FieldBookListScreen extends ConsumerWidget {
                         );
                         ref.invalidate(fieldBookListProvider(projectId));
                       } catch (error) {
+                        analytics.logEvent(AnalyticsEvents.importFailed, {
+                          AnalyticsParams.format: format,
+                          AnalyticsParams.stage: AnalyticsValues.save,
+                        });
                         if (context.mounted) {
                           setDialogState(() => importing = false);
                           AppSnackbar.error(
@@ -708,6 +746,18 @@ class FieldBookListScreen extends ConsumerWidget {
                         }
                         return;
                       }
+                      analytics.logEvent(AnalyticsEvents.importSuccess, {
+                        AnalyticsParams.format: format,
+                        AnalyticsParams.rowCount: AnalyticsBuckets.count(
+                          result.measurements.length,
+                        ),
+                        AnalyticsParams.hasWarnings: result.warnings.isNotEmpty,
+                      });
+                      _logFieldBookCreated(
+                        ref,
+                        AnalyticsValues.imported,
+                        result.fieldBook!.reductionMethod,
+                      );
                       if (!context.mounted) return;
                       if (result.warnings.isEmpty) {
                         AppSnackbar.success(context, l10n.fieldbookCsvImported);
@@ -727,6 +777,21 @@ class FieldBookListScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  static void _logFieldBookCreated(
+    WidgetRef ref,
+    String method,
+    ReductionMethod reductionMethod,
+  ) {
+    ref
+        .read(analyticsServiceProvider)
+        .logEvent(AnalyticsEvents.fieldbookCreated, {
+          AnalyticsParams.method: method,
+          AnalyticsParams.reductionMethod: analyticsReductionMethod(
+            reductionMethod,
+          ),
+        });
   }
 
   /// Backup errors carry a code; anything else is shown as-is.
@@ -835,6 +900,9 @@ class _FieldBookListContentState extends State<_FieldBookListContent> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
+                    settings: const RouteSettings(
+                      name: AnalyticsScreens.bulkExport,
+                    ),
                     builder: (_) => BulkExportScreen(
                       projectId: widget.projectId,
                       fieldBooks: widget.fieldBooks,
@@ -932,6 +1000,9 @@ class _FieldBookListContentState extends State<_FieldBookListContent> {
           Navigator.push(
             context,
             MaterialPageRoute(
+              settings: const RouteSettings(
+                name: AnalyticsScreens.fieldbookEdit,
+              ),
               builder: (_) => FieldBookEditScreen(
                 fieldBook: fb,
                 projectId: widget.projectId,

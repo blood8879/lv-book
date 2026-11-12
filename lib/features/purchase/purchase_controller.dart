@@ -5,6 +5,8 @@ import 'package:in_app_purchase/in_app_purchase.dart';
 
 import '../../l10n/l10n.dart';
 import '../ads/ad_settings_repository.dart';
+import '../analytics/analytics_events.dart';
+import '../analytics/analytics_service.dart';
 import 'owned_purchases_source.dart';
 
 export 'owned_purchases_source.dart';
@@ -97,6 +99,9 @@ class PurchaseController extends ChangeNotifier {
   /// app-wide state such as `adsRemovedProvider` can refresh immediately.
   final VoidCallback? onEntitlementChanged;
 
+  /// Pro funnel events (`pro_purchase_*`, `pro_restore`).
+  final AnalyticsService analytics;
+
   /// Upper bound for the store's restore call itself.
   final Duration restoreTimeout;
 
@@ -129,6 +134,7 @@ class PurchaseController extends ChangeNotifier {
     required this.adSettingsRepository,
     InAppPurchase? inAppPurchase,
     this.onEntitlementChanged,
+    this.analytics = const NoopAnalyticsService(),
     this.restoreTimeout = const Duration(seconds: 30),
     this.restoreGracePeriod = const Duration(seconds: 3),
     this.ownedPurchasesTimeout = const Duration(seconds: 15),
@@ -306,11 +312,13 @@ class PurchaseController extends ChangeNotifier {
   Future<void> buyPro() async {
     final product = _proProduct;
     if (product == null) {
+      _logPurchaseFailed(AnalyticsValues.productNotReady);
       _setMessage(const PurchaseNotice(PurchaseNoticeCode.productNotReady));
       _notify();
       return;
     }
 
+    analytics.logEvent(AnalyticsEvents.proPurchaseStart);
     _purchasePending = true;
     _setMessage(null);
     _notify();
@@ -322,6 +330,7 @@ class PurchaseController extends ChangeNotifier {
         purchaseParam: purchaseParam,
       );
     } catch (error) {
+      _logPurchaseFailed(AnalyticsValues.startFailed);
       _purchasePending = false;
       _setMessage(PurchaseNotice(PurchaseNoticeCode.startError, '$error'));
       _notify();
@@ -329,6 +338,7 @@ class PurchaseController extends ChangeNotifier {
     }
 
     if (!started) {
+      _logPurchaseFailed(AnalyticsValues.startFailed);
       _purchasePending = false;
       _setMessage(const PurchaseNotice(PurchaseNoticeCode.startFailed));
       _notify();
@@ -337,6 +347,7 @@ class PurchaseController extends ChangeNotifier {
 
   Future<void> restorePurchases() async {
     if (!_storeAvailable) {
+      _logRestore(AnalyticsValues.unavailable);
       _setMessage(const PurchaseNotice(PurchaseNoticeCode.storeUnavailable));
       _notify();
       return;
@@ -362,6 +373,7 @@ class PurchaseController extends ChangeNotifier {
       if (!_restoreInProgress) return;
       _finishRestore();
       _purchasePending = false;
+      _logRestore(AnalyticsValues.error);
       _setMessage(PurchaseNotice(PurchaseNoticeCode.restoreError, '$error'));
       _notify();
       return;
@@ -375,6 +387,7 @@ class PurchaseController extends ChangeNotifier {
       if (!_restoreInProgress) return;
       _finishRestore();
       _purchasePending = false;
+      _logRestore(AnalyticsValues.nothing);
       _setMessage(const PurchaseNotice(PurchaseNoticeCode.nothingToRestore));
       _notify();
     });
@@ -391,6 +404,7 @@ class PurchaseController extends ChangeNotifier {
     _finishRestore();
     _purchasePending = false;
     if (!result.succeeded) {
+      _logRestore(AnalyticsValues.error);
       _setMessage(
         PurchaseNotice(PurchaseNoticeCode.restoreError, result.error),
       );
@@ -398,6 +412,11 @@ class PurchaseController extends ChangeNotifier {
       return;
     }
     final entitled = await _applyOwnedPurchases(result, epochAtQuery: epoch);
+    _logRestore(switch (entitled) {
+      true => AnalyticsValues.restored,
+      null => AnalyticsValues.pending,
+      false => AnalyticsValues.nothing,
+    });
     _setMessage(
       PurchaseNotice(switch (entitled) {
         true => PurchaseNoticeCode.proActivated,
@@ -408,6 +427,16 @@ class PurchaseController extends ChangeNotifier {
     _notify();
   }
 
+  void _logRestore(String result) => analytics.logEvent(
+    AnalyticsEvents.proRestore,
+    {AnalyticsParams.result: result},
+  );
+
+  void _logPurchaseFailed(String reason) => analytics.logEvent(
+    AnalyticsEvents.proPurchaseFailed,
+    {AnalyticsParams.reason: reason},
+  );
+
   void _finishRestore() {
     _restoreInProgress = false;
     _restoreTimer?.cancel();
@@ -417,6 +446,7 @@ class PurchaseController extends ChangeNotifier {
   Future<void> _handlePurchaseUpdates(List<PurchaseDetails> purchases) async {
     var entitlementChanged = false;
     for (final purchase in purchases) {
+      final restoring = _restoreInProgress;
       if (purchase.status != PurchaseStatus.pending) _finishRestore();
       switch (purchase.status) {
         case PurchaseStatus.pending:
@@ -426,6 +456,11 @@ class PurchaseController extends ChangeNotifier {
         case PurchaseStatus.purchased:
         case PurchaseStatus.restored:
           if (purchase.productID == proProductId) {
+            if (purchase.status == PurchaseStatus.restored || restoring) {
+              _logRestore(AnalyticsValues.restored);
+            } else {
+              analytics.logEvent(AnalyticsEvents.proPurchaseSuccess);
+            }
             _grantEpoch++;
             await adSettingsRepository.setAdsRemoved(true);
             entitlementChanged = true;
@@ -434,6 +469,11 @@ class PurchaseController extends ChangeNotifier {
           _purchasePending = false;
           break;
         case PurchaseStatus.error:
+          if (restoring) {
+            _logRestore(AnalyticsValues.error);
+          } else {
+            _logPurchaseFailed(AnalyticsValues.error);
+          }
           _purchasePending = false;
           _setMessage(
             PurchaseNotice(
@@ -443,6 +483,7 @@ class PurchaseController extends ChangeNotifier {
           );
           break;
         case PurchaseStatus.canceled:
+          if (!restoring) _logPurchaseFailed(AnalyticsValues.canceled);
           _purchasePending = false;
           _setMessage(const PurchaseNotice(PurchaseNoticeCode.canceled));
           break;

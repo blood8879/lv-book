@@ -76,8 +76,8 @@ Todos los cálculos, controles, la prueba de dos estacas, la exportación indivi
 Sus datos se quedan en su dispositivo. Haga una copia de seguridad en cualquier momento como archivo JSON.
 ```
 
-## Release notes (es-419) — 2.3.0 (30)
+## Release notes (es-419) — 2.4.0 (31)
 
 ```
-• Confirmación y restauración de la compra Pro más fiables
+• Nuevo en Ajustes: "Enviar estadísticas de uso" (anónimas, se pueden desactivar). Tus datos de nivelación nunca se envían.
 ```

@@ -1976,6 +1976,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get settingsPdfSettingsTitle => 'Ajustes del PDF de entrega';
 
   @override
+  String get settingsPrivacySection => 'Privacidad';
+
+  @override
   String get settingsPurchaseStatusSection => 'Estado de la compra';
 
   @override
@@ -2089,4 +2092,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsUnitTitle => 'Unidades';
+
+  @override
+  String get settingsUsageStatsSubtitle =>
+      'Envía estadísticas de uso anónimas para mejorar la app. Nunca se envían los datos de levantamiento que usted introduce.';
+
+  @override
+  String get settingsUsageStatsTitle => 'Enviar estadísticas de uso';
 }

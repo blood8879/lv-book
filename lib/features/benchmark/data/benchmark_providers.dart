@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../ads/ad_providers.dart';
+import '../../analytics/analytics_events.dart';
+import '../../analytics/analytics_providers.dart';
 import '../../fieldbook/data/fieldbook_providers.dart';
 import 'benchmark_media_services.dart';
 import 'benchmark_repository.dart';
@@ -68,6 +70,14 @@ class BenchmarkListNotifier extends FamilyAsyncNotifier<List<BenchMark>, int> {
         kind: kind,
       ),
     );
+    ref
+        .read(analyticsServiceProvider)
+        .logEvent(AnalyticsEvents.benchmarkCreated, {
+          AnalyticsParams.kind: switch (kind) {
+            BenchMarkKind.bm => AnalyticsValues.bm,
+            BenchMarkKind.tbm => AnalyticsValues.tbm,
+          },
+        });
     ref.invalidateSelf();
   }
 

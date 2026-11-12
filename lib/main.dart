@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app.dart';
 import 'features/ads/ad_manager.dart';
+import 'features/analytics/analytics_providers.dart';
+import 'features/analytics/firebase_analytics_service.dart';
 import 'features/backup/auto_backup_service.dart';
 
 void main() async {
@@ -16,7 +18,16 @@ void main() async {
     await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   }
   await AdManager.initialize();
-  runApp(const ProviderScope(child: LvBookApp()));
+  // Not awaited: Firebase initializes in the background and events wait for
+  // it (and for the usage-statistics preference) inside the service. Android
+  // only; elsewhere, or if it fails, analytics is a no-op.
+  final analytics = AnalyticsBootstrap.start();
+  runApp(
+    ProviderScope(
+      overrides: [analyticsServiceProvider.overrideWithValue(analytics)],
+      child: const LvBookApp(),
+    ),
+  );
   _runAutoBackup();
 }
 

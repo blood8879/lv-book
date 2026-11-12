@@ -1,3 +1,6 @@
+import '../analytics/analytics_events.dart';
+import '../analytics/analytics_service.dart';
+
 /// Key/value persistence used by [ReviewPromptPolicy].
 ///
 /// Production uses the `app_settings` table; tests use an in-memory map.
@@ -69,8 +72,13 @@ abstract class AppReviewClient {
 class ReviewPromptCoordinator {
   final ReviewPromptPolicy policy;
   final AppReviewClient client;
+  final AnalyticsService analytics;
 
-  ReviewPromptCoordinator({required this.policy, required this.client});
+  ReviewPromptCoordinator({
+    required this.policy,
+    required this.client,
+    this.analytics = const NoopAnalyticsService(),
+  });
 
   /// Call after an export share completed successfully (not dismissed).
   ///
@@ -99,6 +107,9 @@ class ReviewPromptCoordinator {
     } catch (_) {
       // Swallowed: see class doc.
     }
+    analytics.logEvent(AnalyticsEvents.reviewPromptRequested, {
+      AnalyticsParams.success: ok,
+    });
     try {
       await policy.recordRequested();
     } catch (_) {}

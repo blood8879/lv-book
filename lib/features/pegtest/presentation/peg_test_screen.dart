@@ -10,6 +10,9 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_snackbar.dart';
 import '../../../core/widgets/semantic_pill.dart';
 import '../../../l10n/l10n.dart';
+import '../../analytics/analytics_events.dart';
+import '../../analytics/analytics_mappers.dart';
+import '../../analytics/analytics_providers.dart';
 import '../../fieldbook/domain/misclosure.dart';
 import '../../settings/misclosure_tolerance_repository.dart';
 import '../data/peg_test_record_repository.dart';
@@ -187,8 +190,20 @@ class _PegTestScreenState extends ConsumerState<PegTestScreen> {
     }
   }
 
+  /// Only the action and the pass/fail judgement, never the readings.
+  void _logUsed(String action, TwoPegTest test) {
+    ref.read(analyticsServiceProvider).logEvent(AnalyticsEvents.pegTestUsed, {
+      AnalyticsParams.action: action,
+      AnalyticsParams.result: test.withinTolerance
+          ? AnalyticsValues.pass
+          : AnalyticsValues.fail,
+      AnalyticsParams.unit: analyticsLengthUnit(test.unit),
+    });
+  }
+
   Future<void> _copyResult(TwoPegTest test) async {
     final l10n = context.l10n;
+    _logUsed(AnalyticsValues.copy, test);
     await Clipboard.setData(
       ClipboardData(text: buildPegTestSummary(l10n, test, DateTime.now())),
     );
@@ -210,6 +225,7 @@ class _PegTestScreenState extends ConsumerState<PegTestScreen> {
               note: _recordText(PegTestRecordField.note),
             ),
           );
+      _logUsed(AnalyticsValues.save, test);
       if (!mounted) return;
       // The note belongs to this record; instrument / observer carry over.
       _recordControllers[PegTestRecordField.note]!.clear();
@@ -226,7 +242,10 @@ class _PegTestScreenState extends ConsumerState<PegTestScreen> {
   void _openHistory() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const PegTestHistoryScreen()),
+      MaterialPageRoute(
+        settings: const RouteSettings(name: AnalyticsScreens.pegTestHistory),
+        builder: (_) => const PegTestHistoryScreen(),
+      ),
     );
   }
 

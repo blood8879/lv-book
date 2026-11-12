@@ -14,6 +14,8 @@ import '../../../shared/widgets/banner_ad_widget.dart';
 import '../../../shared/widgets/native_ad_card.dart';
 import '../../ads/ad_manager.dart';
 import '../../ads/ad_providers.dart';
+import '../../analytics/analytics_events.dart';
+import '../../analytics/analytics_providers.dart';
 import '../../backup/project_backup_providers.dart';
 import '../../pegtest/presentation/peg_test_screen.dart';
 import '../../settings/settings_screen.dart';
@@ -39,7 +41,12 @@ class ProjectListScreen extends ConsumerWidget {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const QuickMemoListScreen()),
+                MaterialPageRoute(
+                  settings: const RouteSettings(
+                    name: AnalyticsScreens.quickMemoList,
+                  ),
+                  builder: (_) => const QuickMemoListScreen(),
+                ),
               );
             },
           ),
@@ -49,7 +56,10 @@ class ProjectListScreen extends ConsumerWidget {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const PegTestScreen()),
+                MaterialPageRoute(
+                  settings: const RouteSettings(name: AnalyticsScreens.pegTest),
+                  builder: (_) => const PegTestScreen(),
+                ),
               );
             },
           ),
@@ -59,7 +69,12 @@ class ProjectListScreen extends ConsumerWidget {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                MaterialPageRoute(
+                  settings: const RouteSettings(
+                    name: AnalyticsScreens.settings,
+                  ),
+                  builder: (_) => const SettingsScreen(),
+                ),
               );
             },
           ),
@@ -217,7 +232,13 @@ class _ProEntryPanel extends ConsumerWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => const SettingsScreen(),
+                              settings: const RouteSettings(
+                                name: AnalyticsScreens.settings,
+                              ),
+                              builder: (_) => const SettingsScreen(
+                                paywallSource:
+                                    AnalyticsValues.sourceProjectBanner,
+                              ),
                             ),
                           );
                         },
@@ -338,6 +359,9 @@ class _RecentFieldBookTile extends ConsumerWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
+                settings: const RouteSettings(
+                  name: AnalyticsScreens.fieldbookEdit,
+                ),
                 builder: (_) => FieldBookEditScreen(
                   fieldBook: recent,
                   projectId: recent.projectId,
@@ -539,6 +563,10 @@ class _EmptyProjectStateState extends ConsumerState<_EmptyProjectState> {
       final project = await ref
           .read(sampleProjectServiceProvider)
           .createSampleProject(l10n: l10n);
+      ref.read(analyticsServiceProvider).logEvent(
+        AnalyticsEvents.projectCreated,
+        {AnalyticsParams.method: AnalyticsValues.sample},
+      );
       if (!mounted) return;
       AppSnackbar.success(context, l10n.projectSampleCreatedMessage);
       container.invalidate(projectListProvider);
@@ -546,6 +574,9 @@ class _EmptyProjectStateState extends ConsumerState<_EmptyProjectState> {
       navigator
           .push(
             MaterialPageRoute(
+              settings: const RouteSettings(
+                name: AnalyticsScreens.projectDetail,
+              ),
               builder: (_) => ProjectDetailScreen(project: project),
             ),
           )
@@ -649,6 +680,9 @@ class _ProjectCard extends ConsumerWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
+              settings: const RouteSettings(
+                name: AnalyticsScreens.projectDetail,
+              ),
               builder: (_) => ProjectDetailScreen(project: project),
             ),
           ).then((_) => ref.invalidate(dashboardStatsProvider));

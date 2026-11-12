@@ -3376,6 +3376,12 @@ abstract class AppLocalizations {
   /// **'Submission PDF settings'**
   String get settingsPdfSettingsTitle;
 
+  /// Settings section header for the usage statistics switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy'**
+  String get settingsPrivacySection;
+
   /// No description provided for @settingsPurchaseStatusSection.
   ///
   /// In en, this message translates to:
@@ -3553,6 +3559,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Units'**
   String get settingsUnitTitle;
+
+  /// Subtitle of the usage statistics switch; must say that entered survey data is not sent.
+  ///
+  /// In en, this message translates to:
+  /// **'Sends anonymous usage statistics to help improve the app. Your survey data is never sent.'**
+  String get settingsUsageStatsSubtitle;
+
+  /// Switch that turns anonymous Google Analytics usage statistics on or off (default on).
+  ///
+  /// In en, this message translates to:
+  /// **'Share usage statistics'**
+  String get settingsUsageStatsTitle;
 }
 
 class _AppLocalizationsDelegate

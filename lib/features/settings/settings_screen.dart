@@ -6,6 +6,10 @@ import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_snackbar.dart';
 import '../../l10n/l10n.dart';
 import '../ads/ad_providers.dart';
+import '../analytics/analytics_events.dart';
+import '../analytics/analytics_providers.dart';
+import '../analytics/analytics_service.dart';
+import '../analytics/pro_paywall_impression.dart';
 import '../pro/pro_pdf_settings_screen.dart';
 import '../purchase/purchase_controller.dart';
 import '../purchase/purchase_providers.dart';
@@ -17,7 +21,14 @@ import 'misclosure_tolerance_repository.dart';
 import '../../core/utils/decimal_input.dart';
 
 class SettingsScreen extends ConsumerWidget {
-  const SettingsScreen({super.key});
+  /// Where the user came from, for `pro_paywall_view` (an
+  /// `AnalyticsValues.source*` value).
+  final String paywallSource;
+
+  const SettingsScreen({
+    super.key,
+    this.paywallSource = AnalyticsValues.sourceSettings,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -46,136 +57,156 @@ class SettingsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.settingsTitle)),
-      body: ListView(
-        padding: EdgeInsets.fromLTRB(
-          12,
-          12,
-          12,
-          AppConstants.quickMemoFabListBottomPadding(context),
-        ),
-        children: [
-          _ProPurchasePanel(
-            adsRemovedAsync: adsRemovedAsync,
-            purchaseController: purchaseController,
+      // Wraps the whole list (not the Pro panel) so scrolling the panel out
+      // and back in does not count a second paywall view.
+      body: ProPaywallImpression(
+        source: paywallSource,
+        visible: adsRemovedAsync.valueOrNull == false,
+        child: ListView(
+          padding: EdgeInsets.fromLTRB(
+            12,
+            12,
+            12,
+            AppConstants.quickMemoFabListBottomPadding(context),
           ),
-          const SizedBox(height: 12),
-          _SectionHeader(title: l10n.settingsPurchaseStatusSection),
-          adsRemovedAsync.when(
-            loading: () => _StatusTile(
-              icon: Icons.sync,
-              title: l10n.settingsAdsRemovedChecking,
-              subtitle: l10n.settingsAdsRemovedCheckingSubtitle,
+          children: [
+            _ProPurchasePanel(
+              adsRemovedAsync: adsRemovedAsync,
+              purchaseController: purchaseController,
             ),
-            error: (error, _) => ListTile(
-              leading: const Icon(Icons.error_outline),
-              title: Text(l10n.settingsAdsRemovedLoadError),
-              subtitle: Text('$error'),
-            ),
-            data: (adsRemoved) => Opacity(
-              // 읽기전용(조작 불가) 스위치임을 시각적으로 dim 처리.
-              opacity: 0.55,
-              child: SwitchListTile(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(color: colors.line),
+            const SizedBox(height: 12),
+            _SectionHeader(title: l10n.settingsPurchaseStatusSection),
+            adsRemovedAsync.when(
+              loading: () => _StatusTile(
+                icon: Icons.sync,
+                title: l10n.settingsAdsRemovedChecking,
+                subtitle: l10n.settingsAdsRemovedCheckingSubtitle,
+              ),
+              error: (error, _) => ListTile(
+                leading: const Icon(Icons.error_outline),
+                title: Text(l10n.settingsAdsRemovedLoadError),
+                subtitle: Text('$error'),
+              ),
+              data: (adsRemoved) => Opacity(
+                // 읽기전용(조작 불가) 스위치임을 시각적으로 dim 처리.
+                opacity: 0.55,
+                child: SwitchListTile(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: colors.line),
+                  ),
+                  tileColor: colors.panel,
+                  secondary: Icon(
+                    adsRemoved ? Icons.verified : Icons.workspace_premium,
+                  ),
+                  title: Text(l10n.settingsRemoveAdsTitle),
+                  subtitle: Text(
+                    adsRemoved
+                        ? l10n.settingsAdsRemovedActiveSubtitle
+                        : l10n.settingsAdsRemovedInactiveSubtitle,
+                  ),
+                  value: adsRemoved,
+                  onChanged: null,
                 ),
-                tileColor: colors.panel,
-                secondary: Icon(
-                  adsRemoved ? Icons.verified : Icons.workspace_premium,
-                ),
-                title: Text(l10n.settingsRemoveAdsTitle),
-                subtitle: Text(
-                  adsRemoved
-                      ? l10n.settingsAdsRemovedActiveSubtitle
-                      : l10n.settingsAdsRemovedInactiveSubtitle,
-                ),
-                value: adsRemoved,
-                onChanged: null,
               ),
             ),
-          ),
-          const SizedBox(height: 8),
-          ListTile(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: BorderSide(color: colors.line),
+            const SizedBox(height: 8),
+            ListTile(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: colors.line),
+              ),
+              tileColor: colors.panel,
+              leading: const Icon(Icons.restore),
+              title: Text(l10n.settingsRestorePurchaseTitle),
+              subtitle: Text(
+                purchaseController.purchasePending
+                    ? l10n.settingsRestorePurchasePendingSubtitle
+                    : l10n.settingsRestorePurchaseSubtitle,
+              ),
+              onTap: purchaseController.purchasePending
+                  ? null
+                  : purchaseController.restorePurchases,
             ),
-            tileColor: colors.panel,
-            leading: const Icon(Icons.restore),
-            title: Text(l10n.settingsRestorePurchaseTitle),
-            subtitle: Text(
-              purchaseController.purchasePending
-                  ? l10n.settingsRestorePurchasePendingSubtitle
-                  : l10n.settingsRestorePurchaseSubtitle,
+            const SizedBox(height: 8),
+            _SectionHeader(title: l10n.settingsDocumentSection),
+            ListTile(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: colors.line),
+              ),
+              tileColor: colors.panel,
+              leading: const Icon(Icons.picture_as_pdf_outlined),
+              title: Text(l10n.settingsPdfSettingsTitle),
+              subtitle: Text(l10n.settingsPdfSettingsSubtitle),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    settings: const RouteSettings(
+                      name: AnalyticsScreens.proPdfSettings,
+                    ),
+                    builder: (_) => const ProPdfSettingsScreen(),
+                  ),
+                );
+              },
             ),
-            onTap: purchaseController.purchasePending
-                ? null
-                : purchaseController.restorePurchases,
-          ),
-          const SizedBox(height: 8),
-          _SectionHeader(title: l10n.settingsDocumentSection),
-          ListTile(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: BorderSide(color: colors.line),
+            const SizedBox(height: 8),
+            _SectionHeader(title: l10n.settingsCheckSection),
+            const _LengthUnitTile(),
+            const SizedBox(height: 8),
+            const _MisclosureToleranceTile(),
+            const SizedBox(height: 8),
+            _SectionHeader(title: l10n.settingsToolsSection),
+            ListTile(
+              key: const ValueKey('peg-test-tile'),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: colors.line),
+              ),
+              tileColor: colors.panel,
+              leading: const Icon(Icons.compare_arrows),
+              title: Text(l10n.pegTestTitle),
+              subtitle: Text(l10n.pegTestSubtitle),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    settings: const RouteSettings(
+                      name: AnalyticsScreens.pegTest,
+                    ),
+                    builder: (_) => const PegTestScreen(),
+                  ),
+                );
+              },
             ),
-            tileColor: colors.panel,
-            leading: const Icon(Icons.picture_as_pdf_outlined),
-            title: Text(l10n.settingsPdfSettingsTitle),
-            subtitle: Text(l10n.settingsPdfSettingsSubtitle),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const ProPdfSettingsScreen()),
-              );
-            },
-          ),
-          const SizedBox(height: 8),
-          _SectionHeader(title: l10n.settingsCheckSection),
-          const _LengthUnitTile(),
-          const SizedBox(height: 8),
-          const _MisclosureToleranceTile(),
-          const SizedBox(height: 8),
-          _SectionHeader(title: l10n.settingsToolsSection),
-          ListTile(
-            key: const ValueKey('peg-test-tile'),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: BorderSide(color: colors.line),
+            const SizedBox(height: 8),
+            _SectionHeader(title: l10n.adsPolicySection),
+            _StatusTile(
+              icon: Icons.view_stream_outlined,
+              title: l10n.adsPolicyBannerTitle,
+              subtitle: l10n.adsPolicyBannerSubtitle,
             ),
-            tileColor: colors.panel,
-            leading: const Icon(Icons.compare_arrows),
-            title: Text(l10n.pegTestTitle),
-            subtitle: Text(l10n.pegTestSubtitle),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const PegTestScreen()),
-              );
-            },
-          ),
-          const SizedBox(height: 8),
-          _SectionHeader(title: l10n.adsPolicySection),
-          _StatusTile(
-            icon: Icons.view_stream_outlined,
-            title: l10n.adsPolicyBannerTitle,
-            subtitle: l10n.adsPolicyBannerSubtitle,
-          ),
-          const SizedBox(height: 8),
-          _StatusTile(
-            icon: Icons.ios_share,
-            title: l10n.adsPolicyExportTitle,
-            subtitle: l10n.adsPolicyExportSubtitle,
-          ),
-          // Passive store link only (no rating prompt / incentive). Android
-          // only: there is no App Store listing yet.
-          if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) ...[
-            _SectionHeader(title: l10n.settingsFeedbackSection),
-            const _RateAppTile(),
+            const SizedBox(height: 8),
+            _StatusTile(
+              icon: Icons.ios_share,
+              title: l10n.adsPolicyExportTitle,
+              subtitle: l10n.adsPolicyExportSubtitle,
+            ),
+            // Passive store link only (no rating prompt / incentive). Android
+            // only: there is no App Store listing yet.
+            if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) ...[
+              _SectionHeader(title: l10n.settingsFeedbackSection),
+              const _RateAppTile(),
+            ],
+            if (isAnalyticsSupportedPlatform) ...[
+              _SectionHeader(title: l10n.settingsPrivacySection),
+              const _UsageStatsTile(),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
@@ -372,6 +403,40 @@ class _RateAppTile extends ConsumerWidget {
       onTap: () async {
         try {
           await ref.read(appReviewClientProvider).openStoreListing();
+        } catch (error) {
+          if (context.mounted) {
+            AppSnackbar.error(context, l10n.coreErrorWithDetail('$error'));
+          }
+        }
+      },
+    );
+  }
+}
+
+/// "Share usage statistics" (default on). Applied to the analytics SDK
+/// immediately; debug builds never collect regardless.
+class _UsageStatsTile extends ConsumerWidget {
+  const _UsageStatsTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final colors = context.appColors;
+    final l10n = context.l10n;
+    final enabled = ref.watch(usageStatsEnabledProvider).valueOrNull ?? true;
+    return SwitchListTile(
+      key: const ValueKey('usage-stats-switch'),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: colors.line),
+      ),
+      tileColor: colors.panel,
+      secondary: const Icon(Icons.insights_outlined),
+      title: Text(l10n.settingsUsageStatsTitle),
+      subtitle: Text(l10n.settingsUsageStatsSubtitle),
+      value: enabled,
+      onChanged: (value) async {
+        try {
+          await setUsageStatsEnabled(ref, value);
         } catch (error) {
           if (context.mounted) {
             AppSnackbar.error(context, l10n.coreErrorWithDetail('$error'));

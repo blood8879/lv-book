@@ -16,6 +16,8 @@ import 'csv_exporter.dart';
 import 'xlsx_exporter.dart';
 import '../ads/ad_manager.dart';
 import '../ads/ad_providers.dart';
+import '../analytics/analytics_events.dart';
+import '../analytics/analytics_providers.dart';
 import '../pro/pro_pdf_settings.dart';
 import '../pro/pro_providers.dart';
 import '../project/data/project_providers.dart';
@@ -135,6 +137,26 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
     );
   }
 
+  /// `export_success` once the share sheet returned (with how it closed);
+  /// `export_failed` when building or sharing the file threw.
+  void _logExport(String format, {ShareResult? result}) {
+    ref.read(analyticsServiceProvider).logEvent(
+      result == null
+          ? AnalyticsEvents.exportFailed
+          : AnalyticsEvents.exportSuccess,
+      {
+        AnalyticsParams.format: format,
+        AnalyticsParams.bulk: false,
+        if (result != null)
+          AnalyticsParams.shareStatus: switch (result.status) {
+            ShareResultStatus.success => AnalyticsValues.shared,
+            ShareResultStatus.dismissed => AnalyticsValues.dismissed,
+            ShareResultStatus.unavailable => AnalyticsValues.unavailable,
+          },
+      },
+    );
+  }
+
   @override
   void dispose() {
     _interstitialAd?.dispose();
@@ -192,6 +214,7 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
 
   Future<void> _sharePdf(BuildContext context) async {
     final l10n = context.l10n;
+    var shared = false;
     try {
       final tolerance = await ref.read(misclosureToleranceProvider.future);
       final pdfBytes = await PdfExporter.generateFieldBookPdf(
@@ -214,6 +237,8 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
       final file = File('${dir.path}/$fileName');
       await file.writeAsBytes(pdfBytes);
       final shareResult = await Share.shareXFiles([XFile(file.path)]);
+      shared = true;
+      _logExport(AnalyticsValues.pdf, result: shareResult);
       await ExportHistoryRepository().record(
         ExportHistoryRecord(
           fileName: file.path.split('/').last,
@@ -224,6 +249,8 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
       );
       await _afterShare(shareResult);
     } catch (e) {
+      // Already counted as exported when only the history / ad step failed.
+      if (!shared) _logExport(AnalyticsValues.pdf);
       if (context.mounted) {
         AppSnackbar.error(context, l10n.exportPdfError('$e'));
       }
@@ -232,6 +259,7 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
 
   Future<void> _shareCsv(BuildContext context) async {
     final l10n = context.l10n;
+    var shared = false;
     try {
       final tolerance = await ref.read(misclosureToleranceProvider.future);
       final csvString = CsvExporter.generateFieldBookCsv(
@@ -254,6 +282,8 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
       final file = File('${dir.path}/$fileName');
       await file.writeAsString(CsvExporter.withBom(csvString));
       final shareResult = await Share.shareXFiles([XFile(file.path)]);
+      shared = true;
+      _logExport(AnalyticsValues.csv, result: shareResult);
       await ExportHistoryRepository().record(
         ExportHistoryRecord(
           fileName: file.path.split('/').last,
@@ -264,6 +294,8 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
       );
       await _afterShare(shareResult);
     } catch (e) {
+      // Already counted as exported when only the history / ad step failed.
+      if (!shared) _logExport(AnalyticsValues.csv);
       if (context.mounted) {
         AppSnackbar.error(context, l10n.exportCsvError('$e'));
       }
@@ -274,6 +306,7 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
   /// the CSV.
   Future<void> _shareXlsx(BuildContext context) async {
     final l10n = context.l10n;
+    var shared = false;
     try {
       final tolerance = await ref.read(misclosureToleranceProvider.future);
       final bytes = XlsxExporter.generateFieldBookXlsx(
@@ -299,6 +332,8 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
       final shareResult = await Share.shareXFiles([
         XFile(file.path, mimeType: XlsxExporter.mimeType),
       ]);
+      shared = true;
+      _logExport(AnalyticsValues.xlsx, result: shareResult);
       await ExportHistoryRepository().record(
         ExportHistoryRecord(
           fileName: file.path.split('/').last,
@@ -309,6 +344,8 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
       );
       await _afterShare(shareResult);
     } catch (e) {
+      // Already counted as exported when only the history / ad step failed.
+      if (!shared) _logExport(AnalyticsValues.xlsx);
       if (context.mounted) {
         AppSnackbar.error(context, l10n.exportXlsxError('$e'));
       }

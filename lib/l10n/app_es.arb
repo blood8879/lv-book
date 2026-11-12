@@ -546,6 +546,7 @@
   "settingsFeedbackSection": "Comentarios",
   "settingsPdfSettingsSubtitle": "Empresa, plantilla, marca de agua y firma.",
   "settingsPdfSettingsTitle": "Ajustes del PDF de entrega",
+  "settingsPrivacySection": "Privacidad",
   "settingsPurchaseStatusSection": "Estado de la compra",
   "settingsRateAppSubtitle": "Abra la ficha de Google Play para dejar una reseña.",
   "settingsRateAppTitle": "Calificar Lv Book",
@@ -574,5 +575,7 @@
   "settingsUnitFeet": "Pies (ft)",
   "settingsUnitMetres": "Metros (m)",
   "settingsUnitNote": "Solo cambian las etiquetas; los números existentes no se convierten.",
-  "settingsUnitTitle": "Unidades"
+  "settingsUnitTitle": "Unidades",
+  "settingsUsageStatsSubtitle": "Envía estadísticas de uso anónimas para mejorar la app. Nunca se envían los datos de levantamiento que usted introduce.",
+  "settingsUsageStatsTitle": "Enviar estadísticas de uso"
 }

@@ -1845,6 +1845,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get settingsPdfSettingsTitle => '제출용 PDF 설정';
 
   @override
+  String get settingsPrivacySection => '개인정보';
+
+  @override
   String get settingsPurchaseStatusSection => '구매 상태';
 
   @override
@@ -1953,4 +1956,11 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get settingsUnitTitle => '단위';
+
+  @override
+  String get settingsUsageStatsSubtitle =>
+      '앱 개선을 위해 익명 사용 통계를 보냅니다. 입력한 측량 데이터는 보내지 않습니다.';
+
+  @override
+  String get settingsUsageStatsTitle => '사용 통계 보내기';
 }

@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
+import 'features/ads/ad_providers.dart';
+import 'features/analytics/analytics_events.dart';
+import 'features/analytics/analytics_providers.dart';
 import 'features/project/presentation/project_list_screen.dart';
 import 'features/purchase/purchase_providers.dart';
 import 'features/quickmemo/presentation/quick_memo_fab.dart';
@@ -20,6 +23,9 @@ class LvBookApp extends ConsumerStatefulWidget {
 
 class _LvBookAppState extends ConsumerState<LvBookApp> {
   final _quickMemoFabController = QuickMemoFabController();
+  late final _analyticsObserver = AnalyticsRouteObserver(
+    () => ref.read(analyticsServiceProvider),
+  );
 
   @override
   void dispose() {
@@ -33,6 +39,17 @@ class _LvBookAppState extends ConsumerState<LvBookApp> {
     // Start listening to the store's purchase stream app-wide (not only while
     // Settings is open) so late purchase/restore events update ads state.
     ref.read(purchaseControllerProvider);
+    // Keep the `is_pro` user property in step with the Pro entitlement.
+    ref.listenManual<AsyncValue<bool>>(adsRemovedProvider, (_, next) {
+      final isPro = next.valueOrNull;
+      if (isPro == null) return;
+      ref
+          .read(analyticsServiceProvider)
+          .setUserProperty(
+            AnalyticsUserProperties.isPro,
+            isPro ? AnalyticsValues.trueValue : AnalyticsValues.falseValue,
+          );
+    }, fireImmediately: true);
   }
 
   @override
@@ -51,7 +68,7 @@ class _LvBookAppState extends ConsumerState<LvBookApp> {
       themeMode: ThemeMode.system,
       home: const ProjectListScreen(),
       debugShowCheckedModeBanner: false,
-      navigatorObservers: [_quickMemoFabController],
+      navigatorObservers: [_quickMemoFabController, _analyticsObserver],
       // Overlay a single app-wide quick-memo FAB above every route.
       builder: (context, child) {
         final content = QuickMemoFabScope(

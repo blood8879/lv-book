@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../analytics/analytics_events.dart';
+import '../../analytics/analytics_providers.dart';
 import '../domain/quick_memo.dart';
 import 'quick_memo_audio_paths.dart';
 import 'quick_memo_repository.dart';
@@ -27,6 +29,11 @@ class QuickMemoListNotifier extends AsyncNotifier<List<QuickMemo>> {
         : await QuickMemoAudioPaths.toStoredOnDevice(audioPath);
     final memo = QuickMemo(text: text, audioPath: storedAudioPath);
     await _repository.create(memo);
+    // Only whether text / audio were present, never the content.
+    ref.read(analyticsServiceProvider).logEvent(AnalyticsEvents.quickMemoUsed, {
+      AnalyticsParams.hasText: text?.trim().isNotEmpty ?? false,
+      AnalyticsParams.hasAudio: audioPath != null,
+    });
     state = AsyncData(await _repository.list());
   }
 

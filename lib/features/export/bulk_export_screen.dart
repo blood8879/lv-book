@@ -1,11 +1,18 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_snackbar.dart';
 import '../../l10n/l10n.dart';
 import '../ads/ad_providers.dart';
+import '../analytics/analytics_events.dart';
+import '../analytics/analytics_providers.dart';
+import '../analytics/pro_paywall_impression.dart';
 import '../benchmark/data/benchmark_repository.dart';
 import '../fieldbook/data/fieldbook_providers.dart';
 import '../fieldbook/domain/fieldbook.dart';
@@ -15,6 +22,15 @@ import '../review/review_providers.dart';
 import '../settings/misclosure_tolerance_repository.dart';
 import 'bulk_export_service.dart';
 import '../../core/constants/app_constants.dart';
+
+/// Share sheet used by bulk export (overridable in tests).
+final bulkExportShareProvider = Provider<BulkExportShare>(
+  (ref) => Share.shareXFiles,
+);
+
+/// Folder the bulk export files are written to (overridable in tests).
+final bulkExportTemporaryDirectoryProvider =
+    Provider<Future<Directory> Function()>((ref) => getTemporaryDirectory);
 
 class BulkExportScreen extends ConsumerStatefulWidget {
   final int projectId;
@@ -49,7 +65,8 @@ class _BulkExportScreenState extends ConsumerState<BulkExportScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isPro = ref.watch(adsRemovedProvider).valueOrNull == true;
+    final adsRemoved = ref.watch(adsRemovedProvider).valueOrNull;
+    final isPro = adsRemoved == true;
     final l10n = context.l10n;
 
     return Scaffold(
@@ -68,7 +85,13 @@ class _BulkExportScreenState extends ConsumerState<BulkExportScreen> {
       ),
       body: Column(
         children: [
-          if (!isPro) _buildLockedBanner(),
+          if (!isPro)
+            ProPaywallImpression(
+              source: AnalyticsValues.sourceBulkExport,
+              // Not while the entitlement is still loading.
+              visible: adsRemoved == false,
+              child: _buildLockedBanner(),
+            ),
           Expanded(
             child: Opacity(
               opacity: isPro ? 1.0 : 0.5,
@@ -265,6 +288,13 @@ class _BulkExportScreenState extends ConsumerState<BulkExportScreen> {
         .where((fieldBook) => _selectedIds.contains(fieldBook.id))
         .toList();
     final l10n = context.l10n;
+    final analytics = ref.read(analyticsServiceProvider);
+    final format = switch (_format) {
+      BulkExportFormat.pdf => AnalyticsValues.pdf,
+      BulkExportFormat.csv => AnalyticsValues.csv,
+      BulkExportFormat.xlsx => AnalyticsValues.xlsx,
+      BulkExportFormat.both => AnalyticsValues.pdfCsv,
+    };
 
     setState(() => _sharing = true);
     try {
@@ -277,6 +307,10 @@ class _BulkExportScreenState extends ConsumerState<BulkExportScreen> {
         measurementRepository: ref.read(measurementRepositoryProvider),
         benchMarkRepository: BenchMarkRepository(),
         tolerance: await ref.read(misclosureToleranceProvider.future),
+        temporaryDirectoryProvider: ref.read(
+          bulkExportTemporaryDirectoryProvider,
+        ),
+        shareFiles: ref.read(bulkExportShareProvider),
       );
       final fileCount = await service.shareFieldBooks(
         fieldBooks: selected,
@@ -286,6 +320,13 @@ class _BulkExportScreenState extends ConsumerState<BulkExportScreen> {
         includeSummary: _includeSummary,
         l10n: l10n,
       );
+      if (fileCount > 0) {
+        analytics.logEvent(AnalyticsEvents.exportSuccess, {
+          AnalyticsParams.format: format,
+          AnalyticsParams.bulk: true,
+          AnalyticsParams.fileCount: fileCount,
+        });
+      }
 
       if (!mounted) return;
       if (fileCount == 0) {
@@ -300,6 +341,10 @@ class _BulkExportScreenState extends ConsumerState<BulkExportScreen> {
         }
       }
     } catch (error) {
+      analytics.logEvent(AnalyticsEvents.exportFailed, {
+        AnalyticsParams.format: format,
+        AnalyticsParams.bulk: true,
+      });
       if (!mounted) return;
       AppSnackbar.error(
         context,

@@ -1956,6 +1956,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsPdfSettingsTitle => 'Submission PDF settings';
 
   @override
+  String get settingsPrivacySection => 'Privacy';
+
+  @override
   String get settingsPurchaseStatusSection => 'Purchase status';
 
   @override
@@ -2069,4 +2072,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsUnitTitle => 'Units';
+
+  @override
+  String get settingsUsageStatsSubtitle =>
+      'Sends anonymous usage statistics to help improve the app. Your survey data is never sent.';
+
+  @override
+  String get settingsUsageStatsTitle => 'Share usage statistics';
 }

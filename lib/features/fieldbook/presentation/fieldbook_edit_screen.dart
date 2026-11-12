@@ -19,6 +19,9 @@ import '../../benchmark/domain/benchmark.dart';
 import '../../benchmark/domain/benchmark_recheck.dart';
 import '../../settings/misclosure_tolerance_repository.dart';
 import '../../export/export_screen.dart';
+import '../../analytics/analytics_events.dart';
+import '../../analytics/analytics_mappers.dart';
+import '../../analytics/analytics_providers.dart';
 import '../../quickmemo/presentation/quick_memo_fab.dart';
 import '../../../core/utils/calculation.dart';
 import '../../../l10n/l10n.dart';
@@ -168,6 +171,10 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
   int _queuedGeneration = 0;
   int _savedGeneration = 0;
   double? _persistedStartElevation;
+
+  /// Whether the book already had a BS/FS reading when opened (or one has
+  /// been saved since); drives the one-off `fieldbook_first_entry` event.
+  bool _hasReadings = true;
   late FieldBookReviewStatus _reviewStatus;
   DateTime? _reviewedAt;
 
@@ -338,6 +345,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
 
     final measRepo = ref.read(measurementRepositoryProvider);
     final existing = await measRepo.getByFieldBookId(widget.fieldBook.id!);
+    _hasReadings = existing.any((m) => m.bs != null || m.fs != null);
 
     final rows = <_RowData>[];
     for (final m in existing) {
@@ -461,6 +469,10 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
     final MeasurementRepository measRepo = container.read(
       measurementRepositoryProvider,
     );
+    final firstEntry =
+        !_hasReadings && measurements.any((m) => m.bs != null || m.fs != null);
+    if (firstEntry) _hasReadings = true;
+    final reductionMethod = _reductionMethod;
 
     final save = _saveQueue.catchError((Object _) {}).then((_) async {
       await measRepo.replaceForFieldBook(
@@ -469,6 +481,15 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
         startElevation: startElevation,
       );
       container.invalidate(measurementListProvider(fieldBookId));
+      if (firstEntry) {
+        container
+            .read(analyticsServiceProvider)
+            .logEvent(AnalyticsEvents.fieldbookFirstEntry, {
+              AnalyticsParams.reductionMethod: analyticsReductionMethod(
+                reductionMethod,
+              ),
+            });
+      }
       if (_persistedStartElevation != startElevation) {
         _persistedStartElevation = startElevation;
         container.invalidate(fieldBookListProvider(projectId));
@@ -1930,9 +1951,34 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
     );
   }
 
+  /// `misclosure_checked` when the user exports (the explicit check point;
+  /// the live summary recomputes on every keystroke). Only the judgement is
+  /// sent, never the misclosure or any reading.
+  void _logClosureCheck(
+    MeasurementValidationResult validation,
+    MisclosureTolerance tolerance,
+  ) {
+    final closure = validation.closure;
+    if (closure == null) return;
+    _container.read(analyticsServiceProvider).logEvent(
+      AnalyticsEvents.misclosureChecked,
+      {
+        AnalyticsParams.result: analyticsClosureResult(closure.withinTolerance),
+        AnalyticsParams.arithmeticOk: closure.arithmeticOk,
+        AnalyticsParams.toleranceMode: analyticsToleranceMode(tolerance.mode),
+        AnalyticsParams.unit: analyticsLengthUnit(tolerance.unit),
+        AnalyticsParams.reductionMethod: analyticsReductionMethod(
+          _reductionMethod,
+        ),
+      },
+    );
+  }
+
   Future<void> _export() async {
     await _saveToDb();
-    final validation = _validate(_tolerance);
+    final tolerance = _tolerance;
+    final validation = _validate(tolerance);
+    _logClosureCheck(validation, tolerance);
     if (!validation.canExport && mounted) {
       final proceed = await _confirmExportValidation(validation);
       if (!proceed) return;
@@ -1962,6 +2008,7 @@ class _FieldBookEditScreenState extends ConsumerState<FieldBookEditScreen>
       Navigator.push(
         context,
         MaterialPageRoute(
+          settings: const RouteSettings(name: AnalyticsScreens.export),
           builder: (_) => ExportScreen(
             fieldBook: _fieldBookWithReviewMetadata(),
             measurements: measurements,

@@ -68,8 +68,8 @@ All calculations, checks, the two-peg test, single PDF/Excel/CSV export, CSV/Exc
 Your data stays on your device. Back it up any time as a JSON file.
 ```
 
-## Release notes (en-US) — 2.3.0 (30)
+## Release notes (en-US) — 2.4.0 (31)
 
 ```
-• More reliable Pro purchase confirmation and restore
+• New in Settings: "Share usage statistics" (anonymous, can be turned off). Your survey data is never sent.
 ```

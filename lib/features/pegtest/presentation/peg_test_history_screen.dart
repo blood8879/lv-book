@@ -13,6 +13,7 @@ import '../../../core/widgets/app_snackbar.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/semantic_pill.dart';
 import '../../../l10n/l10n.dart';
+import '../../analytics/analytics_events.dart';
 import '../../pro/pro_pdf_settings.dart';
 import '../../pro/pro_providers.dart';
 import '../data/peg_test_record_repository.dart';
@@ -84,7 +85,10 @@ class _RecordTile extends StatelessWidget {
   void _open(BuildContext context) {
     Navigator.push<bool>(
       context,
-      MaterialPageRoute(builder: (_) => PegTestRecordScreen(record: record)),
+      MaterialPageRoute(
+        settings: const RouteSettings(name: AnalyticsScreens.pegTestRecord),
+        builder: (_) => PegTestRecordScreen(record: record),
+      ),
     );
   }
 

@@ -56,3 +56,7 @@ android/app/keystore/
 # Local SDK paths and generated Android build settings
 android/local.properties
 android/.kotlin/
+
+# Firebase config (kept local; public repo)
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist

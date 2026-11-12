@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../ads/ad_providers.dart';
+import '../analytics/analytics_providers.dart';
 import 'purchase_controller.dart';
 
 /// App-wide purchase controller.
@@ -15,6 +16,7 @@ final purchaseControllerProvider = ChangeNotifierProvider<PurchaseController>((
   final controller = PurchaseController(
     adSettingsRepository: ref.watch(adSettingsRepositoryProvider),
     onEntitlementChanged: () => ref.invalidate(adsRemovedProvider),
+    analytics: ref.watch(analyticsServiceProvider),
   );
   controller.initialize();
   return controller;

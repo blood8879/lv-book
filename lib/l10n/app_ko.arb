@@ -546,6 +546,7 @@
   "settingsFeedbackSection": "의견",
   "settingsPdfSettingsSubtitle": "회사명, 템플릿, 워터마크, 서명을 설정합니다.",
   "settingsPdfSettingsTitle": "제출용 PDF 설정",
+  "settingsPrivacySection": "개인정보",
   "settingsPurchaseStatusSection": "구매 상태",
   "settingsRateAppSubtitle": "Google Play 스토어에서 리뷰를 남길 수 있습니다.",
   "settingsRateAppTitle": "앱 평가하기",
@@ -574,5 +575,7 @@
   "settingsUnitFeet": "피트 (ft)",
   "settingsUnitMetres": "미터 (m)",
   "settingsUnitNote": "표시 단위만 바뀌며 기존 값은 변환되지 않습니다.",
-  "settingsUnitTitle": "단위"
+  "settingsUnitTitle": "단위",
+  "settingsUsageStatsSubtitle": "앱 개선을 위해 익명 사용 통계를 보냅니다. 입력한 측량 데이터는 보내지 않습니다.",
+  "settingsUsageStatsTitle": "사용 통계 보내기"
 }
